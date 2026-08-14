@@ -162,36 +162,29 @@ const etapasSeleccion = [
   class="relative isolate grano scroll-mt-24 border-t border-white/5 bg-carbon-950 py-24 md:py-32"
 >
   {/*
-    ⚑ UN SOLO FONDO PARA TODA LA SECCIÓN, Y A SANGRE.
+    ⚑ ESTA SECCIÓN NO LLEVA FONDO, Y ES A PROPÓSITO.
 
-    Las dos versiones anteriores tenían un fondo POR RECORRIDO, y eso daba dos
-    costuras que se veían:
+    Se probaron cuatro y las cuatro se veían raras:
 
-      · el fondo vivía dentro de `.contenedor` (1.280px), así que en una
-        pantalla más ancha quedaban dos franjas más oscuras a los costados —
-        una línea vertical al costado del panel;
-      · cada bloque traía su propio degradé vertical pegado a la ventana, así
-        que al pasar del club a la selección aparecía un corte horizontal duro.
+      1. una foto estirada al alto del bloque — más de 10.000px de largo, salía
+         deformada;
+      2. un video con los fotogramas atados al scroll — dejó de deformarse pero
+         seguía tosco: una foto oscura y ruidosa atenuada da manchones;
+      3. un fondo dibujado por recorrido — dos costuras: franjas oscuras a los
+         costados (vivía dentro de `.contenedor`) y un corte horizontal al pasar
+         de un bloque al otro;
+      4. una sola capa a sangre con líneas de cal en SVG — sin costuras, pero
+         las líneas recortadas se leían como rayas sueltas, no como una cancha.
 
-    Ahora es una sola capa, del ancho de la pantalla, pegada con `sticky` para
-    que no se mueva, y sin degradés verticales —que era lo que dibujaba las
-    bandas—. Lo único que cambia entre un recorrido y el otro es el COLOR del
-    resplandor, y lo hace con una transición, no con un corte.
+    La quinta es no poner nada. El carbón liso es lo que usan Manager y Juegos,
+    así que además queda coherente, y las capturas del juego —que son el punto
+    de la sección— quedan como lo único que se mira. El grano ya viene de la
+    clase `grano` de la sección.
+
+    ⚠ Si alguna vez se vuelve a intentar: el fondo NUNCA va dentro de
+      `.contenedor` (deja franjas a los costados) y nada de degradés verticales
+      pegados a la ventana (dibujan bandas fijas que no se mueven con el texto).
   */}
-  <div class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
-    <div class="sticky top-0 h-screen w-full overflow-hidden">
-      <div
-        class="absolute inset-0 transition-[background] duration-1000"
-        data-camino-resplandor
-        style="background:
-          radial-gradient(60% 50% at 72% 22%, rgba(18,183,106,0.13), transparent 62%),
-          radial-gradient(50% 42% at 14% 78%, rgba(11,110,79,0.11), transparent 62%)"
-      >
-      </div>
-      <div class="grano absolute inset-0"></div>
-    </div>
-  </div>
-
   <div class="contenedor">
     <header class="mx-auto mb-16 max-w-2xl text-center md:mb-24">
       <p class="rotulo">Tu camino en el juego</p>
@@ -204,7 +197,7 @@ const etapasSeleccion = [
     </header>
 
     {/* ---- RECORRIDO 1: EL CLUB -------------------------------------- */}
-    <Recorrido etapas={etapas} clima="club" />
+    <Recorrido etapas={etapas} />
 
     {/* ---- RECORRIDO 2: LA SELECCIÓN --------------------------------- */}
     <div class="linea-cal my-20 md:my-28"></div>
@@ -217,7 +210,7 @@ const etapasSeleccion = [
       </h2>
     </header>
 
-    <Recorrido etapas={etapasSeleccion} clima="mundial" />
+    <Recorrido etapas={etapasSeleccion} />
   </div>
 </section>
 
@@ -280,38 +273,4 @@ const etapasSeleccion = [
       })
     }
   })
-
-
-
-  /**
-   * EL COLOR DEL RESPLANDOR SIGUE AL RECORRIDO.
-   *
-   * Verde mientras se lee el camino del club, dorado en el de la selección. Es
-   * un cambio de `background` con transición de un segundo: no hay corte, y no
-   * hace falta un fondo por bloque —que era justo lo que dejaba costuras.
-   */
-  const resplandor = document.querySelector<HTMLElement>('[data-camino-resplandor]')
-
-  const CLIMAS = {
-    club:
-      'radial-gradient(60% 50% at 72% 22%, rgba(18,183,106,0.13), transparent 62%),' +
-      'radial-gradient(50% 42% at 14% 78%, rgba(11,110,79,0.11), transparent 62%)',
-    mundial:
-      'radial-gradient(62% 52% at 76% 20%, rgba(245,158,11,0.13), transparent 62%),' +
-      'radial-gradient(52% 44% at 16% 80%, rgba(18,183,106,0.10), transparent 62%)',
-  }
-
-  if (resplandor) {
-    document.querySelectorAll<HTMLElement>('[data-clima]').forEach((bloque) => {
-      const clima = bloque.dataset.clima as keyof typeof CLIMAS
-      if (!CLIMAS[clima]) return
-      ScrollTrigger.create({
-        trigger: bloque,
-        start: 'top 60%',
-        end: 'bottom 40%',
-        onEnter: () => { resplandor.style.background = CLIMAS[clima] },
-        onEnterBack: () => { resplandor.style.background = CLIMAS[clima] },
-      })
-    })
-  }
 </script>

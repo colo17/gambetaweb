@@ -25,17 +25,15 @@ export interface Etapa {
 
 interface Props {
   etapas: Etapa[]
-  /** Marca el bloque para que el fondo de la sección sepa dónde está el scroll. */
-  clima?: 'club' | 'mundial'
 }
 
-const { etapas, clima } = Astro.props
+const { etapas } = Astro.props
 
 /** La versión de teléfono de una captura. El arte no tiene, y no hace falta. */
 const enTelefono = (ruta: string) => ruta.replace('-desktop.webp', '-mobile.webp')
 ---
 
-<div data-recorrido data-clima={clima}>
+<div data-recorrido>
   <div class="grid gap-10 lg:grid-cols-[minmax(0,0.85fr)_1.3fr] lg:gap-12">
   <!-- ---- Columna del texto ------------------------------------------- -->
   <ol class="relative">
