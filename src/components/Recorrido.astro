@@ -28,15 +28,21 @@ interface Props {
 }
 
 const { etapas } = Astro.props
-
-/** La versión de teléfono de una captura. El arte no tiene, y no hace falta. */
-const enTelefono = (ruta: string) => ruta.replace('-desktop.webp', '-mobile.webp')
 ---
 
 <div data-recorrido>
-  <div class="grid gap-10 lg:grid-cols-[minmax(0,0.85fr)_1.3fr] lg:gap-12">
+  <div class="grid min-w-0 gap-10 lg:grid-cols-[minmax(0,0.85fr)_1.3fr] lg:gap-12">
+  {/*
+    ⚠ `min-w-0` NO ES DECORATIVO. Un item de grilla tiene `min-width: auto`, o
+      sea que se niega a encogerse por debajo del ancho de su contenido. Con la
+      captura de escritorio adentro (723px de ancho), esta lista pasaba a medir
+      976px en una pantalla de 390: el documento entero se iba a 1.700px y todo
+      el texto de las etapas quedaba cortado a la derecha. No se notaba como
+      scroll horizontal porque `body` tiene `overflow-x: hidden` — se notaba
+      como texto comido.
+  */}
   <!-- ---- Columna del texto ------------------------------------------- -->
-  <ol class="relative">
+  <ol class="relative min-w-0">
     <!-- La línea de tiempo -->
     <span
       class="absolute left-[0.9rem] top-2 bottom-2 w-px bg-gradient-to-b from-cesped-700/70 via-cesped-700/25 to-transparent lg:left-[1.15rem]"
@@ -56,17 +62,47 @@ const enTelefono = (ruta: string) => ruta.replace('-desktop.webp', '-mobile.webp
           <h3 class="text-[clamp(1.5rem,3.5vw,2.5rem)]">{etapa.titulo}</h3>
           <p class="mt-4 max-w-lg text-lg leading-relaxed text-hueso-400">{etapa.texto}</p>
 
-          {/* En teléfono la imagen va acá abajo: no hay lugar para clavarla al costado. */}
-          <figure class="tarjeta-hover mt-6 overflow-hidden rounded-xl border border-white/10 bg-[#070a12] lg:hidden">
-            <img
-              src={etapa.tipo === 'arte' ? etapa.imagen : enTelefono(etapa.imagen)}
-              alt={`${etapa.titulo} — ${etapa.pie}`}
-              loading="lazy"
-              decoding="async"
-              class="w-full"
-            />
-            <figcaption class="border-t border-white/8 bg-carbon-900/80 px-3 py-2 text-xs text-hueso-500">
-              {etapa.pie}
+          {/*
+            En teléfono la imagen va acá abajo: no hay lugar para clavarla al
+            costado.
+
+            ⚠ Y VA LA CAPTURA DE ESCRITORIO, NO UNA "DE TELÉFONO". Se probó
+              fotografiar el juego a 420px y salió peor: a ese ancho los paneles
+              del juego recortan sus propias tablas, así que la captura ya venía
+              cortada —se veía "Promover | N…" con los botones comidos—. La de
+              escritorio está completa; lo que se adapta es cómo se muestra.
+
+            Se deja alta y se desliza de costado, que es como se mira una captura
+            de una app de escritorio en un teléfono. Encogerla al ancho de la
+            pantalla la dejaría entera pero ilegible.
+          */}
+          <figure class="mt-6 overflow-hidden rounded-xl border border-white/10 bg-[#070a12] lg:hidden">
+            {
+              etapa.tipo === 'arte' ? (
+                <img
+                  src={etapa.imagen}
+                  alt={`${etapa.titulo} — ${etapa.pie}`}
+                  loading="lazy"
+                  decoding="async"
+                  class="w-full"
+                />
+              ) : (
+                <div class="w-full overflow-x-auto overscroll-x-contain">
+                  <img
+                    src={etapa.imagen}
+                    alt={`${etapa.titulo} — ${etapa.pie}`}
+                    loading="lazy"
+                    decoding="async"
+                    class="h-[56vh] w-auto max-w-none"
+                  />
+                </div>
+              )
+            }
+            <figcaption class="flex items-center justify-between gap-3 border-t border-white/8 bg-carbon-900/80 px-3 py-2 text-xs text-hueso-500">
+              <span>{etapa.pie}</span>
+              {etapa.tipo !== 'arte' && (
+                <span class="shrink-0 text-hueso-400">deslizá →</span>
+              )}
             </figcaption>
           </figure>
         </li>

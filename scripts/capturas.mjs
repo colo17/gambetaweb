@@ -3,7 +3,7 @@
  * ===========================
  *
  * Levanta el harness (`vite.harness.config.mjs`), que monta los componentes
- * reales del juego, y los fotografía en escritorio y teléfono.
+ * reales del juego, y los fotografía.
  *
  * ⛔ NO TOCA `cyberfoot-online`. El harness lo lee por alias; Vite escribe su
  *    caché en el temporal del sistema. Ver la nota larga en la config.
@@ -72,10 +72,16 @@ const PANTALLAS = [
   { id: 'cancha-vivo' },
 ].map((p) => ({ nombre: p.id, ...p }))
 
-const VISTAS = [
-  { nombre: 'desktop', ancho: 1600, alto: 1000, escala: 1 },
-  { nombre: 'mobile', ancho: 420, alto: 900, escala: 2 },
-]
+/**
+ * ⚠ SÓLO ESCRITORIO, y a propósito.
+ *
+ * Antes se fotografiaba también a 420px para usar esas capturas en el teléfono,
+ * y salía peor: a ese ancho los paneles del juego recortan sus propias tablas,
+ * así que la captura ya venía cortada —se veía "Promover | N…" con los botones
+ * comidos—. El sitio usa la captura de escritorio en los dos tamaños y en el
+ * teléfono la muestra alta y deslizable. Ver `Recorrido.astro`.
+ */
+const VISTAS = [{ nombre: 'desktop', ancho: 1600, alto: 1000, escala: 1 }]
 
 // ---------------------------------------------------------------------------
 

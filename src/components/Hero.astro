@@ -172,13 +172,16 @@ const cifras = [
    * si la conexión es cara: en esos casos queda la imagen de arranque, que ya
    * es una buena foto.
    */
-  const CLIPS = [
-    '/assets/generated/hero-1.mp4',
-    '/assets/generated/hero-2.mp4',
-    '/assets/generated/hero-3.mp4',
-    '/assets/generated/hero-4.mp4',
-    '/assets/generated/hero-5.mp4',
-  ]
+  /**
+   * ⚑ HAY DOS JUEGOS DE CLIPS. Los de teléfono son los mismos videos a 720px de
+   *   ancho y con más compresión: 1,1 MB los cinco contra 3,0 MB los grandes.
+   *   Antes en el teléfono directamente NO se cargaba ninguno —el fondo era una
+   *   foto fija— y eso el dueño lo marcó como un error, no como una decisión.
+   */
+  const anchoChico = window.matchMedia('(max-width: 1023px)').matches
+  const CLIPS = [1, 2, 3, 4, 5].map(
+    (n) => `/assets/generated/hero-${n}${anchoChico ? '-mob' : ''}.mp4`
+  )
 
   /** Cuánto dura el cruce entre un clip y el siguiente. */
   const FUNDIDO = 1.2
@@ -191,11 +194,12 @@ const cifras = [
   const imagen = document.querySelector<HTMLElement>('[data-imagen-hero]')
 
   const quieto = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  const pantallaChica = window.matchMedia('(max-width: 1023px)').matches
   const conexion = (navigator as any).connection
-  const ahorroDatos = conexion?.saveData === true || /(^|-)2g$/.test(conexion?.effectiveType ?? '')
+  // En el teléfono el corte es más estricto: también se saltea el 3G.
+  const lenta = /(^|-)[23]g$/.test(conexion?.effectiveType ?? '')
+  const ahorroDatos = conexion?.saveData === true || lenta
 
-  if (capas[0] && capas[1] && !quieto && !pantallaChica && !ahorroDatos) {
+  if (capas[0] && capas[1] && !quieto && !ahorroDatos) {
     let actual = 0        // qué capa se está viendo
     let clip = 0          // qué clip toca
     let cambiando = false

@@ -277,13 +277,20 @@ export default function LigasExplorer({ ligas, detalleInicial }: Props) {
       <div className={cargando ? 'opacity-40 transition-opacity' : 'transition-opacity'}>
         {/* ---- Tabla de clubes ------------------------------------------ */}
         <div className="max-h-[30rem] overflow-auto">
-          <table className="w-full min-w-[36rem] border-collapse text-left text-sm">
+          {/*
+            ⚠ SIN `min-w`. Antes tenía `min-w-[36rem]` (576px) dentro de un
+              contenedor de 348px en un teléfono: 228px de tabla quedaban fuera
+              de pantalla y había que arrastrar de costado para ver la media.
+              Ahora las columnas que sobran se esconden por breakpoint y entra
+              entera.
+          */}
+          <table className="w-full border-collapse text-left text-sm">
             <caption className="solo-lectores">
               Clubes de {detalle.nombre} con su media, plantel y estadio
             </caption>
             <thead className="sticky top-0 z-10 bg-carbon-850/95 backdrop-blur">
               <tr className="text-[0.65rem] uppercase tracking-[0.14em] text-hueso-500">
-                <th scope="col" className="px-5 py-3 font-semibold md:px-6">#</th>
+                <th scope="col" className="px-3 py-3 font-semibold md:px-6">#</th>
                 <th scope="col" aria-sort={ariaOrden('nombre')} className="py-3 font-semibold">
                   <button onClick={() => cambiarOrden('nombre')} className="hover:text-hueso-200">
                     Club{flecha('nombre')}
@@ -294,17 +301,17 @@ export default function LigasExplorer({ ligas, detalleInicial }: Props) {
                     Once{flecha('mediaTitulares')}
                   </button>
                 </th>
-                <th scope="col" aria-sort={ariaOrden('media')} className="py-3 text-right font-semibold">
+                <th scope="col" aria-sort={ariaOrden('media')} className="hidden py-3 text-right font-semibold xs:table-cell">
                   <button onClick={() => cambiarOrden('media')} className="hover:text-hueso-200">
                     Plantel{flecha('media')}
                   </button>
                 </th>
-                <th scope="col" aria-sort={ariaOrden('plantel')} className="py-3 text-right font-semibold">
+                <th scope="col" aria-sort={ariaOrden('plantel')} className="hidden py-3 text-right font-semibold sm:table-cell">
                   <button onClick={() => cambiarOrden('plantel')} className="hover:text-hueso-200">
                     Jug.{flecha('plantel')}
                   </button>
                 </th>
-                <th scope="col" aria-sort={ariaOrden('aforo')} className="hidden py-3 pr-5 text-right font-semibold sm:table-cell md:pr-6">
+                <th scope="col" aria-sort={ariaOrden('aforo')} className="hidden py-3 pr-3 text-right font-semibold md:table-cell md:pr-6">
                   <button onClick={() => cambiarOrden('aforo')} className="hover:text-hueso-200">
                     Estadio{flecha('aforo')}
                   </button>
@@ -317,7 +324,7 @@ export default function LigasExplorer({ ligas, detalleInicial }: Props) {
                   key={club.id}
                   className="border-t border-white/5 transition-colors hover:bg-white/[0.03]"
                 >
-                  <td className="px-5 py-2.5 text-hueso-500 tabular-nums md:px-6">{indice + 1}</td>
+                  <td className="px-3 py-2.5 text-hueso-500 tabular-nums md:px-6">{indice + 1}</td>
                   <td className="py-2.5">
                     <div className="flex items-center gap-2.5">
                       <span
@@ -336,9 +343,13 @@ export default function LigasExplorer({ ligas, detalleInicial }: Props) {
                   <td className={`py-2.5 text-right font-display text-lg tabular-nums ${tonoMedia(club.mediaTitulares)}`}>
                     {club.mediaTitulares}
                   </td>
-                  <td className="py-2.5 text-right tabular-nums text-hueso-400">{club.media}</td>
-                  <td className="py-2.5 text-right tabular-nums text-hueso-400">{club.plantel}</td>
-                  <td className="hidden py-2.5 pr-5 text-right sm:table-cell md:pr-6">
+                  <td className="hidden py-2.5 text-right tabular-nums text-hueso-400 xs:table-cell">
+                    {club.media}
+                  </td>
+                  <td className="hidden py-2.5 text-right tabular-nums text-hueso-400 sm:table-cell">
+                    {club.plantel}
+                  </td>
+                  <td className="hidden py-2.5 pr-3 text-right md:table-cell md:pr-6">
                     <p className="truncate text-xs text-hueso-400">{club.estadio ?? '—'}</p>
                     <p className="text-xs text-hueso-500 tabular-nums">{numero(club.aforo)}</p>
                   </td>

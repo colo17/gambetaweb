@@ -257,6 +257,28 @@ fotogramas acompañan la lectura. Tres cosas que hacen falta para que ande:
 - **Sólo se cargan en pantallas grandes**, igual que el del hero, y el póster
   es un WebP chico. Con pósters en JPG de 87 KB la nota móvil se caía a 85.
 
+### Teléfono: tres cosas que estaban mal y cómo quedaron
+
+- **El hero no tenía video.** Estaba desactivado por debajo de 1024px "por
+  rendimiento". Ahora sí carga, pero un juego de clips aparte a 720px de ancho
+  y más compresión: **1,1 MB los cinco** contra 3,0 MB los grandes. Se saltea
+  igual con `prefers-reduced-motion`, `saveData`, 2G o 3G.
+- **Las capturas del scrollytelling salían recortadas.** Se fotografiaba el
+  juego a 420px y a ese ancho los paneles recortan sus propias tablas: la
+  captura ya venía cortada. Ahora se usa la de escritorio —completa— y en el
+  teléfono se muestra alta y deslizable, con un "deslizá →" en el pie.
+- **La tabla de ligas se cortaba de costado.** Tenía `min-w-[36rem]` (576px) en
+  un contenedor de 348px. Se sacó el mínimo y las columnas que sobran se
+  esconden por breakpoint: en un teléfono quedan #, Club y Once.
+
+⚠ **Y el bug de fondo, que no se veía como tal:** el `<ol>` de las etapas es un
+item de grilla, y un item de grilla tiene `min-width: auto` — se niega a
+encogerse por debajo del ancho de su contenido. Con la captura de escritorio
+adentro pasaba a medir 976px en una pantalla de 390 y **el documento entero se
+iba a 1.700px**, con todo el texto cortado a la derecha. No se notaba como
+scroll horizontal porque `body` tiene `overflow-x: hidden`; se notaba como
+texto comido. Lo arregla un `min-w-0`.
+
 ### El hero son cinco clips en secuencia
 
 Cuentan un partido de punta a punta: **micro → partido → vestuario → partido →
