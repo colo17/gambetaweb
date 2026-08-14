@@ -1,0 +1,261 @@
+---
+/**
+ * El hero.
+ *
+ * De fondo va un partido de verdad, de noche y con la cancha llena. Antes
+ * había una pizarra en miniatura y el dueño la bajó: "se ve muy raro, es como
+ * una cancha que gira y los jugadores ni se mueven".
+ *
+ * ⚑ El video NO es imprescindible: hay `poster`, y en `prefers-reduced-motion`
+ *   ni se carga. Lo que se lee siempre es el texto, que va en el HTML.
+ */
+import numeros from '@/data/numeros.json'
+import { CTA_JUGAR } from '@/config/games'
+
+const cifras = [
+  { valor: numeros.ligas, etiqueta: 'ligas' },
+  { valor: numeros.clubes.toLocaleString('es-AR'), etiqueta: 'clubes' },
+  { valor: `${Math.round(numeros.jugadores / 1000)}k`, etiqueta: 'futbolistas' },
+  { valor: numeros.paises, etiqueta: 'países' },
+]
+---
+
+<section id="inicio" class="relative isolate grano min-h-[100svh] overflow-hidden">
+  <!-- Fondo -->
+  <div class="absolute inset-0 -z-10">
+    {/*
+      ⚑ LA IMAGEN VA PRIMERO Y EL VIDEO SE SUMA DESPUÉS, si corresponde.
+
+      Antes el fondo era el `<video>` con `poster`, y en teléfono el LCP se iba
+      a 3,8 s: el poster pesaba 91 KB de JPG y el video, medio mega, competía
+      por el ancho de banda. Medido con Lighthouse, eso solo dejaba la nota de
+      rendimiento móvil en 87.
+
+      Ahora el primer pintado es un WebP de 31 KB con `fetchpriority="high"`, y
+      el video —que es puro adorno— sólo se carga en pantallas grandes.
+    */}
+    <img
+      src="/assets/generated/hero-inicio-900.webp"
+      srcset="/assets/generated/hero-inicio-900.webp 900w, /assets/generated/hero-inicio-1600.webp 1600w"
+      sizes="100vw"
+      alt=""
+      width="1600"
+      height="900"
+      fetchpriority="high"
+      decoding="async"
+      class="absolute inset-0 h-full w-full object-cover opacity-45 transition-opacity duration-1000"
+      data-imagen-hero
+    />
+
+    {/*
+      DOS capas de video, no una. Se turnan: mientras una está en pantalla, la
+      otra ya cargó el clip siguiente, y al terminar se funden. Con un solo
+      elemento habría un parpadeo a negro en cada cambio.
+    */}
+    <video
+      class="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-[1200ms]"
+      muted
+      playsinline
+      preload="none"
+      aria-hidden="true"
+      data-video-hero="a"
+    >
+    </video>
+    <video
+      class="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-[1200ms]"
+      muted
+      playsinline
+      preload="none"
+      aria-hidden="true"
+      data-video-hero="b"
+    >
+    </video>
+
+    <!--
+      El velo. Sin esto el texto no llega a contraste AA sobre el video, y el
+      título cae justo encima de la parte más iluminada de la cancha.
+      Son tres capas y cada una hace una cosa:
+        · el radial   apaga los bordes
+        · el lateral  oscurece la izquierda, que es donde vive el texto
+        · el inferior empalma con la sección siguiente
+    -->
+    <div class="absolute inset-0 bg-[radial-gradient(120%_90%_at_60%_10%,transparent_0%,#050607_78%)]"></div>
+    <div class="absolute inset-0 bg-gradient-to-r from-carbon-950 via-carbon-950/85 to-carbon-950/25"></div>
+    <div class="absolute inset-x-0 bottom-0 h-56 bg-gradient-to-t from-carbon-950 to-transparent"></div>
+  </div>
+
+  <div class="contenedor flex min-h-[100svh] flex-col justify-center pt-28 pb-16 md:pt-32">
+    <div class="max-w-5xl">
+      <p class="rotulo mb-6 flex items-center gap-3">
+        <span class="inline-block h-px w-10 bg-cesped-500"></span>
+        Del potrero a la pantalla
+      </p>
+
+      {/*
+        ⚠ `leading-[1.04]` y no menos. Anton mete las tildes bien arriba de la
+          altura de mayúscula, así que con un interlineado apretado la Í de
+          "Escribí" se montaba sobre "Sé el DT." de la línea de arriba. Cada
+          línea va en su propio bloque para poder darle aire sin tocar el resto.
+      */}
+      <h1 class="max-w-5xl text-[clamp(2.5rem,8vw,6rem)] leading-[1.04]">
+        <span class="block">Sé el DT.</span>
+        <span class="texto-degrade block pt-1">Escribí tu historia.</span>
+      </h1>
+
+      <p class="mt-8 max-w-xl text-lg leading-relaxed text-hueso-400 md:text-xl">
+        Gambeta es la casa de nuestros juegos de fútbol. El primero ya se juega:
+        un manager por turnos para pelear una liga entera con tus amigos, con{' '}
+        <strong class="font-semibold text-hueso-200">
+          {numeros.clubes.toLocaleString('es-AR')} clubes
+        </strong>{' '}
+        de {numeros.paises} países adentro.
+      </p>
+
+      <div class="mt-10 flex flex-wrap items-center gap-4">
+        <a
+          href={CTA_JUGAR.href}
+          class="boton boton-primario"
+          {...CTA_JUGAR.externo ? { target: '_blank', rel: 'noopener' } : {}}
+        >
+          {CTA_JUGAR.texto}
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </a>
+        <a href="#juegos" class="boton boton-secundario">Ver los juegos</a>
+      </div>
+
+      <!-- Los números del mundo. Salen del catálogo, no son marketing. -->
+      <dl class="mt-16 grid max-w-2xl grid-cols-2 gap-x-8 gap-y-6 sm:grid-cols-4">
+        {
+          cifras.map((cifra) => (
+            <div class="dato-hover border-l border-cesped-700/50 pl-4 transition-colors duration-300 hover:border-cesped-400">
+              <dt class="dato-valor font-display text-3xl text-hueso-50 md:text-4xl">{cifra.valor}</dt>
+              <dd class="mt-1 text-xs uppercase tracking-[0.18em] text-hueso-500">
+                {cifra.etiqueta}
+              </dd>
+            </div>
+          ))
+        }
+      </dl>
+    </div>
+  </div>
+
+  <!-- Indicador de scroll -->
+  <div
+    class="pointer-events-none absolute inset-x-0 bottom-6 flex justify-center"
+    aria-hidden="true"
+  >
+    <span class="flex h-9 w-5 items-start justify-center rounded-full border border-white/20 p-1">
+      <span class="h-1.5 w-1 animate-bounce rounded-full bg-cesped-400"></span>
+    </span>
+  </div>
+</section>
+
+<script>
+  /**
+   * EL HERO ES UNA SECUENCIA DE CINCO CLIPS, EN LOOP.
+   *
+   * El orden cuenta un partido de punta a punta: el micro llegando al estadio,
+   * el partido, el entretiempo en el vestuario, el partido de nuevo desde el
+   * césped, y la vuelta olímpica. Al terminar el quinto vuelve al primero.
+   *
+   * ⚑ CÓMO SE ENCADENAN: hay dos capas de video que se turnan. Mientras una se
+   *   ve, la otra ya está cargando el clip que viene; cuando la primera está
+   *   por terminar, la segunda arranca y se funden. Con un solo elemento cada
+   *   cambio sería un parpadeo a negro.
+   *
+   * ⚑ Y SE CARGAN DE A UNO. Los cinco juntos son casi tres megas; así el
+   *   visitante baja 640 KB y el resto llega mientras mira.
+   *
+   * Nada de esto pasa si la pantalla es chica, si pidieron menos movimiento o
+   * si la conexión es cara: en esos casos queda la imagen de arranque, que ya
+   * es una buena foto.
+   */
+  const CLIPS = [
+    '/assets/generated/hero-1.mp4',
+    '/assets/generated/hero-2.mp4',
+    '/assets/generated/hero-3.mp4',
+    '/assets/generated/hero-4.mp4',
+    '/assets/generated/hero-5.mp4',
+  ]
+
+  /** Cuánto dura el cruce entre un clip y el siguiente. */
+  const FUNDIDO = 1.2
+  const OPACIDAD = '0.45'
+
+  const capas = [
+    document.querySelector<HTMLVideoElement>('[data-video-hero="a"]'),
+    document.querySelector<HTMLVideoElement>('[data-video-hero="b"]'),
+  ]
+  const imagen = document.querySelector<HTMLElement>('[data-imagen-hero]')
+
+  const quieto = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  const pantallaChica = window.matchMedia('(max-width: 1023px)').matches
+  const conexion = (navigator as any).connection
+  const ahorroDatos = conexion?.saveData === true || /(^|-)2g$/.test(conexion?.effectiveType ?? '')
+
+  if (capas[0] && capas[1] && !quieto && !pantallaChica && !ahorroDatos) {
+    let actual = 0        // qué capa se está viendo
+    let clip = 0          // qué clip toca
+    let cambiando = false
+
+    const cargar = (capa: HTMLVideoElement, indice: number) => {
+      capa.src = CLIPS[indice % CLIPS.length]
+      capa.preload = 'auto'
+      capa.load()
+    }
+
+    /** Pasa a la capa siguiente con un fundido cruzado. */
+    const siguiente = () => {
+      if (cambiando) return
+      cambiando = true
+
+      const saliendo = capas[actual]!
+      const entrando = capas[1 - actual]!
+
+      entrando.currentTime = 0
+      entrando.play().catch(() => {})
+      entrando.style.opacity = OPACIDAD
+      saliendo.style.opacity = '0'
+
+      actual = 1 - actual
+      clip += 1
+
+      // La capa que salió se queda con el clip de más adelante, ya precargado.
+      window.setTimeout(() => {
+        saliendo.pause()
+        cargar(saliendo, clip + 1)
+        cambiando = false
+      }, FUNDIDO * 1000)
+    }
+
+    // El cruce arranca un poco antes del final, no al terminar.
+    for (const capa of capas) {
+      capa!.addEventListener('timeupdate', () => {
+        if (capa!.style.opacity === '0' || !capa!.duration) return
+        if (capa!.duration - capa!.currentTime <= FUNDIDO) siguiente()
+      })
+      // Si un clip no carga, no se corta la cadena: se pasa al que sigue.
+      capa!.addEventListener('error', () => siguiente())
+    }
+
+    cargar(capas[0]!, 0)
+    cargar(capas[1]!, 1)
+
+    capas[0]!.addEventListener(
+      'canplay',
+      () => {
+        capas[0]!.play().catch(() => {})
+        capas[0]!.style.opacity = OPACIDAD
+        /**
+         * ⚠ Y LA IMAGEN SE APAGA. Las dos capas estaban al 45% a la vez y se
+         *   veían los dos fotogramas superpuestos: cada jugador aparecía dos
+         *   veces, uno de ellos quieto.
+         */
+        imagen?.classList.replace('opacity-45', 'opacity-0')
+      },
+      { once: true }
+    )
+  }
+</script>

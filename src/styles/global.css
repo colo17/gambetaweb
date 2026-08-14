@@ -1,0 +1,311 @@
+@import 'tailwindcss';
+
+@import '@fontsource-variable/inter';
+@import '@fontsource/anton';
+
+/* ==========================================================================
+   IDENTIDAD DE GAMBETA
+   --------------------------------------------------------------------------
+   Fútbol rioplatense, potrero, pasión — con acabado premium, no de dibujito.
+
+   La paleta es de tres tiempos:
+     · el carbón     el fondo, siempre. El sitio nace oscuro.
+     · el verde      el césped. Manda en la marca.
+     · el dorado     sólo para lo que se toca (CTA, número que importa).
+
+   ⚑ El dorado es CARO a propósito: si se usa en todos lados deja de llamar la
+     atención, y su único trabajo es decir "hacé click acá".
+   ========================================================================== */
+
+@theme {
+  /* --- Carbón: los fondos ------------------------------------------------ */
+  --color-carbon-950: #050607;
+  --color-carbon-900: #0a0a0a;
+  --color-carbon-850: #101211;
+  --color-carbon-800: #161a18;
+  --color-carbon-700: #1f2522;
+  --color-carbon-600: #2c3531;
+
+  /* --- Césped: el verde de la marca -------------------------------------- */
+  --color-cesped-50: #e9fbf2;
+  --color-cesped-300: #4ade9a;
+  --color-cesped-400: #22c97c;
+  --color-cesped-500: #12b76a;
+  --color-cesped-600: #0e9a58;
+  --color-cesped-700: #0b6e4f;
+  --color-cesped-900: #06382a;
+
+  /* --- Dorado: el acento del CTA ----------------------------------------- */
+  --color-dorado-300: #fcd34d;
+  --color-dorado-400: #fbbf24;
+  --color-dorado-500: #f59e0b;
+  --color-dorado-600: #d97706;
+
+  /* --- Hueso: el texto --------------------------------------------------- */
+  --color-hueso-50: #faf9f6;
+  --color-hueso-200: #e7e4dc;
+  --color-hueso-400: #a8a49a;
+  --color-hueso-500: #7d7a73;
+
+  /* --- Tipografía -------------------------------------------------------- */
+  --font-display: 'Anton', 'Arial Narrow', system-ui, sans-serif;
+  --font-sans: 'Inter Variable', 'Inter', system-ui, sans-serif;
+
+  /* --- Ritmo ------------------------------------------------------------- */
+  --ease-salida: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ==========================================================================
+   BASE
+   ========================================================================== */
+
+@layer base {
+  :root {
+    color-scheme: dark;
+    /* ⚠ NADA de `scrollbar-gutter: stable` acá. Reservaba 17px de canaleta y
+       el documento pasaba a medir 407px en una pantalla de 390: desborde
+       horizontal en todos los teléfonos. El menú móvil es en línea y no
+       bloquea el scroll, así que la canaleta no hacía falta para nada. */
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* Respetar a quien pidió que nada se mueva. No es opcional. */
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  body {
+    background-color: var(--color-carbon-950);
+    color: var(--color-hueso-200);
+    font-family: var(--font-sans);
+    font-synthesis-weight: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    letter-spacing: 0.01em;
+    /* ⚠ 1 y no 0,95. Anton pone las tildes por encima de la altura de
+       mayúscula, así que en un título de dos líneas la Í de la segunda se
+       monta sobre la primera. En español eso pasa todo el tiempo. */
+    line-height: 1;
+    text-transform: uppercase;
+    color: var(--color-hueso-50);
+  }
+
+  /* El foco tiene que verse. Se navega con teclado. */
+  :focus-visible {
+    outline: 2px solid var(--color-dorado-400);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  ::selection {
+    background: var(--color-cesped-500);
+    color: var(--color-carbon-950);
+  }
+}
+
+/* ==========================================================================
+   PIEZAS QUE SE REPITEN
+   ========================================================================== */
+
+@layer components {
+  /* El ancho de lectura de todo el sitio. */
+  .contenedor {
+    width: 100%;
+    max-width: 80rem;
+    margin-inline: auto;
+    padding-inline: 1.25rem;
+  }
+  @media (min-width: 768px) { .contenedor { padding-inline: 2rem; } }
+
+  /* El rótulo chiquito arriba de cada título. */
+  .rotulo {
+    font-family: var(--font-sans);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--color-cesped-400);
+  }
+
+  /* --- Botones ---------------------------------------------------------- */
+  .boton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.625rem;
+    padding: 0.9rem 1.75rem;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    letter-spacing: 0.02em;
+    line-height: 1;
+    transition: transform 0.25s var(--ease-salida), box-shadow 0.25s var(--ease-salida),
+                background-color 0.25s var(--ease-salida), border-color 0.25s var(--ease-salida);
+    will-change: transform;
+  }
+  .boton:hover { transform: translateY(-2px); }
+  .boton:active { transform: translateY(0); }
+
+  .boton-primario {
+    background: var(--color-dorado-500);
+    color: var(--color-carbon-950);
+    box-shadow: 0 8px 30px -8px color-mix(in oklab, var(--color-dorado-500) 70%, transparent);
+  }
+  .boton-primario:hover {
+    background: var(--color-dorado-400);
+    box-shadow: 0 14px 40px -10px color-mix(in oklab, var(--color-dorado-400) 80%, transparent);
+  }
+
+  .boton-secundario {
+    border: 1px solid color-mix(in oklab, var(--color-hueso-200) 22%, transparent);
+    color: var(--color-hueso-50);
+    background: color-mix(in oklab, var(--color-carbon-900) 55%, transparent);
+    backdrop-filter: blur(8px);
+  }
+  .boton-secundario:hover {
+    border-color: var(--color-cesped-500);
+    background: color-mix(in oklab, var(--color-cesped-900) 45%, transparent);
+  }
+
+  /* --- Superficies ------------------------------------------------------ */
+  .panel {
+    background: linear-gradient(
+      160deg,
+      color-mix(in oklab, var(--color-carbon-800) 92%, transparent),
+      color-mix(in oklab, var(--color-carbon-900) 96%, transparent)
+    );
+    border: 1px solid color-mix(in oklab, var(--color-hueso-200) 9%, transparent);
+    border-radius: 1rem;
+  }
+
+  /**
+   * EL HOVER DE CUALQUIER RECUADRO.
+   *
+   * Una sola clase para todas las tarjetas del sitio: se levanta un poco, el
+   * borde se tiñe de verde y aparece un resplandor bajo. Es el mismo gesto en
+   * todos lados a propósito — que cada sección invente su propio hover es lo
+   * que hace que un sitio se sienta cosido a mano.
+   *
+   * ⚠ Sólo con puntero fino. En un teléfono no hay hover: el `:hover` se queda
+   *   pegado después de tocar, y la tarjeta queda levantada para siempre.
+   */
+  .tarjeta-hover {
+    transition:
+      transform 0.35s var(--ease-salida),
+      border-color 0.35s var(--ease-salida),
+      box-shadow 0.35s var(--ease-salida),
+      background-color 0.35s var(--ease-salida);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .tarjeta-hover:hover {
+      transform: translateY(-3px);
+      border-color: color-mix(in oklab, var(--color-cesped-500) 45%, transparent);
+      box-shadow: 0 18px 45px -22px color-mix(in oklab, var(--color-cesped-500) 55%, transparent);
+    }
+
+    /* Variante dorada, para lo que lleva al juego. */
+    .tarjeta-hover-dorado:hover {
+      border-color: color-mix(in oklab, var(--color-dorado-500) 50%, transparent);
+      box-shadow: 0 18px 45px -22px color-mix(in oklab, var(--color-dorado-500) 55%, transparent);
+    }
+
+    /* Para filas de lista: sin levantar, sólo el fondo y un desplazamiento. */
+    .fila-hover {
+      transition: background-color 0.25s var(--ease-salida), transform 0.25s var(--ease-salida);
+    }
+    .fila-hover:hover {
+      background-color: color-mix(in oklab, var(--color-hueso-50) 4%, transparent);
+      transform: translateX(3px);
+    }
+
+    /* El número grande de una estadística, cuando se pasa por encima. */
+    .dato-hover:hover .dato-valor {
+      color: var(--color-cesped-300);
+    }
+    .dato-hover .dato-valor {
+      transition: color 0.3s var(--ease-salida);
+    }
+  }
+
+  /* La línea de cal que separa secciones. */
+  .linea-cal {
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in oklab, var(--color-cesped-500) 45%, transparent),
+      transparent
+    );
+  }
+}
+
+/* ==========================================================================
+   TEXTURAS Y UTILIDADES
+   ========================================================================== */
+
+@layer utilities {
+  /* Grano sutil: saca el aspecto de "degradé de CSS" sin costar una imagen. */
+  .grano::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.16;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  }
+
+  /* Las rayas del césped, para fondos de sección. */
+  .cancha-rayada {
+    background-image: repeating-linear-gradient(
+      90deg,
+      color-mix(in oklab, var(--color-cesped-500) 4%, transparent) 0 60px,
+      transparent 60px 120px
+    );
+  }
+
+  .texto-degrade {
+    background: linear-gradient(100deg, var(--color-hueso-50) 30%, var(--color-cesped-400) 70%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Aparecer al entrar en pantalla. GSAP la apaga cuando toma el control. */
+  .revelar {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  .revelar.visible {
+    opacity: 1;
+    transform: none;
+    transition: opacity 0.8s var(--ease-salida), transform 0.8s var(--ease-salida);
+  }
+
+  /* Sólo para lectores de pantalla. */
+  .solo-lectores {
+    position: absolute;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+}

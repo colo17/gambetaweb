@@ -1,0 +1,268 @@
+---
+/**
+ * LA SECCIÓN DE GAMBETA MANAGER GAME
+ *
+ * Es la única parte del sitio donde no hay una sola palabra de marketing: todo
+ * lo que se muestra sale del catálogo del juego, extraído por
+ * `scripts/extract-catalog.mjs`.
+ *
+ * ⚠ SOBRE LOS NOMBRES. El catálogo dice "Prenier League" y "Arsenel" a
+ *   propósito: el juego muta los nombres reales una letra por una cuestión de
+ *   derechos, y acá se muestra exactamente lo que ve el jugador. No es un error
+ *   de tipeo y no hay que "arreglarlo".
+ */
+import ligas from '@/data/ligas.json'
+import figuras from '@/data/figuras.json'
+import promesas from '@/data/promesas.json'
+import numeros from '@/data/numeros.json'
+import ligaDestacada from '@/data/liga-destacada.json'
+import LigasExplorer from './LigasExplorer.tsx'
+import { CTA_JUGAR } from '@/config/games'
+
+const modos = [
+  {
+    titulo: 'Liga con amigos',
+    estado: 'Andando',
+    texto:
+      'Se crea una sala, se pasa el código y cada uno agarra un club. Todos gestionan su semana, marcan «listo» y el servidor simula la fecha. Nadie puede hacer trampa: el resultado no lo calcula tu máquina.',
+  },
+  {
+    titulo: 'La fecha, en vivo',
+    estado: 'Andando',
+    texto:
+      'La fecha no es una pantalla de carga. Se ven los partidos mientras pasan, con la cancha dibujando cada jugada, y se puede pausar para hacer un cambio en el entretiempo.',
+  },
+  {
+    titulo: 'Mercado y copas',
+    estado: 'Andando',
+    texto:
+      'Fichajes, subastas, cesiones y cláusulas. Copa nacional, torneos continentales y selecciones con su propio calendario.',
+  },
+  {
+    titulo: 'Un jugador solo',
+    estado: 'En camino',
+    texto:
+      'La misma liga, pero contra la computadora, para el que quiere jugar sin esperar a nadie.',
+  },
+]
+
+const confederaciones = [...new Set(ligas.map((l) => l.confederacion))].filter(Boolean)
+const porConfederacion = confederaciones.map((c) => ({
+  nombre: c,
+  ligas: ligas.filter((l) => l.confederacion === c).length,
+}))
+
+/**
+ * Lo que se le pasa a la isla, y NADA más.
+ *
+ * ⚑ Las props de un componente con `client:*` viajan DOS veces: una en el HTML
+ *   ya renderizado y otra como JSON para que React se hidrate. Mandar las 81
+ *   ligas enteras metía ~54 KB de campos que el explorador ni mira (medias,
+ *   clubesTop, fechas). Con los cuatro que usa la pestaña y el buscador, son 6.
+ */
+const ligasParaIsla = ligas.map((liga) => ({
+  slug: liga.slug,
+  nombre: liga.nombre,
+  pais: liga.pais,
+  paisNombre: liga.paisNombre,
+}))
+---
+
+<section id="manager" class="relative isolate scroll-mt-24 border-t border-white/5 bg-carbon-950 py-24 md:py-32">
+  <div class="contenedor">
+    <!-- ---- Presentación ------------------------------------------------ -->
+    <div class="grid gap-12 lg:grid-cols-[1.1fr_1fr] lg:items-end lg:gap-20">
+      <div>
+        <p class="rotulo flex items-center gap-3">
+          <span class="relative flex h-2 w-2">
+            <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-cesped-400 opacity-70"></span>
+            <span class="relative inline-flex h-2 w-2 rounded-full bg-cesped-500"></span>
+          </span>
+          Jugable ahora
+        </p>
+        <h2 class="mt-5 text-[clamp(2.5rem,7vw,5rem)]">
+          Gambeta<br /><span class="texto-degrade">Manager Game</span>
+        </h2>
+        <p class="mt-7 max-w-xl text-lg leading-relaxed text-hueso-400">
+          Un manager de fútbol por turnos, en el navegador, para jugar una liga
+          entera con amigos. No jugás la pelota: elegís el club, armás el
+          plantel, peleás el mercado, plantás la táctica y te bancás los noventa
+          minutos desde el banco.
+        </p>
+        <div class="mt-9 flex flex-wrap gap-4">
+          <a
+            href={CTA_JUGAR.href}
+            class="boton boton-primario"
+            {...CTA_JUGAR.externo ? { target: '_blank', rel: 'noopener' } : {}}
+          >
+            {CTA_JUGAR.texto}
+          </a>
+          <a href="#camino" class="boton boton-secundario">Cómo se juega</a>
+        </div>
+      </div>
+
+      <!-- Los números del mundo -->
+      <dl class="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-white/8 bg-white/8">
+        {
+          [
+            { v: numeros.ligas, e: 'ligas oficiales' },
+            { v: numeros.clubes.toLocaleString('es-AR'), e: 'clubes' },
+            { v: numeros.jugadores.toLocaleString('es-AR'), e: 'futbolistas' },
+            { v: numeros.paises, e: 'países' },
+          ].map((dato) => (
+            <div class="dato-hover bg-carbon-900 px-5 py-6">
+              <dt class="dato-valor font-display text-4xl text-hueso-50 md:text-5xl">{dato.v}</dt>
+              <dd class="mt-1.5 text-xs uppercase tracking-[0.16em] text-hueso-500">{dato.e}</dd>
+            </div>
+          ))
+        }
+      </dl>
+    </div>
+
+    <!-- ---- Modos -------------------------------------------------------- -->
+    <div class="mt-20 md:mt-28">
+      <p class="rotulo mb-6">Qué se puede hacer</p>
+      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {
+          modos.map((modo) => (
+            <article class="panel tarjeta-hover flex flex-col p-5">
+              <span
+                class:list={[
+                  'mb-4 self-start rounded-full px-2.5 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.12em]',
+                  modo.estado === 'Andando'
+                    ? 'bg-cesped-500/15 text-cesped-300 ring-1 ring-cesped-500/30'
+                    : 'bg-white/5 text-hueso-500 ring-1 ring-white/10',
+                ]}
+              >
+                {modo.estado}
+              </span>
+              <h3 class="text-xl">{modo.titulo}</h3>
+              <p class="mt-3 text-sm leading-relaxed text-hueso-400">{modo.texto}</p>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+
+    <!-- ---- El explorador de ligas --------------------------------------- -->
+    <div class="mt-20 md:mt-28">
+      <div class="mb-8 flex flex-wrap items-end justify-between gap-6">
+        <div>
+          <p class="rotulo">El mundo del juego</p>
+          <h3 class="mt-3 text-[clamp(1.75rem,4vw,3rem)]">
+            {numeros.ligas} ligas. {numeros.clubes.toLocaleString('es-AR')} clubes. Todos jugables.
+          </h3>
+        </div>
+        <ul class="flex flex-wrap gap-2">
+          {
+            porConfederacion.map((c) => (
+              <li class="tarjeta-hover rounded-full border border-white/10 px-3 py-1.5 text-xs text-hueso-400 hover:text-hueso-100">
+                {c.nombre} <span class="ml-1 text-hueso-500">{c.ligas}</span>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+
+      <LigasExplorer client:visible ligas={ligasParaIsla} detalleInicial={ligaDestacada} />
+
+      <p class="mt-4 text-xs leading-relaxed text-hueso-500">
+        Los nombres de clubes y ligas están alterados a propósito dentro del
+        juego, y acá se muestran tal cual. La fuerza de cada jugador es un valor
+        propio de Gambeta, calibrado a partir de edad, jerarquía y nivel del
+        club.
+      </p>
+    </div>
+
+    <!-- ---- Las figuras del mundo ---------------------------------------- -->
+    <div class="mt-20 md:mt-28">
+      <div class="mb-8">
+        <p class="rotulo">Los mejores del mundo</p>
+        <h3 class="mt-3 text-[clamp(1.75rem,4vw,3rem)]">
+          Los que valen una temporada
+        </h3>
+        <p class="mt-3 max-w-xl text-hueso-400">
+          Las {figuras.length} fuerzas más altas del catálogo. Que uno de estos
+          aparezca en tu mercado es, literalmente, la noticia del año.
+        </p>
+      </div>
+
+      <ul class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {
+          figuras.slice(0, 8).map((figura) => (
+            <li class="panel tarjeta-hover group relative overflow-hidden p-5">
+              <div
+                class="absolute inset-x-0 top-0 h-0.5 opacity-70"
+                style={`background:${figura.clubColores?.primary ?? '#12b76a'}`}
+                aria-hidden="true"
+              />
+              <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <p class="truncate text-lg font-semibold text-hueso-50">{figura.nombre}</p>
+                  <p class="mt-0.5 truncate text-xs text-hueso-500">
+                    {figura.puestoLabel} · {figura.edad} años
+                  </p>
+                </div>
+                <span class="font-display text-4xl leading-none text-cesped-400">
+                  {figura.fuerza}
+                </span>
+              </div>
+
+              <div class="mt-4 flex items-center gap-2 border-t border-white/5 pt-3">
+                <span
+                  class="h-4 w-1 rounded-full"
+                  style={`background:${figura.clubColores?.primary ?? '#2c3531'}`}
+                  aria-hidden="true"
+                />
+                <p class="truncate text-sm text-hueso-300">{figura.club}</p>
+              </div>
+              <p class="mt-1 truncate text-xs text-hueso-500">{figura.liga}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+
+    <!-- ---- Promesas ------------------------------------------------------ -->
+    <div class="mt-16 md:mt-20">
+      <div class="mb-6">
+        <p class="rotulo">Los que todavía no son</p>
+        <h3 class="mt-3 text-[clamp(1.5rem,3.5vw,2.5rem)]">Las joyas del mercado</h3>
+        <p class="mt-3 max-w-xl text-hueso-400">
+          Sub-21 con el techo más alto del mundo. La fuerza de hoy no es la que
+          van a tener: el juego los hace crecer según lo que les falta para
+          llegar.
+        </p>
+      </div>
+
+      <ul class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {
+          promesas.slice(0, 6).map((joya) => (
+            <li class="panel tarjeta-hover flex items-center gap-4 p-4">
+              <div class="text-center">
+                <p class="font-display text-2xl text-hueso-300">{joya.fuerza}</p>
+                <p class="text-[0.6rem] uppercase tracking-wider text-hueso-500">hoy</p>
+              </div>
+              <div class="flex flex-col items-center text-dorado-500" aria-hidden="true">
+                <svg width="26" height="10" viewBox="0 0 26 10" fill="none">
+                  <path d="M0 5h22M18 1l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                <span class="mt-0.5 text-[0.6rem] font-semibold">+{joya.margen}</span>
+              </div>
+              <div class="text-center">
+                <p class="font-display text-2xl text-dorado-400">{joya.techo}</p>
+                <p class="text-[0.6rem] uppercase tracking-wider text-hueso-500">techo</p>
+              </div>
+              <div class="min-w-0 flex-1 border-l border-white/8 pl-4">
+                <p class="truncate font-medium text-hueso-100">{joya.nombre}</p>
+                <p class="truncate text-xs text-hueso-500">
+                  {joya.edad} años · {joya.puesto} · {joya.club}
+                </p>
+              </div>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </div>
+</section>

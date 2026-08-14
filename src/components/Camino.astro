@@ -1,0 +1,254 @@
+---
+/**
+ * SCROLLYTELLING #2 — "Tu camino en el juego"
+ *
+ * DOS recorridos: el del club (10 etapas, de la sala vacía a la tabla final) y
+ * el de la selección (4). Los dos usan el mismo componente `Recorrido`.
+ *
+ * ⚑ LAS CAPTURAS SON DEL JUEGO DE VERDAD: salen de `npm run capturas`, que
+ *   monta las pantallas reales de `cyberfoot-online` con los clubes y
+ *   jugadores del catálogo y las fotografía. La única que dice "Arte" es
+ *   ilustración, y por eso está marcada.
+ */
+
+import Recorrido from './Recorrido.astro'
+
+const etapas = [
+  {
+    id: 'sala',
+    numero: '01',
+    titulo: 'Creá la sala e invitá',
+    texto:
+      'Se abre una sala y sale un código de seis letras. Se lo pasás por WhatsApp y cada uno entra desde su navegador, sin instalar nada. Se ve quién está conectado y quién falta.',
+    imagen: '/assets/screenshots/sala-desktop.webp',
+    pie: 'La sala, con el código para invitar',
+  },
+  {
+    id: 'editor',
+    numero: '02',
+    titulo: 'Cambien lo que quieran',
+    texto:
+      'Antes de arrancar, el editor los deja tocar todo: renombrar clubes, cambiar colores y escudos, editar jugadores, mover equipos de liga o reemplazar uno por cualquiera de los 1.339 del catálogo. La partida arranca como ustedes quieran.',
+    imagen: '/assets/screenshots/editor-desktop.webp',
+    pie: 'El editor de equipos y jugadores',
+  },
+  {
+    id: 'reparto',
+    numero: '03',
+    titulo: 'Repartan los equipos',
+    texto:
+      'Cada manager agarra su club. Podés ir al grande de tu liga o quedarte con uno del ascenso y hacerlo subir. Los que nadie toma los dirige la computadora.',
+    imagen: '/assets/screenshots/reparto-desktop.webp',
+    pie: 'El reparto de clubes entre los managers',
+  },
+  {
+    id: 'escritorio',
+    numero: '04',
+    titulo: 'Administrá tu plantel',
+    texto:
+      'El escritorio es tu oficina: el plantel entero con la fuerza, la condición y el ánimo de cada uno, la caja del club, y la confianza de los dirigentes y de la hinchada —que se mueven solas según cómo te vaya.',
+    imagen: '/assets/screenshots/escritorio-desktop.webp',
+    pie: 'El escritorio del club',
+  },
+  {
+    id: 'mercado',
+    numero: '05',
+    titulo: 'Peleá el mercado de pases',
+    texto:
+      'Ofertas, contraofertas y subastas contra los otros managers y contra la computadora. Cesiones, cláusulas y renovaciones. Y un buscador que entra en los 37.160 futbolistas del mundo, no sólo en tu partida.',
+    imagen: '/assets/screenshots/mercado-desktop.webp',
+    pie: 'El mercado de pases',
+  },
+  {
+    id: 'equipo',
+    numero: '06',
+    titulo: 'Armá tu equipo',
+    texto:
+      'Once en la cancha, arrastrando con el dedo o con el mouse, y al lado el planteo: actitud, presión, marca, por dónde atacás y quién patea los penales, los córners y los tiros libres.',
+    imagen: '/assets/screenshots/equipo-desktop.webp',
+    pie: 'La cancha y el planteo, juntos',
+  },
+  {
+    id: 'partido',
+    numero: '07',
+    titulo: 'Jugá la fecha en vivo',
+    texto:
+      'La liga, la copa nacional, la Champians, la Europa Leage, la Libertadores, la Sudamericana y el Mundial de Clubes. Todos marcan «listo» y se ven los diez partidos a la vez: el tuyo en el medio, los demás a los costados con sus goles, y la crónica cayendo abajo.',
+    imagen: '/assets/screenshots/partido-desktop.webp',
+    pie: 'La fecha en vivo, minuto 33',
+  },
+  {
+    id: 'planilla',
+    numero: '08',
+    titulo: 'Leé la planilla',
+    texto:
+      'Terminada la fecha: todos los resultados, la tabla actualizada, las notas de cada jugador, la crónica del partido y el equipo ideal de la jornada. Después, a preparar la que viene.',
+    imagen: '/assets/screenshots/planilla-desktop.webp',
+    pie: 'La planilla, después de la fecha',
+  },
+  {
+    id: 'tabla',
+    numero: '09',
+    titulo: 'Y así hasta el final',
+    texto:
+      'Treinta y ocho fechas. Sale campeón uno solo; los demás pelean el descenso, la copa o el orgullo. Después se abre el mercado, los pibes crecen, los veteranos aflojan, y arranca la temporada siguiente.',
+    imagen: '/assets/screenshots/tablas-desktop.webp',
+    pie: 'La tabla, con lo que quedó',
+  },
+  {
+    id: 'mas',
+    numero: '10',
+    titulo: 'Y mucho más',
+    texto:
+      'Juveniles que suben de la cantera, ranking y mercado de técnicos, el estadio para ampliar y poner precios, contratos que se vencen, historial de todas las temporadas, goleadores, Balón de Oro y galería de trofeos.',
+    imagen: '/assets/screenshots/juveniles-desktop.webp',
+    pie: 'Juveniles, uno de los paneles del escritorio',
+    extra: [
+      { imagen: '/assets/screenshots/tecnicos-desktop.webp', pie: 'Técnicos' },
+      { imagen: '/assets/screenshots/estadio-desktop.webp', pie: 'Estadio' },
+      { imagen: '/assets/screenshots/agenda-desktop.webp', pie: 'Agenda' },
+    ],
+  },
+]
+
+/**
+ * El segundo bloque: la selección.
+ *
+ * Va aparte porque no es un paso más del club, es otra carrera en paralelo.
+ */
+const etapasSeleccion = [
+  {
+    id: 'sel-elegir',
+    numero: '01',
+    titulo: 'Te ofrecen tres',
+    texto:
+      'En algún momento de la temporada te llega la propuesta: tres selecciones, elegidas al azar entre las que están libres. Tenés cuatro fechas para decidir, y la que agarrás la dirigís todo el año además de tu club.',
+    imagen: '/assets/screenshots/seleccion-elegir-desktop.webp',
+    pie: 'La oferta de selecciones',
+  },
+  {
+    id: 'sel-armar',
+    numero: '02',
+    titulo: 'Armá los 23',
+    texto:
+      'Tenés a todos los futbolistas del país repartidos por el mundo, jueguen donde jueguen. De ahí salen los 23 que van al torneo: los que están en forma, los que vienen de lesión y el pibe que rompió todo en una liga que nadie mira.',
+    imagen: '/assets/screenshots/seleccion-armar-desktop.webp',
+    pie: 'La convocatoria',
+  },
+  {
+    id: 'sel-plantel',
+    numero: '03',
+    titulo: 'Dirigila como a tu club',
+    texto:
+      'La selección tiene su propio escritorio, su plantel y su calendario de fechas FIFA. Se alinea igual, se plantea igual, y compite en paralelo a la liga.',
+    imagen: '/assets/screenshots/seleccion-plantel-desktop.webp',
+    pie: 'El escritorio de la selección',
+  },
+  {
+    id: 'sel-mundial',
+    numero: '04',
+    titulo: 'Y después, el Mundial',
+    texto:
+      'Fase de grupos, llaves y una final. Con los planteles reales de cada país y el mismo motor que simula tu liga todas las semanas. Ganarlo con la selección que te tocó al azar es otra cosa.',
+    imagen: '/assets/generated/bg-mundial-1600.webp',
+    tipo: 'arte',
+    pie: 'La noche que se juega todo',
+  },
+]
+---
+
+<section
+  id="camino"
+  class="relative isolate grano scroll-mt-24 border-t border-white/5 bg-carbon-950 py-24 md:py-32"
+>
+  <div class="contenedor">
+    <header class="mx-auto mb-16 max-w-2xl text-center md:mb-24">
+      <p class="rotulo">Tu camino en el juego</p>
+      <h2 class="mt-4 text-[clamp(2.25rem,6vw,4.5rem)]">
+        De la sala vacía <span class="texto-degrade">a la vuelta</span>
+      </h2>
+      <p class="mt-5 text-lg text-hueso-400">
+        Todas las pantallas son capturas del juego funcionando, no maquetas.
+      </p>
+    </header>
+
+    {/* ---- RECORRIDO 1: EL CLUB -------------------------------------- */}
+    <Recorrido etapas={etapas} fondo="club" />
+
+    {/* ---- RECORRIDO 2: LA SELECCIÓN --------------------------------- */}
+    <div class="linea-cal my-20 md:my-28"></div>
+
+    <header class="mx-auto mb-16 max-w-2xl text-center md:mb-24">
+      <p class="rotulo">La otra carrera</p>
+      <h2 class="mt-4 text-[clamp(1.875rem,5vw,3.5rem)]">
+        Si con tu club no fue suficiente,<br />
+        <span class="texto-degrade">dirigí a tu selección</span>
+      </h2>
+    </header>
+
+    <Recorrido etapas={etapasSeleccion} fondo="mundial" />
+  </div>
+</section>
+
+<script>
+  import { gsap } from 'gsap'
+  import { ScrollTrigger } from 'gsap/ScrollTrigger'
+
+  gsap.registerPlugin(ScrollTrigger)
+
+  const seccion = document.querySelector<HTMLElement>('#camino')
+
+  /**
+   * ⚑ HAY DOS RECORRIDOS EN LA MISMA SECCIÓN (el club y la selección), así que
+   *   todas las búsquedas van ACOTADAS a su bloque. Con `document.querySelectorAll`
+   *   el segundo pisaba al primero: al llegar a la selección se apagaban las
+   *   imágenes del club y quedaba el marco vacío.
+   */
+  document.querySelectorAll<HTMLElement>('[data-recorrido]').forEach((bloque) => {
+    const etapas = gsap.utils.toArray<HTMLElement>(bloque.querySelectorAll('[data-etapa]'))
+    const figuras = gsap.utils.toArray<HTMLElement>(bloque.querySelectorAll('[data-camino-figura]'))
+    const progreso = bloque.querySelector<HTMLElement>('[data-camino-progreso]')
+    if (!etapas.length || !figuras.length) return
+
+    /** Deja visible una sola figura. El cambio es un fundido corto. */
+    const mostrar = (indice: number) => {
+      figuras.forEach((figura, i) => {
+        gsap.to(figura, { opacity: i === indice ? 1 : 0, duration: 0.45, ease: 'power2.out' })
+      })
+      etapas.forEach((etapa, i) => {
+        const punto = etapa.querySelector<HTMLElement>('[data-etapa-punto]')
+        if (!punto) return
+        const activo = i === indice
+        punto.classList.toggle('bg-cesped-500', activo)
+        punto.classList.toggle('text-carbon-950', activo)
+        punto.classList.toggle('border-cesped-500', activo)
+        punto.classList.toggle('bg-carbon-900', !activo)
+        punto.classList.toggle('text-cesped-400', !activo)
+      })
+    }
+
+    etapas.forEach((etapa, indice) => {
+      ScrollTrigger.create({
+        trigger: etapa,
+        // El disparo está a media pantalla: la etapa "manda" cuando su texto
+        // está en el centro de la vista, que es donde lo lee la gente.
+        start: 'top 55%',
+        end: 'bottom 55%',
+        onEnter: () => mostrar(indice),
+        onEnterBack: () => mostrar(indice),
+      })
+    })
+
+    mostrar(0)
+
+    if (progreso) {
+      gsap.to(progreso, {
+        width: '100%',
+        ease: 'none',
+        scrollTrigger: { trigger: bloque, start: 'top 60%', end: 'bottom 80%', scrub: 0.5 },
+      })
+    }
+  })
+
+
+</script>

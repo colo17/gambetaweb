@@ -1,0 +1,33 @@
+---
+import Base from '@/layouts/Base.astro'
+import Header from '@/components/Header.astro'
+import Hero from '@/components/Hero.astro'
+import Alma from '@/components/Alma.astro'
+import Manager from '@/components/Manager.astro'
+import Camino from '@/components/Camino.astro'
+import Juegos from '@/components/Juegos.astro'
+import Avisame from '@/components/Avisame.astro'
+import Footer from '@/components/Footer.astro'
+---
+
+<Base
+  titulo="Gambeta — Juegos de fútbol. Sé el DT y escribí tu historia."
+  descripcion="Gambeta es la casa de nuestros juegos de fútbol. Empezá por Gambeta Manager Game: dirigí un club, armá el plantel y peleá la liga con tus amigos, con 81 ligas y 1.339 clubes."
+>
+  <Header />
+  <main id="contenido">
+    <Hero />
+    {/*
+      El orden importa y es el que pidió el dueño: primero se muestra QUÉ se
+      hace en el juego (Camino), después los datos del mundo (Manager), y recién
+      al final el porqué emocional (Alma). El que llega quiere ver el juego, no
+      que le cuenten un sentimiento.
+    */}
+    <Camino />
+    <Manager />
+    <Alma />
+    <Juegos />
+    <Avisame />
+  </main>
+  <Footer />
+</Base>

@@ -1,0 +1,22 @@
+# Dependencias
+node_modules/
+
+# Build
+dist/
+.astro/
+
+# Capturas de la revisión visual (se regeneran con `npm run revisar`)
+.revision/
+
+# Variables de entorno
+.env
+.env.production
+.env.*.local
+
+# Sistema operativo / editores
+.DS_Store
+Thumbs.db
+*.log
+
+# ⚑ `assets-src/` SÍ se versiona: son los originales de Higgsfield y sin ellos
+#   `npm run assets` no puede regenerar nada. Son ~25 MB, una sola vez.

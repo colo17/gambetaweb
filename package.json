@@ -1,0 +1,43 @@
+{
+  "name": "gambeta-web",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Landing y hub oficial de Gambeta — gambetagame.com",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "datos": "node scripts/extract-catalog.mjs",
+    "assets": "node scripts/optimize-assets.mjs",
+    "capturas": "node scripts/capturas.mjs",
+    "revisar": "node scripts/revisar.mjs",
+    "probar": "node scripts/probar.mjs",
+    "harness": "vite --config vite.harness.config.mjs"
+  },
+  "dependencies": {
+    "@astrojs/react": "^6.0.2",
+    "@astrojs/sitemap": "^3.7.3",
+    "@fontsource-variable/inter": "^5.3.0",
+    "@fontsource/anton": "^5.3.0",
+    "@tailwindcss/vite": "^4.3.3",
+    "astro": "^7.2.1",
+    "gsap": "^3.15.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "tailwindcss": "^4.3.3"
+  },
+  "devDependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^5.2.0",
+    "lighthouse": "^13.4.1",
+    "playwright": "^1.62.1",
+    "react-router-dom": "^7.18.2",
+    "sharp": "^0.35.3",
+    "typescript": "^5.7.0",
+    "vite": "^8.2.1"
+  }
+}

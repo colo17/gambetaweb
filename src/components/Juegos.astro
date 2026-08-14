@@ -1,0 +1,143 @@
+---
+/**
+ * LA GRILLA DEL HUB
+ *
+ * Se arma entera desde `src/config/games.ts`. Para sumar un juego nuevo no hay
+ * que tocar este archivo: se empuja un objeto a `JUEGOS` y aparece la card, con
+ * su estado, su badge y su CTA.
+ */
+import { JUEGOS } from '@/config/games'
+
+const ACENTOS = {
+  cesped: {
+    borde: 'hover:border-cesped-500/50',
+    barra: 'bg-cesped-500',
+    icono: 'bg-cesped-500/12 ring-cesped-500/25',
+    resplandor: 'from-cesped-500/12',
+  },
+  dorado: {
+    borde: 'hover:border-dorado-500/50',
+    barra: 'bg-dorado-500',
+    icono: 'bg-dorado-500/12 ring-dorado-500/25',
+    resplandor: 'from-dorado-500/12',
+  },
+  hueso: {
+    borde: 'hover:border-hueso-200/30',
+    barra: 'bg-hueso-400',
+    icono: 'bg-white/6 ring-white/12',
+    resplandor: 'from-white/8',
+  },
+} as const
+---
+
+<section id="juegos" class="scroll-mt-24 border-t border-white/5 bg-carbon-950 py-24 md:py-32">
+  <div class="contenedor">
+    <header class="mb-14 max-w-2xl">
+      <p class="rotulo">El hub</p>
+      <h2 class="mt-4 text-[clamp(2.25rem,6vw,4.5rem)]">
+        Los juegos de <span class="texto-degrade">Gambeta</span>
+      </h2>
+      <p class="mt-5 text-lg leading-relaxed text-hueso-400">
+        Uno ya se juega. Los otros dos están en el horno. Todos comparten el
+        mismo mundo: las mismas ligas, los mismos clubes, los mismos 37.000
+        futbolistas.
+      </p>
+    </header>
+
+    <div class="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+      {
+        JUEGOS.map((juego) => {
+          const acento = ACENTOS[juego.acento]
+          const proximo = juego.estado === 'coming-soon'
+
+          // ⚠ El id de la card va PREFIJADO. Sin prefijo, la del Manager
+          //   quedaba con id="manager", el mismo de la sección de arriba: dos
+          //   elementos con el mismo id en la página, y el enlace "Manager"
+          //   del menú caía en la card en lugar de la sección.
+          return (
+            <article
+              id={`juego-${juego.id}`}
+              class:list={[
+                'panel tarjeta-hover group relative flex flex-col overflow-hidden p-6',
+                acento.borde,
+                proximo && 'opacity-70 hover:opacity-100',
+              ]}
+            >
+              {/* El resplandor que aparece al pasar por encima */}
+              <div
+                class:list={[
+                  'pointer-events-none absolute inset-x-0 -top-24 h-48 bg-gradient-to-b to-transparent opacity-0 blur-2xl transition-opacity duration-500 group-hover:opacity-100',
+                  acento.resplandor,
+                ]}
+                aria-hidden="true"
+              />
+              <div class:list={['absolute inset-x-0 top-0 h-0.5', acento.barra]} aria-hidden="true" />
+
+              <div class="relative flex items-start justify-between gap-4">
+                <span
+                  class:list={[
+                    'grid h-12 w-12 place-items-center rounded-xl text-2xl ring-1',
+                    acento.icono,
+                  ]}
+                  aria-hidden="true"
+                >
+                  {juego.icono}
+                </span>
+
+                <span
+                  class:list={[
+                    'rounded-full px-2.5 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.12em]',
+                    proximo
+                      ? 'bg-white/5 text-hueso-500 ring-1 ring-white/10'
+                      : 'bg-cesped-500/15 text-cesped-300 ring-1 ring-cesped-500/30',
+                  ]}
+                >
+                  {juego.etiqueta}
+                </span>
+              </div>
+
+              <h3 class="relative mt-6 text-2xl">{juego.nombre}</h3>
+              <p class="relative mt-1.5 text-sm font-medium text-hueso-300">{juego.tagline}</p>
+              <p class="relative mt-4 text-sm leading-relaxed text-hueso-400">{juego.descripcion}</p>
+
+              <ul class="relative mt-6 space-y-2.5 border-t border-white/8 pt-5">
+                {juego.claves.map((clave) => (
+                  <li class="flex gap-2.5 text-sm text-hueso-400">
+                    <span class="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-cesped-500" aria-hidden="true" />
+                    {clave}
+                  </li>
+                ))}
+              </ul>
+
+              <div class="relative mt-6 pt-1">
+                {juego.url ? (
+                  <a
+                    href={juego.url}
+                    target="_blank"
+                    rel="noopener"
+                    class="boton boton-primario w-full !py-3 !text-sm"
+                  >
+                    Jugar ahora
+                  </a>
+                ) : juego.estado === 'live' ? (
+                  <a href="#avisame" class="boton boton-primario w-full !py-3 !text-sm">
+                    Quiero jugar
+                  </a>
+                ) : (
+                  <a href="#avisame" class="boton boton-secundario w-full !py-3 !text-sm">
+                    Avisame cuando salga
+                  </a>
+                )}
+              </div>
+            </article>
+          )
+        })
+      }
+    </div>
+
+    <p id="proximamente" class="mt-8 scroll-mt-32 text-sm text-hueso-500">
+      ¿Se te ocurre otro juego de fútbol que te gustaría jugar? Escribinos: los
+      dos que vienen salieron de charlas de grupo.
+    </p>
+  </div>
+</section>

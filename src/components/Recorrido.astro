@@ -1,0 +1,220 @@
+---
+/**
+ * UN RECORRIDO DE SCROLLYTELLING
+ *
+ * La columna de texto scrollea y la imagen queda clavada al costado, cambiando
+ * a medida que avanza. Se usa dos veces en `Camino.astro`: una para el camino
+ * del club y otra para el de la selección.
+ *
+ * Cada etapa lleva:
+ *   imagen   la captura o el arte que se muestra
+ *   tipo     'juego' (por defecto) o 'arte'; sólo cambia el badge y el encuadre
+ *   extra    imágenes adicionales; si están, el marco se parte en mosaico
+ */
+
+export interface Etapa {
+  id: string
+  numero: string
+  titulo: string
+  texto: string
+  imagen: string
+  pie: string
+  tipo?: 'juego' | 'arte'
+  extra?: { imagen: string; pie: string }[]
+}
+
+interface Props {
+  etapas: Etapa[]
+  /**
+   * Qué clima dibuja el fondo: 'club' (verde) o 'mundial' (dorado). Sin esto,
+   * el bloque va sin fondo.
+   */
+  fondo?: 'club' | 'mundial'
+}
+
+const { etapas, fondo } = Astro.props
+
+/** La versión de teléfono de una captura. El arte no tiene, y no hace falta. */
+const enTelefono = (ruta: string) => ruta.replace('-desktop.webp', '-mobile.webp')
+---
+
+<div class="relative isolate" data-recorrido>
+  {
+    fondo && (
+      <div class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
+        {/*
+          ⚑ EL FONDO ES DIBUJADO, NO UNA FOTO.
+
+          Pasó por tres versiones, y las dos primeras fallaron por lo mismo:
+
+            1. una foto estirada al alto del bloque — con diez etapas el bloque
+               mide más de 10.000px y la foto salía deformada;
+            2. un video en `sticky`, ya del tamaño de la ventana — dejó de
+               deformarse, pero seguía viéndose tosco: una foto oscura y ruidosa
+               al 60% debajo de degradés da manchones, no atmósfera.
+
+          Una imagen atenuada casi nunca queda premium; queda sucia. Esto es un
+          resplandor y unas líneas de cal en SVG: pesa cero, es nítido en
+          cualquier pantalla, no se deforma nunca, y deja que las capturas del
+          juego sean lo único que se mire.
+
+          Va en un `sticky` de un alto de pantalla para que quede QUIETO y el
+          texto le pase por encima.
+        */}
+        <div class="sticky top-0 h-screen w-full overflow-hidden">
+          <div
+            class:list={[
+              'absolute inset-0',
+              fondo === 'mundial'
+                ? 'bg-[radial-gradient(70%_55%_at_78%_18%,rgba(245,158,11,0.16),transparent_60%),radial-gradient(60%_50%_at_20%_85%,rgba(18,183,106,0.12),transparent_60%)]'
+                : 'bg-[radial-gradient(65%_55%_at_75%_20%,rgba(18,183,106,0.16),transparent_60%),radial-gradient(55%_45%_at_15%_80%,rgba(11,110,79,0.14),transparent_60%)]',
+            ]}
+          />
+
+          <svg
+            class="absolute inset-0 h-full w-full opacity-[0.07]"
+            viewBox="0 0 1200 800"
+            preserveAspectRatio="xMidYMid slice"
+            fill="none"
+            stroke="#e7e4dc"
+            stroke-width="1.5"
+          >
+            <circle cx="1200" cy="400" r="150" />
+            <line x1="1200" y1="0" x2="1200" y2="800" />
+            <rect x="1050" y="180" width="300" height="440" />
+            <rect x="1170" y="300" width="180" height="200" />
+            <path d="M1050 320 A 150 150 0 0 0 1050 480" />
+          </svg>
+
+          <div class="grano absolute inset-0" />
+          <div class="absolute inset-0 bg-gradient-to-b from-carbon-950 via-transparent to-carbon-950" />
+        </div>
+      </div>
+    )
+  }
+
+  <div class="grid gap-10 lg:grid-cols-[minmax(0,0.85fr)_1.3fr] lg:gap-12">
+  <!-- ---- Columna del texto ------------------------------------------- -->
+  <ol class="relative">
+    <!-- La línea de tiempo -->
+    <span
+      class="absolute left-[0.9rem] top-2 bottom-2 w-px bg-gradient-to-b from-cesped-700/70 via-cesped-700/25 to-transparent lg:left-[1.15rem]"
+      aria-hidden="true"></span>
+
+    {
+      etapas.map((etapa) => (
+        <li class="relative pb-16 pl-12 last:pb-0 lg:pb-[34vh] lg:pl-14" data-etapa={etapa.id}>
+          <span
+            class="absolute left-0 top-1 grid h-8 w-8 place-items-center rounded-full border border-cesped-700 bg-carbon-900 font-display text-xs text-cesped-400 transition-colors duration-500 lg:h-9 lg:w-9 lg:text-sm"
+            data-etapa-punto
+            aria-hidden="true"
+          >
+            {etapa.numero}
+          </span>
+
+          <h3 class="text-[clamp(1.5rem,3.5vw,2.5rem)]">{etapa.titulo}</h3>
+          <p class="mt-4 max-w-lg text-lg leading-relaxed text-hueso-400">{etapa.texto}</p>
+
+          {/* En teléfono la imagen va acá abajo: no hay lugar para clavarla al costado. */}
+          <figure class="tarjeta-hover mt-6 overflow-hidden rounded-xl border border-white/10 bg-[#070a12] lg:hidden">
+            <img
+              src={etapa.tipo === 'arte' ? etapa.imagen : enTelefono(etapa.imagen)}
+              alt={`${etapa.titulo} — ${etapa.pie}`}
+              loading="lazy"
+              decoding="async"
+              class="w-full"
+            />
+            <figcaption class="border-t border-white/8 bg-carbon-900/80 px-3 py-2 text-xs text-hueso-500">
+              {etapa.pie}
+            </figcaption>
+          </figure>
+        </li>
+      ))
+    }
+  </ol>
+
+  <!-- ---- Columna de la imagen, clavada ------------------------------- -->
+  <div class="hidden lg:block">
+    <div class="sticky top-28">
+      <div class="panel relative max-h-[70vh] overflow-hidden" style="aspect-ratio: 5 / 4">
+        {
+          etapas.map((etapa, indice) => {
+            const esArte = etapa.tipo === 'arte'
+            const mosaico = etapa.extra?.length
+              ? [{ imagen: etapa.imagen, pie: etapa.pie }, ...etapa.extra]
+              : null
+
+            return (
+              <figure
+                class="absolute inset-0 flex flex-col"
+                data-camino-figura={indice}
+                style={indice === 0 ? 'opacity:1' : 'opacity:0'}
+              >
+                <div class:list={['relative flex-1 overflow-hidden', !esArte && 'bg-[#070a12]']}>
+                  {
+                    mosaico ? (
+                      /* Cuatro paneles a la vez: la etapa "y mucho más" no es
+                         una pantalla, es un montón de pantallas. */
+                      <div class="grid h-full grid-cols-2 grid-rows-2 gap-1 p-1">
+                        {mosaico.slice(0, 4).map((item) => (
+                          <div class="relative overflow-hidden rounded bg-[#070a12]">
+                            <img
+                              src={item.imagen}
+                              alt={item.pie}
+                              loading="lazy"
+                              decoding="async"
+                              class="h-full w-full object-cover object-top opacity-90"
+                            />
+                            <span class="absolute inset-x-0 bottom-0 bg-carbon-950/85 px-2 py-1 text-[0.6rem] uppercase tracking-wider text-hueso-400">
+                              {item.pie}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <img
+                        src={etapa.imagen}
+                        alt={`${etapa.titulo} — ${etapa.pie}`}
+                        loading={indice < 2 ? 'eager' : 'lazy'}
+                        decoding="async"
+                        class:list={[
+                          'h-full w-full',
+                          // ⚠ Las capturas van CONTENIDAS, no recortadas: con
+                          //   `cover` se perdían columnas enteras de la interfaz.
+                          esArte ? 'object-cover' : 'object-contain',
+                        ]}
+                      />
+                    )
+                  }
+                  {esArte && (
+                    <div class="absolute inset-0 bg-gradient-to-t from-carbon-950/85 to-transparent" />
+                  )}
+                </div>
+
+                <figcaption class="flex items-center justify-between gap-4 border-t border-white/8 bg-carbon-900/90 px-4 py-3">
+                  <span class="text-sm text-hueso-300">{etapa.pie}</span>
+                  <span
+                    class:list={[
+                      'shrink-0 rounded-full px-2 py-0.5 text-[0.6rem] font-semibold uppercase tracking-[0.12em]',
+                      esArte
+                        ? 'bg-white/5 text-hueso-400 ring-1 ring-white/10'
+                        : 'bg-cesped-500/15 text-cesped-300 ring-1 ring-cesped-500/30',
+                    ]}
+                  >
+                    {esArte ? 'Arte' : 'Captura real'}
+                  </span>
+                </figcaption>
+              </figure>
+            )
+          })
+        }
+      </div>
+
+      <!-- Progreso -->
+      <div class="mt-4 h-0.5 w-full overflow-hidden rounded-full bg-white/8">
+        <div class="h-full w-0 bg-cesped-500" data-camino-progreso></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>

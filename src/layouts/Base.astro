@@ -1,0 +1,119 @@
+---
+/**
+ * El armazón de toda página del sitio.
+ *
+ * Concentra acá lo que Google y las redes leen: título, descripción, Open Graph,
+ * favicon y datos estructurados. Ninguna página los repite.
+ */
+import '@/styles/global.css'
+import { JUEGOS, URL_MANAGER } from '@/config/games'
+
+interface Props {
+  titulo: string
+  descripcion: string
+  /** Imagen de compartir, relativa a /public. */
+  imagen?: string
+}
+
+const {
+  titulo,
+  descripcion,
+  imagen = '/assets/generated/og.jpg',
+} = Astro.props
+
+const url = new URL(Astro.url.pathname, Astro.site)
+const imagenAbsoluta = new URL(imagen, Astro.site)
+
+/**
+ * Datos estructurados: un VideoGameSeries que agrupa los juegos de la marca.
+ * Se arma desde `games.ts`, así que sumar un juego también lo suma al SEO.
+ */
+const datosEstructurados = {
+  '@context': 'https://schema.org',
+  '@type': 'VideoGameSeries',
+  name: 'Gambeta',
+  url: Astro.site?.toString(),
+  description: descripcion,
+  inLanguage: 'es',
+  genre: ['Sports', 'Simulation', 'Manager'],
+  hasPart: JUEGOS.map((juego) => ({
+    '@type': 'VideoGame',
+    name: juego.nombre,
+    description: juego.descripcion,
+    genre: 'Sports Manager',
+    gamePlatform: 'Web browser',
+    inLanguage: 'es',
+    applicationCategory: 'Game',
+    ...(juego.url ? { url: juego.url } : {}),
+  })),
+}
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="generator" content={Astro.generator} />
+
+    <title>{titulo}</title>
+    <meta name="description" content={descripcion} />
+    <link rel="canonical" href={url.toString()} />
+
+    <meta name="theme-color" content="#050607" />
+    <meta name="color-scheme" content="dark" />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/assets/generated/icono-180.png" />
+
+    {/*
+      El fondo del hero es el LCP. Sin este preload el navegador recién lo
+      descubre después de bajar y parsear el CSS, y en móvil eso son segundos.
+      El `imagesrcset` tiene que coincidir con el del <img> del hero para que
+      no baje la imagen dos veces.
+    */}
+    {/*
+      ⚠ TIENE QUE COINCIDIR CON EL `<img>` DEL HERO, exactamente. Cuando el
+        fondo cambió de la pizarra al partido y esto quedó apuntando al viejo,
+        el navegador precargaba una imagen que no usaba y NO precargaba la que
+        sí: medido, el LCP móvil pasó de 3,0 a 3,8 s y la nota cayó de 93 a 88.
+    */}
+    <link
+      rel="preload"
+      as="image"
+      href="/assets/generated/hero-inicio-900.webp"
+      imagesrcset="/assets/generated/hero-inicio-900.webp 900w, /assets/generated/hero-inicio-1600.webp 1600w"
+      imagesizes="100vw"
+      fetchpriority="high"
+    />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Gambeta" />
+    <meta property="og:locale" content="es_AR" />
+    <meta property="og:title" content={titulo} />
+    <meta property="og:description" content={descripcion} />
+    <meta property="og:url" content={url.toString()} />
+    <meta property="og:image" content={imagenAbsoluta.toString()} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={titulo} />
+    <meta name="twitter:description" content={descripcion} />
+    <meta name="twitter:image" content={imagenAbsoluta.toString()} />
+
+    <script type="application/ld+json" set:html={JSON.stringify(datosEstructurados)} />
+  </head>
+
+  <body>
+    <a href="#contenido" class="solo-lectores focus:not-sr-only">Saltar al contenido</a>
+    <slot />
+    {
+      /* Un solo lugar donde se sabe si el juego ya está publicado, por si algún
+         script del cliente lo necesita. */
+      URL_MANAGER && <meta name="gambeta:manager-url" content={URL_MANAGER} />
+    }
+  </body>
+</html>

@@ -1,0 +1,136 @@
+---
+/**
+ * "AVISAME CUANDO SALGA"
+ *
+ * ⚠ NO HAY BACKEND TODAVÍA. El formulario postea a un endpoint que se define
+ *   por variable de entorno; mientras no exista, guarda el mail en el propio
+ *   navegador y muestra el agradecimiento igual. Nada se pierde y nadie ve un
+ *   error.
+ *
+ * Para conectarlo de verdad, en Vercel/Netlify:
+ *
+ *     PUBLIC_FORM_ENDPOINT=https://formspree.io/f/xxxxxxx
+ *
+ * Sirve cualquier servicio que acepte un POST con JSON (Formspree, Formcarry,
+ * Buttondown, una Edge Function propia).
+ */
+const endpoint = import.meta.env.PUBLIC_FORM_ENDPOINT?.trim() ?? ''
+---
+
+<section id="avisame" class="relative isolate scroll-mt-24 overflow-hidden border-t border-white/5 py-24 md:py-32">
+  <!-- Fondo -->
+  <div class="absolute inset-0 -z-10">
+    <!-- ⚠ Sin `cancha-rayada`: sobre una foto tenue sólo se veían rayas. -->
+    <img
+      src="/assets/generated/bg-potrero-1600.webp"
+      alt=""
+      loading="lazy"
+      decoding="async"
+      class="h-full w-full object-cover opacity-30"
+    />
+    <div class="absolute inset-0 bg-gradient-to-b from-carbon-950/90 via-carbon-950/80 to-carbon-950"></div>
+  </div>
+
+  <div class="contenedor">
+    <div class="panel tarjeta-hover mx-auto max-w-2xl p-8 text-center md:p-12">
+      <p class="rotulo">Enterate primero</p>
+      <h2 class="mt-4 text-[clamp(1.75rem,4.5vw,3rem)]">
+        Dejanos tu mail y te avisamos
+      </h2>
+      <p class="mx-auto mt-4 max-w-md text-hueso-400">
+        Cuando abra el Manager para todos, y cuando salgan el Player Game y el
+        Test. Sin spam, sin newsletter semanal: sólo cuando hay algo nuevo para
+        jugar.
+      </p>
+
+      <form class="mx-auto mt-8 max-w-md" data-aviso data-endpoint={endpoint} novalidate>
+        <div class="flex flex-col gap-3 sm:flex-row">
+          <label class="flex-1">
+            <span class="solo-lectores">Tu correo electrónico</span>
+            <input
+              type="email"
+              name="email"
+              required
+              autocomplete="email"
+              placeholder="tu@mail.com"
+              class="w-full rounded-full border border-white/12 bg-carbon-900/80 px-5 py-3.5 text-hueso-100 placeholder:text-hueso-500 focus:border-cesped-500 focus:outline-none"
+            />
+          </label>
+          <button type="submit" class="boton boton-primario shrink-0">Avisame</button>
+        </div>
+
+        <!-- Trampa para robots: una persona nunca la completa. -->
+        <label class="solo-lectores" aria-hidden="true">
+          No completar
+          <input type="text" name="apodo" tabindex="-1" autocomplete="off" />
+        </label>
+
+        <p class="mt-4 text-sm" role="status" aria-live="polite" data-aviso-mensaje></p>
+      </form>
+
+      <p class="mt-2 text-xs text-hueso-500">
+        Sólo usamos tu mail para avisarte de los juegos de Gambeta.
+      </p>
+    </div>
+  </div>
+</section>
+
+<script>
+  const formulario = document.querySelector<HTMLFormElement>('[data-aviso]')
+  const mensaje = document.querySelector<HTMLElement>('[data-aviso-mensaje]')
+
+  const decir = (texto: string, bien: boolean) => {
+    if (!mensaje) return
+    mensaje.textContent = texto
+    mensaje.className = `mt-4 text-sm ${bien ? 'text-cesped-300' : 'text-red-300'}`
+  }
+
+  formulario?.addEventListener('submit', async (evento) => {
+    evento.preventDefault()
+
+    const datos = new FormData(formulario)
+    const email = String(datos.get('email') ?? '').trim()
+
+    // Si la trampa vino completa es un robot: se le agradece y no se hace nada.
+    if (String(datos.get('apodo') ?? '')) {
+      decir('¡Listo! Te avisamos.', true)
+      return
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
+      decir('Ese mail no parece válido. Revisalo y probá de nuevo.', false)
+      return
+    }
+
+    const boton = formulario.querySelector('button[type="submit"]') as HTMLButtonElement | null
+    if (boton) { boton.disabled = true; boton.textContent = 'Mandando…' }
+
+    const endpoint = formulario.dataset.endpoint
+
+    try {
+      if (endpoint) {
+        const respuesta = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({ email, origen: 'gambetagame.com' }),
+        })
+        if (!respuesta.ok) throw new Error(String(respuesta.status))
+      } else {
+        /**
+         * Todavía no hay a dónde mandarlo. Se guarda en el navegador para no
+         * perderlo y para que, si la persona vuelve, no lo cargue dos veces.
+         */
+        const guardados = JSON.parse(localStorage.getItem('gambeta:avisos') ?? '[]')
+        if (!guardados.includes(email)) guardados.push(email)
+        localStorage.setItem('gambeta:avisos', JSON.stringify(guardados))
+      }
+
+      formulario.reset()
+      decir('¡Listo! Te escribimos cuando haya novedades.', true)
+    } catch {
+      decir('No pudimos guardarlo. Probá de nuevo en un rato.', false)
+    } finally {
+      if (boton) { boton.disabled = false; boton.textContent = 'Avisame' }
+    }
+  })
+</script>

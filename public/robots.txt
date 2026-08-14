@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# El detalle de cada liga son datos que consume la página, no páginas para
+# indexar. No están enlazadas, pero se aclara igual.
+Disallow: /data/
+
+Sitemap: https://gambetagame.com/sitemap-index.xml

@@ -1,0 +1,113 @@
+---
+/**
+ * Barra superior fija.
+ *
+ * Nace transparente sobre el hero y se vuelve sólida al bajar: así el logo
+ * respira contra el video y, más abajo, el texto no compite con la foto.
+ */
+import { NAVEGACION, CTA_JUGAR } from '@/config/games'
+---
+
+<header
+  id="cabecera"
+  class="fixed inset-x-0 top-0 z-50 transition-[background-color,border-color,backdrop-filter] duration-500"
+  data-cabecera
+>
+  <div class="contenedor flex h-16 items-center justify-between gap-6 md:h-20">
+    <a href="#inicio" class="group flex items-center gap-2.5" aria-label="Gambeta — inicio">
+      <img src="/logo.svg" alt="" width="36" height="36" class="h-8 w-8 md:h-9 md:w-9" />
+      <span class="font-display text-xl tracking-wide text-hueso-50 md:text-2xl">Gambeta</span>
+    </a>
+
+    <nav aria-label="Secciones" class="hidden items-center gap-8 lg:flex">
+      {
+        NAVEGACION.map((item) => (
+          <a
+            href={item.href}
+            class="relative text-sm font-medium text-hueso-400 transition-colors hover:text-hueso-50"
+          >
+            {item.texto}
+          </a>
+        ))
+      }
+    </nav>
+
+    <div class="flex items-center gap-3">
+      <a
+        href={CTA_JUGAR.href}
+        class="boton boton-primario !px-5 !py-2.5 !text-sm"
+        {...CTA_JUGAR.externo ? { target: '_blank', rel: 'noopener' } : {}}
+      >
+        {CTA_JUGAR.texto}
+      </a>
+
+      <button
+        type="button"
+        class="grid h-10 w-10 place-items-center rounded-lg border border-white/10 text-hueso-200 lg:hidden"
+        aria-label="Abrir menú"
+        aria-expanded="false"
+        aria-controls="menu-movil"
+        data-abrir-menu
+      >
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+          <path d="M2 5h14M2 9h14M2 13h14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Menú de teléfono -->
+  <div
+    id="menu-movil"
+    class="hidden border-t border-white/10 bg-carbon-950/95 backdrop-blur-xl lg:hidden"
+    data-menu
+  >
+    <nav aria-label="Secciones" class="contenedor flex flex-col py-3">
+      {
+        NAVEGACION.map((item) => (
+          <a
+            href={item.href}
+            class="border-b border-white/5 py-3.5 text-base font-medium text-hueso-200 last:border-0"
+            data-cerrar-menu
+          >
+            {item.texto}
+          </a>
+        ))
+      }
+    </nav>
+  </div>
+</header>
+
+<script>
+  const cabecera = document.querySelector<HTMLElement>('[data-cabecera]')
+  const boton = document.querySelector<HTMLButtonElement>('[data-abrir-menu]')
+  const menu = document.querySelector<HTMLElement>('[data-menu]')
+
+  // Sólida en cuanto se despega del borde. 24px alcanza para que no titile.
+  const alScrollear = () => {
+    const bajo = window.scrollY > 24
+    cabecera?.classList.toggle('bg-carbon-950/85', bajo)
+    cabecera?.classList.toggle('backdrop-blur-xl', bajo)
+    cabecera?.classList.toggle('border-b', bajo)
+    cabecera?.classList.toggle('border-white/8', bajo)
+  }
+  alScrollear()
+  window.addEventListener('scroll', alScrollear, { passive: true })
+
+  const alternarMenu = (abrir?: boolean) => {
+    if (!menu || !boton) return
+    const visible = abrir ?? menu.classList.contains('hidden')
+    menu.classList.toggle('hidden', !visible)
+    boton.setAttribute('aria-expanded', String(visible))
+    boton.setAttribute('aria-label', visible ? 'Cerrar menú' : 'Abrir menú')
+  }
+
+  boton?.addEventListener('click', () => alternarMenu())
+  document.querySelectorAll('[data-cerrar-menu]').forEach((enlace) => {
+    enlace.addEventListener('click', () => alternarMenu(false))
+  })
+  // Escape cierra: se navega con teclado.
+  document.addEventListener('keydown', (evento) => {
+    if (evento.key === 'Escape') alternarMenu(false)
+  })
+</script>

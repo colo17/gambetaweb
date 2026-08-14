@@ -1,0 +1,111 @@
+---
+import { JUEGOS, NAVEGACION } from '@/config/games'
+import numeros from '@/data/numeros.json'
+
+const anio = new Date().getFullYear()
+
+/**
+ * Placeholders: se completan cuando existan las cuentas.
+ *
+ * ⚠ VA EL NOMBRE COMPLETO, NO LAS INICIALES. Antes eran cuadraditos con "IG",
+ *   "TT", "DC" y un `aria-label` con el nombre entero. Eso rompe la regla
+ *   `label-content-name-mismatch`: quien navega por voz dice "click en
+ *   Instagram" y el navegador busca un elemento cuyo texto visible sea ese,
+ *   pero encuentra "IG". Esconder las iniciales con `aria-hidden` tampoco
+ *   alcanza. Con el nombre escrito, además, se entiende sin adivinar.
+ */
+const redes = [
+  { nombre: 'Instagram', href: '#' },
+  { nombre: 'TikTok', href: '#' },
+  { nombre: 'X', href: '#' },
+  { nombre: 'Discord', href: '#' },
+]
+---
+
+<footer class="border-t border-white/8 bg-carbon-950">
+  <div class="contenedor py-16">
+    <div class="grid gap-12 md:grid-cols-[1.4fr_1fr_1fr] md:gap-8">
+      <!-- Marca -->
+      <div>
+        <a href="#inicio" class="flex items-center gap-2.5" aria-label="Gambeta — inicio">
+          <img src="/logo.svg" alt="" width="36" height="36" class="h-9 w-9" />
+          <span class="font-display text-2xl tracking-wide text-hueso-50">Gambeta</span>
+        </a>
+        <p class="mt-5 max-w-sm text-sm leading-relaxed text-hueso-400">
+          Juegos de fútbol hechos en el Río de la Plata. Un mundo de
+          {numeros.ligas} ligas, {numeros.clubes.toLocaleString('es-AR')} clubes y
+          {numeros.jugadores.toLocaleString('es-AR')} futbolistas, compartido por todos
+          nuestros juegos.
+        </p>
+
+        <ul class="mt-6 flex flex-wrap gap-2">
+          {
+            redes.map((red) => (
+              <li>
+                <a
+                  href={red.href}
+                  class="inline-flex items-center rounded-full border border-white/10 px-3.5 py-1.5 text-xs font-medium text-hueso-400 transition-colors hover:border-cesped-500 hover:text-cesped-300"
+                >
+                  {red.nombre}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+
+      <!-- Secciones -->
+      <nav aria-label="Secciones del sitio">
+        <p class="rotulo mb-5">El sitio</p>
+        <ul class="space-y-3">
+          {
+            NAVEGACION.map((item) => (
+              <li>
+                <a href={item.href} class="text-sm text-hueso-400 transition-colors hover:text-hueso-50">
+                  {item.texto}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+
+      <!-- Juegos -->
+      <nav aria-label="Juegos">
+        <p class="rotulo mb-5">Los juegos</p>
+        <ul class="space-y-3">
+          {
+            JUEGOS.map((juego) => (
+              <li>
+                <a
+                  href={juego.url ?? '#juegos'}
+                  class="flex items-center gap-2 text-sm text-hueso-400 transition-colors hover:text-hueso-50"
+                  {...(juego.url ? { target: '_blank', rel: 'noopener' } : {})}
+                >
+                  {juego.nombre}
+                  {/* `hueso-400` y no `hueso-500`: sobre `bg-white/5` el 500
+                      da 4,37 de contraste y el mínimo AA es 4,5. */}
+                  {juego.estado === 'coming-soon' && (
+                    <span class="rounded-full bg-white/5 px-1.5 py-0.5 text-[0.6rem] uppercase tracking-wider text-hueso-400">
+                      pronto
+                    </span>
+                  )}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+    </div>
+
+    <div class="linea-cal my-10"></div>
+
+    <div class="flex flex-col gap-4 text-xs text-hueso-500 sm:flex-row sm:items-center sm:justify-between">
+      <p>© {anio} Gambeta. Hecho con birra y ganas en el Río de la Plata.</p>
+      <p>
+        Los nombres de clubes, ligas y futbolistas del juego son ficticios.
+        Cualquier parecido con la realidad es, digamos, deliberado.
+      </p>
+    </div>
+  </div>
+</footer>

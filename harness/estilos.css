@@ -1,0 +1,19 @@
+/**
+ * Estilos del harness.
+ *
+ * ⚑ POR QUÉ EXISTE ESTE ARCHIVO Y NO SE IMPORTA `index.css` DEL JUEGO A SECAS:
+ *   Tailwind v4 descubre solo qué clases generar escaneando el código fuente,
+ *   y arranca la búsqueda desde la raíz del proyecto de Vite — que acá es
+ *   `harness/`, donde no hay ni un componente del juego. Resultado: se
+ *   compilaba el tema (los colores, las fuentes) pero NINGUNA utilidad, y la
+ *   cancha salía como una tira de 60px de ancho porque `aspect-[7/10]` no
+ *   existía.
+ *
+ *   `@source` le dice dónde mirar de verdad. Es un archivo nuestro; el del
+ *   juego no se toca.
+ */
+
+@import '../../cyberfoot-online/src/index.css';
+
+@source '../../cyberfoot-online/src/**/*.{jsx,js}';
+@source './main.jsx';
