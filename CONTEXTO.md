@@ -57,7 +57,7 @@ Todo verde y desplegable:
 - `npm run probar` → 19 de 19 verificaciones funcionales.
 - `npm run revisar` → sin desbordes, sin imágenes rotas, un solo `h1`.
 - `npm run build` → sin errores.
-- Último commit: `f84ab5f`, rama `main`, sincronizado con el remoto.
+- Último commit: `f1ca7bc`, rama `main`, sincronizado con el remoto.
 
 ---
 
