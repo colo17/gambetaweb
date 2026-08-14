@@ -43,7 +43,7 @@ const cifras = [
       height="900"
       fetchpriority="high"
       decoding="async"
-      class="absolute inset-0 h-full w-full object-cover opacity-45 transition-opacity duration-1000"
+      class="absolute inset-0 h-full w-full object-cover opacity-60 transition-opacity duration-1000 md:opacity-45"
       data-imagen-hero
     />
 
@@ -72,16 +72,21 @@ const cifras = [
     </video>
 
     <!--
-      El velo. Sin esto el texto no llega a contraste AA sobre el video, y el
-      título cae justo encima de la parte más iluminada de la cancha.
-      Son tres capas y cada una hace una cosa:
-        · el radial   apaga los bordes
-        · el lateral  oscurece la izquierda, que es donde vive el texto
-        · el inferior empalma con la sección siguiente
+      El velo, y NO ES EL MISMO EN LOS DOS TAMAÑOS.
+
+      En escritorio el texto vive en la mitad izquierda, así que el velo va de
+      izquierda a derecha: tapa donde se lee y deja respirar la cancha a la
+      derecha.
+
+      ⚠ EN TELÉFONO ESE MISMO VELO MATABA EL VIDEO. Con 390px de ancho el texto
+        ocupa todo, así que el degradé lateral oscurecía la pantalla entera y el
+        video "casi ni se veía". Acá el velo es un manto parejo más suave, con
+        el peso abajo, que es donde caen los botones y los números.
     -->
-    <div class="absolute inset-0 bg-[radial-gradient(120%_90%_at_60%_10%,transparent_0%,#050607_78%)]"></div>
-    <div class="absolute inset-0 bg-gradient-to-r from-carbon-950 via-carbon-950/85 to-carbon-950/25"></div>
-    <div class="absolute inset-x-0 bottom-0 h-56 bg-gradient-to-t from-carbon-950 to-transparent"></div>
+    <div class="absolute inset-0 bg-[radial-gradient(140%_100%_at_50%_5%,transparent_0%,#050607_88%)] md:bg-[radial-gradient(120%_90%_at_60%_10%,transparent_0%,#050607_78%)]"></div>
+    <div class="absolute inset-0 bg-carbon-950/35 md:bg-transparent"></div>
+    <div class="absolute inset-0 hidden md:block md:bg-gradient-to-r md:from-carbon-950 md:via-carbon-950/85 md:to-carbon-950/25"></div>
+    <div class="absolute inset-x-0 bottom-0 h-72 bg-gradient-to-t from-carbon-950 via-carbon-950/70 to-transparent md:h-56 md:via-transparent"></div>
   </div>
 
   <div class="contenedor flex min-h-[100svh] flex-col justify-center pt-28 pb-16 md:pt-32">
@@ -185,7 +190,8 @@ const cifras = [
 
   /** Cuánto dura el cruce entre un clip y el siguiente. */
   const FUNDIDO = 1.2
-  const OPACIDAD = '0.45'
+  /** Más presente en el teléfono: ahí el velo es un manto parejo, no lateral. */
+  const OPACIDAD = window.matchMedia('(max-width: 767px)').matches ? '0.6' : '0.45'
 
   const capas = [
     document.querySelector<HTMLVideoElement>('[data-video-hero="a"]'),
@@ -257,7 +263,8 @@ const cifras = [
          *   veían los dos fotogramas superpuestos: cada jugador aparecía dos
          *   veces, uno de ellos quieto.
          */
-        imagen?.classList.replace('opacity-45', 'opacity-0')
+        imagen?.classList.remove('opacity-60', 'opacity-45')
+        imagen?.classList.add('opacity-0')
       },
       { once: true }
     )

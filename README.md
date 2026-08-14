@@ -263,10 +263,18 @@ fotogramas acompañan la lectura. Tres cosas que hacen falta para que ande:
   rendimiento". Ahora sí carga, pero un juego de clips aparte a 720px de ancho
   y más compresión: **1,1 MB los cinco** contra 3,0 MB los grandes. Se saltea
   igual con `prefers-reduced-motion`, `saveData`, 2G o 3G.
-- **Las capturas del scrollytelling salían recortadas.** Se fotografiaba el
-  juego a 420px y a ese ancho los paneles recortan sus propias tablas: la
-  captura ya venía cortada. Ahora se usa la de escritorio —completa— y en el
-  teléfono se muestra alta y deslizable, con un "deslizá →" en el pie.
+- **Y el velo del hero es distinto en cada tamaño.** En escritorio va de
+  izquierda a derecha, porque el texto vive en la mitad izquierda. Ese mismo
+  velo en un teléfono —donde el texto ocupa todo el ancho— oscurecía la pantalla
+  entera y el video casi no se veía. En teléfono es un manto parejo más suave,
+  con el peso abajo, y el video sube de 45% a 60% de opacidad.
+- **Las capturas del scrollytelling salían recortadas.** Dos versiones malas
+  antes de la buena: primero se fotografiaba el juego a 420px, y a ese ancho sus
+  paneles recortan sus propias tablas —la captura ya venía cortada—; después se
+  usó la de escritorio alta y deslizable de costado, que se leía pero se veía
+  siempre por la mitad y con un alto distinto en cada etapa. Ahora van
+  `object-contain` en un marco de proporción fija: **chicas, pero enteras y
+  todas iguales**. Chica y completa le gana a grande y cortada.
 - **La tabla de ligas se cortaba de costado.** Tenía `min-w-[36rem]` (576px) en
   un contenedor de 348px. Se sacó el mínimo y las columnas que sobran se
   esconden por breakpoint: en un teléfono quedan #, Club y Once.

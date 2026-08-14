@@ -66,43 +66,39 @@ const { etapas } = Astro.props
             En teléfono la imagen va acá abajo: no hay lugar para clavarla al
             costado.
 
-            ⚠ Y VA LA CAPTURA DE ESCRITORIO, NO UNA "DE TELÉFONO". Se probó
-              fotografiar el juego a 420px y salió peor: a ese ancho los paneles
-              del juego recortan sus propias tablas, así que la captura ya venía
-              cortada —se veía "Promover | N…" con los botones comidos—. La de
-              escritorio está completa; lo que se adapta es cómo se muestra.
+            ⚠ COMPLETA Y TODAS DEL MISMO TAMAÑO. Pasó por dos versiones malas:
 
-            Se deja alta y se desliza de costado, que es como se mira una captura
-            de una app de escritorio en un teléfono. Encogerla al ancho de la
-            pantalla la dejaría entera pero ilegible.
+              1. capturas del juego tomadas a 420px — a ese ancho los paneles
+                 recortan sus propias tablas, así que la captura YA venía
+                 cortada ("Promover | N…" con los botones comidos);
+              2. la captura de escritorio, alta y deslizable de costado — se
+                 leía, pero se veía siempre por la mitad, y cada etapa con un
+                 alto distinto.
+
+            Ahora va `object-contain` dentro de un marco de proporción fija: se
+            ve chica, pero entera y todas iguales. Chica y completa le gana a
+            grande y cortada.
           */}
-          <figure class="mt-6 overflow-hidden rounded-xl border border-white/10 bg-[#070a12] lg:hidden">
-            {
-              etapa.tipo === 'arte' ? (
-                <img
-                  src={etapa.imagen}
-                  alt={`${etapa.titulo} — ${etapa.pie}`}
-                  loading="lazy"
-                  decoding="async"
-                  class="w-full"
-                />
-              ) : (
-                <div class="w-full overflow-x-auto overscroll-x-contain">
-                  <img
-                    src={etapa.imagen}
-                    alt={`${etapa.titulo} — ${etapa.pie}`}
-                    loading="lazy"
-                    decoding="async"
-                    class="h-[56vh] w-auto max-w-none"
-                  />
-                </div>
-              )
-            }
-            <figcaption class="flex items-center justify-between gap-3 border-t border-white/8 bg-carbon-900/80 px-3 py-2 text-xs text-hueso-500">
-              <span>{etapa.pie}</span>
-              {etapa.tipo !== 'arte' && (
-                <span class="shrink-0 text-hueso-400">deslizá →</span>
-              )}
+          <figure class="mt-6 overflow-hidden rounded-xl border border-white/10 lg:hidden">
+            <div
+              class:list={[
+                'flex aspect-[4/3] items-center justify-center',
+                etapa.tipo === 'arte' ? '' : 'bg-[#070a12] p-2',
+              ]}
+            >
+              <img
+                src={etapa.imagen}
+                alt={`${etapa.titulo} — ${etapa.pie}`}
+                loading="lazy"
+                decoding="async"
+                class:list={[
+                  'h-full w-full',
+                  etapa.tipo === 'arte' ? 'object-cover' : 'object-contain',
+                ]}
+              />
+            </div>
+            <figcaption class="border-t border-white/8 bg-carbon-900/80 px-3 py-2 text-xs text-hueso-500">
+              {etapa.pie}
             </figcaption>
           </figure>
         </li>
