@@ -291,6 +291,15 @@ saber:
   meta `format-detection` en `Base.astro`.
 - **Las capturas en PNG** costaban 2,3 MB y tiraban la nota móvil de 91 a 78.
   En WebP son 660 KB. **No volver a PNG.**
+- **Apagar una clase de Tailwind con `classList.remove` y una variante de
+  breakpoint** — la imagen del hero lleva `opacity-60 md:opacity-45`. Un intento
+  hacía `remove('opacity-60', 'opacity-45')` + `add('opacity-0')`, y en
+  **escritorio** no apagaba nada: la clase que existe es `md:opacity-45`, no
+  `opacity-45`, así que sobrevivía y le ganaba a `opacity-0` por ser variante
+  de breakpoint. La imagen quedaba al 45% abajo de los cinco videos para
+  siempre, y se veía como **un fotograma gris trabado encima de todo**. En
+  teléfono funcionaba, porque ahí `md:` no aplica. **Para prender y apagar algo
+  desde JS, estilo en línea — gana en cualquier ancho.**
 
 ---
 
