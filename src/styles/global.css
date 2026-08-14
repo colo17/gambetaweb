@@ -51,10 +51,6 @@
   --font-display: 'Anton', 'Arial Narrow', system-ui, sans-serif;
   --font-sans: 'Inter Variable', 'Inter', system-ui, sans-serif;
 
-  /* Un breakpoint por debajo de sm: los teléfonos angostos (360-400px)
-     necesitan un corte propio para las tablas. */
-  --breakpoint-xs: 26rem;
-
   /* --- Ritmo ------------------------------------------------------------- */
   --ease-salida: cubic-bezier(0.16, 1, 0.3, 1);
 }

@@ -278,11 +278,20 @@ export default function LigasExplorer({ ligas, detalleInicial }: Props) {
         {/* ---- Tabla de clubes ------------------------------------------ */}
         <div className="max-h-[30rem] overflow-auto">
           {/*
-            ⚠ SIN `min-w`. Antes tenía `min-w-[36rem]` (576px) dentro de un
-              contenedor de 348px en un teléfono: 228px de tabla quedaban fuera
-              de pantalla y había que arrastrar de costado para ver la media.
-              Ahora las columnas que sobran se esconden por breakpoint y entra
-              entera.
+            ⚠ SIN `min-w`, Y CON LAS COLUMNAS ESCALONADAS.
+
+            Antes tenía `min-w-[36rem]` (576px) dentro de un contenedor de 348px
+            en un teléfono: 228px de tabla quedaban fuera de pantalla.
+
+            ⚠ Y los cortes van HOLGADOS. Un primer intento usaba un breakpoint
+              propio de 416px para "Plantel", y en los teléfonos grandes —un Pro
+              Max mide 430px— la columna entraba justo y quedaba partida al
+              medio. En un teléfono se muestran tres columnas y punto:
+
+                # · Club · Once        siempre
+                + Plantel              desde sm  (640px)
+                + Jugadores            desde md  (768px)
+                + Estadio              desde lg  (1024px)
           */}
           <table className="w-full border-collapse text-left text-sm">
             <caption className="solo-lectores">
@@ -301,17 +310,17 @@ export default function LigasExplorer({ ligas, detalleInicial }: Props) {
                     Once{flecha('mediaTitulares')}
                   </button>
                 </th>
-                <th scope="col" aria-sort={ariaOrden('media')} className="hidden py-3 text-right font-semibold xs:table-cell">
+                <th scope="col" aria-sort={ariaOrden('media')} className="hidden py-3 text-right font-semibold sm:table-cell">
                   <button onClick={() => cambiarOrden('media')} className="hover:text-hueso-200">
                     Plantel{flecha('media')}
                   </button>
                 </th>
-                <th scope="col" aria-sort={ariaOrden('plantel')} className="hidden py-3 text-right font-semibold sm:table-cell">
+                <th scope="col" aria-sort={ariaOrden('plantel')} className="hidden py-3 text-right font-semibold md:table-cell">
                   <button onClick={() => cambiarOrden('plantel')} className="hover:text-hueso-200">
                     Jug.{flecha('plantel')}
                   </button>
                 </th>
-                <th scope="col" aria-sort={ariaOrden('aforo')} className="hidden py-3 pr-3 text-right font-semibold md:table-cell md:pr-6">
+                <th scope="col" aria-sort={ariaOrden('aforo')} className="hidden py-3 pr-3 text-right font-semibold lg:table-cell lg:pr-6">
                   <button onClick={() => cambiarOrden('aforo')} className="hover:text-hueso-200">
                     Estadio{flecha('aforo')}
                   </button>
@@ -343,13 +352,13 @@ export default function LigasExplorer({ ligas, detalleInicial }: Props) {
                   <td className={`py-2.5 text-right font-display text-lg tabular-nums ${tonoMedia(club.mediaTitulares)}`}>
                     {club.mediaTitulares}
                   </td>
-                  <td className="hidden py-2.5 text-right tabular-nums text-hueso-400 xs:table-cell">
+                  <td className="hidden py-2.5 text-right tabular-nums text-hueso-400 sm:table-cell">
                     {club.media}
                   </td>
-                  <td className="hidden py-2.5 text-right tabular-nums text-hueso-400 sm:table-cell">
+                  <td className="hidden py-2.5 text-right tabular-nums text-hueso-400 md:table-cell">
                     {club.plantel}
                   </td>
-                  <td className="hidden py-2.5 pr-3 text-right md:table-cell md:pr-6">
+                  <td className="hidden py-2.5 pr-3 text-right lg:table-cell lg:pr-6">
                     <p className="truncate text-xs text-hueso-400">{club.estadio ?? '—'}</p>
                     <p className="text-xs text-hueso-500 tabular-nums">{numero(club.aforo)}</p>
                   </td>

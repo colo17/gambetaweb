@@ -63,6 +63,21 @@ const datosEstructurados = {
     <meta name="theme-color" content="#050607" />
     <meta name="color-scheme" content="dark" />
 
+    {/*
+      ⚠ APAGA LOS DETECTORES DEL TELÉFONO.
+
+      Safari en iOS —y algún Android— autodetecta lo que parece una dirección,
+      un teléfono o una fecha y lo convierte en un enlace azul subrayado, sin
+      que el sitio tenga ni un `<a>`. En la tabla de clubes eso agarraba las
+      ciudades ("Londres", "Manchester") y los nombres de estadio y los
+      transformaba en enlaces a mapas: se veían como hipervínculos que nadie
+      puso y que no llevan a ningún lado útil.
+    */}
+    <meta
+      name="format-detection"
+      content="telephone=no, address=no, email=no, date=no"
+    />
+
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/assets/generated/icono-180.png" />
 

@@ -276,8 +276,24 @@ fotogramas acompañan la lectura. Tres cosas que hacen falta para que ande:
   `object-contain` en un marco de proporción fija: **chicas, pero enteras y
   todas iguales**. Chica y completa le gana a grande y cortada.
 - **La tabla de ligas se cortaba de costado.** Tenía `min-w-[36rem]` (576px) en
-  un contenedor de 348px. Se sacó el mínimo y las columnas que sobran se
-  esconden por breakpoint: en un teléfono quedan #, Club y Once.
+  un contenedor de 348px. Se sacó el mínimo y las columnas se escalonaron:
+
+  | | Desde |
+  |---|---|
+  | # · Club · Once | siempre |
+  | + Plantel | `sm` (640px) |
+  | + Jugadores | `md` (768px) |
+  | + Estadio | `lg` (1024px) |
+
+  ⚠ Los cortes van **holgados** a propósito. Un primer intento usaba un
+  breakpoint propio de 416px para "Plantel", y en los teléfonos grandes —un Pro
+  Max mide 430px— la columna entraba justo y quedaba partida al medio.
+
+- **Aparecían hipervínculos que nadie puso.** En la tabla, los nombres de club y
+  las ciudades se veían como enlaces azules. No hay ni un `<a>` en ese
+  componente: los inventa Safari en iOS, que autodetecta lo que parece una
+  dirección y lo linkea a mapas. Lo apaga la meta `format-detection` en
+  `Base.astro`.
 
 ⚠ **Y el bug de fondo, que no se veía como tal:** el `<ol>` de las etapas es un
 item de grilla, y un item de grilla tiene `min-width: auto` — se niega a
