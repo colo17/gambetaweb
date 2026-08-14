@@ -7,6 +7,11 @@ Hoy hay un juego jugable (*Gambeta Manager Game*) y dos en camino
 (*Player Game* y *Test*). El sitio está armado para que sumar un juego nuevo sea
 editar un archivo de datos, no rehacer pantallas.
 
+> **¿Venís de cero o de otra ventana?** Leé **[CONTEXTO.md](CONTEXTO.md)** antes
+> de tocar nada: tiene la regla de que la carpeta del juego es solo lectura, lo
+> que falta por hacer, y —sobre todo— **lo que ya se probó y no funcionó**.
+> [HANDOFF.md](HANDOFF.md) es la crónica de cómo se construyó.
+
 ---
 
 ## Arranque rápido
