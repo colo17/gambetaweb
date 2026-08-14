@@ -357,7 +357,20 @@ comunes.
 4. Dominio: agregar `gambetagame.com` y `www.gambetagame.com` en *Settings →
    Domains*, y apuntar el DNS a Vercel.
 
-`vercel.json` ya trae el cacheo de assets y las cabeceras de seguridad.
+`vercel.json` ya trae el cacheo y las cabeceras de seguridad. Qué cachea cada
+regla, que en el archivo no se puede explicar porque **JSON no admite
+comentarios** —y Vercel rechaza el deploy si le agregás una clave `comment`,
+con `Invalid request: headers[0] should NOT have additional property 'comment'`:
+
+| Ruta | Cache-Control | Por qué |
+|---|---|---|
+| `/_astro/*` | 1 año, `immutable` | Llevan hash en el nombre: si cambia el contenido, cambia la URL |
+| `/assets/*` | 1 año, revalidando | Imágenes, videos y capturas; se reemplazan de vez en cuando |
+| `/data/*` | 1 hora, revalidando | El detalle de cada liga cambia sólo al regenerar el catálogo |
+| `/*` | — | Sólo cabeceras de seguridad (`nosniff`, `Referrer-Policy`, `X-Frame-Options`) |
+
+`netlify.toml` hace lo mismo, y ahí sí los comentarios están escritos en el
+archivo porque TOML los acepta.
 
 ### Netlify
 

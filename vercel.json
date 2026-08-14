@@ -5,17 +5,14 @@
   "outputDirectory": "dist",
   "headers": [
     {
-      "comment": "Los assets llevan hash en el nombre: se pueden cachear para siempre.",
       "source": "/_astro/(.*)",
       "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
     },
     {
-      "comment": "Imágenes y videos: un año, pero revalidando.",
       "source": "/assets/(.*)",
       "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, stale-while-revalidate=86400" }]
     },
     {
-      "comment": "El detalle de cada liga cambia sólo cuando se regenera el catálogo.",
       "source": "/data/(.*)",
       "headers": [{ "key": "Cache-Control", "value": "public, max-age=3600, stale-while-revalidate=86400" }]
     },
