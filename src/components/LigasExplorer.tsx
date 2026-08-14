@@ -292,6 +292,12 @@ export default function LigasExplorer({ ligas, detalleInicial }: Props) {
                 + Plantel              desde sm  (640px)
                 + Jugadores            desde md  (768px)
                 + Estadio              desde lg  (1024px)
+
+            ⚠ Y CADA COLUMNA NUMÉRICA LLEVA SU PROPIO `pr`. Sin eso, la última
+              que quedaba visible en ese ancho tocaba el borde y el número se
+              veía cortado: en un teléfono le pasaba a "Once", que es la única
+              que queda. Como cuál es la última cambia con el ancho, el padding
+              va en todas y no en la última.
           */}
           <table className="w-full border-collapse text-left text-sm">
             <caption className="solo-lectores">
@@ -305,17 +311,17 @@ export default function LigasExplorer({ ligas, detalleInicial }: Props) {
                     Club{flecha('nombre')}
                   </button>
                 </th>
-                <th scope="col" aria-sort={ariaOrden('mediaTitulares')} className="py-3 text-right font-semibold">
+                <th scope="col" aria-sort={ariaOrden('mediaTitulares')} className="py-3 pr-3 text-right font-semibold md:pr-4">
                   <button onClick={() => cambiarOrden('mediaTitulares')} className="hover:text-hueso-200">
                     Once{flecha('mediaTitulares')}
                   </button>
                 </th>
-                <th scope="col" aria-sort={ariaOrden('media')} className="hidden py-3 text-right font-semibold sm:table-cell">
+                <th scope="col" aria-sort={ariaOrden('media')} className="hidden py-3 pr-3 text-right font-semibold sm:table-cell md:pr-4">
                   <button onClick={() => cambiarOrden('media')} className="hover:text-hueso-200">
                     Plantel{flecha('media')}
                   </button>
                 </th>
-                <th scope="col" aria-sort={ariaOrden('plantel')} className="hidden py-3 text-right font-semibold md:table-cell">
+                <th scope="col" aria-sort={ariaOrden('plantel')} className="hidden py-3 pr-3 text-right font-semibold md:table-cell md:pr-4">
                   <button onClick={() => cambiarOrden('plantel')} className="hover:text-hueso-200">
                     Jug.{flecha('plantel')}
                   </button>
@@ -349,13 +355,13 @@ export default function LigasExplorer({ ligas, detalleInicial }: Props) {
                       </div>
                     </div>
                   </td>
-                  <td className={`py-2.5 text-right font-display text-lg tabular-nums ${tonoMedia(club.mediaTitulares)}`}>
+                  <td className={`py-2.5 pr-3 text-right font-display text-lg tabular-nums md:pr-4 ${tonoMedia(club.mediaTitulares)}`}>
                     {club.mediaTitulares}
                   </td>
-                  <td className="hidden py-2.5 text-right tabular-nums text-hueso-400 sm:table-cell">
+                  <td className="hidden py-2.5 pr-3 text-right tabular-nums text-hueso-400 sm:table-cell md:pr-4">
                     {club.media}
                   </td>
-                  <td className="hidden py-2.5 text-right tabular-nums text-hueso-400 md:table-cell">
+                  <td className="hidden py-2.5 pr-3 text-right tabular-nums text-hueso-400 md:table-cell md:pr-4">
                     {club.plantel}
                   </td>
                   <td className="hidden py-2.5 pr-3 text-right lg:table-cell lg:pr-6">
