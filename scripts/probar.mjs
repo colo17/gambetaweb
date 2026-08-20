@@ -275,7 +275,20 @@ verificar(
 console.log('\nManager')
 
 await ir('/manager')
-verificar('el camino completo tiene sus dos recorridos', (await pagina.locator('[data-recorrido]').count()) === 2)
+verificar(
+  'el camino completo tiene sus dos escenarios',
+  (await pagina.locator('[data-escenario]').count()) === 2
+)
+verificar(
+  'y las catorce etapas, cada una con su fondo',
+  (await pagina.locator('#camino [data-paso]').count()) === 14 &&
+    (await pagina.locator('#camino [data-escenario-fondo]').count()) === 14,
+  `${await pagina.locator('#camino [data-paso]').count()} pasos`
+)
+verificar(
+  'la etapa "y mucho más" sigue mostrando su mosaico',
+  (await pagina.locator('[data-etapa="mas"] img').count()) === 4
+)
 verificar(
   'las capturas del juego están',
   (await pagina.locator('img[src*="/assets/screenshots/"]').count()) > 10,

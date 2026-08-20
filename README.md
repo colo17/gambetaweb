@@ -32,7 +32,7 @@ Queda en <http://localhost:4321>.
 | `npm run assets` | Reprocesa logo, fondos, íconos y la imagen de compartir |
 | `npm run capturas` | Vuelve a fotografiar las pantallas del juego |
 | `npm run harness` | Levanta sólo el harness de capturas, para mirarlo a ojo |
-| `npm run probar` | Prueba funcional de las seis páginas (49 verificaciones) |
+| `npm run probar` | Prueba funcional de las seis páginas (53 verificaciones) |
 | `npm run revisar` | Revisión visual: cada página a 1440, 390 y 430px + chequeos |
 
 Las tres últimas piden que haya un servidor levantado; `probar` y `revisar`
@@ -49,8 +49,8 @@ Vite no minifica y la nota de rendimiento no significa nada.
 - **React 19** — sólo para las tres islas: el explorador de ligas, el buscador de
   futbolistas y el perfil. Todo lo demás es HTML.
 - **Tailwind CSS 4** — el tema entero vive en `src/styles/global.css`, no hay `tailwind.config`.
-- **GSAP + ScrollTrigger** — sólo los dos scrollytelling de `/manager`. Los tres de
-  la portada no usan ninguna biblioteca.
+- **GSAP + ScrollTrigger** — sólo para `Alma`, en `/manager`. Los cinco
+  scrollytelling no usan ninguna biblioteca.
 - **Supabase JS** — sólo en `/perfil`, y se descarga sólo si las cuentas están prendidas.
 - **TypeScript** en la config y las islas.
 
@@ -87,7 +87,7 @@ src/
   config/
     games.ts             ← EL CATÁLOGO DE JUEGOS. Se agrega un juego acá.
     presentaciones.ts    ← el scrollytelling de portada de cada juego
-    recorrido.ts         ← la forma de una etapa (la comparten los tres)
+    recorrido.ts         ← la forma de una etapa (la comparten los cinco)
     puestos.ts           ← el vocabulario de puestos, copiado del juego
   lib/cuenta.ts          ← el cliente de Supabase y los tipos del perfil
   data/*.json            ← generados por `npm run datos`, no editar a mano
@@ -95,8 +95,8 @@ src/
     Header · Hero · Footer
     PresentacionJuego    ← un juego en la portada
     MundoGambeta         ← la banda de números que va debajo
-    Escenario            ← el scrollytelling de la PORTADA (panel fijo + fondo)
-    Recorrido            ← el scrollytelling de /manager (imagen fija)
+    Escenario            ← EL scrollytelling: panel de texto fijo, imágenes que
+                            scrollean y una ilustración a sangre atrás
     Camino               ← las 10+4 etapas del Manager
     Alma                 ← el scrollytelling emocional del Manager
     ManagerIntro         ← la cabecera de /manager
@@ -355,7 +355,7 @@ la imagen de compartir.
 | `bg-mundial.png` | `z_image` (16:9) | *Cinematic wide shot of a packed football stadium at night during a world tournament final, thousands of tiny lights and flags of many nations blurred in the stands, confetti drifting through floodlight beams, deep emerald pitch below, warm gold and green colour grade, epic premium video game key art, moody and atmospheric, no readable text, no letters, no logos, no faces in focus* |
 | `hero-1` … `hero-5` (los cinco clips del hero) | `seedance1_5` (4 s, 720p) y `kling3_0_turbo` (8 s, 1080p) para el nº 2 | El micro llegando al estadio bajo la lluvia · el partido de noche desde la tribuna · el entretiempo en el vestuario · el partido desde el césped · la vuelta olímpica con la copa. Los prompts completos están en el historial del proyecto; todos piden *documentary realism, natural human motion, no morphing, no readable text, no logos*. |
 
-### ⚠ Los scrollytelling NO llevan fondo, y es a propósito
+### Los fondos del scrollytelling, y los cuatro intentos que fallaron
 
 Esta sección decía lo contrario hasta agosto de 2026 y estaba vieja: el fondo de
 video se probó, no anduvo, y se sacó. **Se probaron cuatro y las cuatro se veían

@@ -70,7 +70,7 @@ Todo verde y desplegable:
 
 Accesibilidad, buenas prácticas y SEO: **100 en las seis**.
 
-- `npm run probar` → 49 de 49 verificaciones funcionales, sobre las seis páginas.
+- `npm run probar` → 53 de 53 verificaciones funcionales, sobre las seis páginas.
 - `npm run revisar` → sin desbordes, sin imágenes rotas, un solo `h1` por página,
   sin ids repetidos. Mira cada página a 1440, 390 y **430px**.
 - `npm run build` → sin errores.
@@ -138,8 +138,8 @@ src/
   data/*.json            ← generados por `npm run datos`. NO editar a mano.
   components/
     Header · Hero        ← el hero son 5 clips de video en secuencia
-    Escenario.astro      ← el scrollytelling de la PORTADA (3 veces)
-    Recorrido.astro      ← el scrollytelling de /manager (2 veces)
+    Escenario.astro      ← EL scrollytelling. Se usa 5 veces (3 en la portada,
+                            2 en /manager) y trae su propio script.
     PresentacionJuego    ← un juego en la portada · MundoGambeta ← la banda
     Camino               ← las 10+4 etapas del Manager
     Alma                 ← la pizarra que cambia de formación
@@ -157,26 +157,31 @@ assets-src/              ← originales de Higgsfield (se versionan, ~60 MB)
 public/data/planteles/   ← 81 archivos, el plantel de cada club por liga
 ```
 
-### ⚑ HAY DOS SCROLLYTELLING DISTINTOS, Y ES A PROPÓSITO
+### ⚑ HAY UN SOLO SCROLLYTELLING: `Escenario`
 
-No los unifiques. Son inversos, y cada uno sirve para algo distinto:
+Se usa **cinco veces**: tres en la portada (una por juego) y dos en `/manager`
+(el club y la selección). Funciona así:
 
-| | `Recorrido` (/manager) | `Escenario` (portada) |
-|---|---|---|
-| Scrollea | el **texto** | las **imágenes** |
-| Queda fijo | la **imagen** | un **panel de texto** que se reescribe |
-| Fondo | ninguno | una imagen a sangre que hace crossfade |
-| Motor | GSAP + ScrollTrigger | JavaScript a secas, ~20 líneas |
+- **Scrollean las imágenes**, en la columna derecha.
+- **Queda fijo un panel de texto** a la izquierda, que se reescribe con la
+  etapa: número, título y párrafo.
+- **Atrás, una ilustración a sangre** que hace crossfade con cada etapa.
+- **Sin GSAP**: la cuenta —el paso activo es el que cruza la mitad de la
+  pantalla— entra en veinte líneas.
 
-El de la portada está calcado del de `terrasol-web` (`site/assets/js/app.js`,
-buscar `data-scrolly`), que es lo que pidió el dueño el 20 de agosto: *"quiero
-que sean diferentes… como el que hicimos para terrasol-web"*. Un panel que se
-reescribe se lee como una película; una lista de textos que pasan se lee como un
-documento. La portada quiere lo primero, y la página del Manager —que sí es una
-explicación larga— quiere lo segundo.
+Está calcado del de `terrasol-web` (`site/assets/js/app.js`, buscar
+`data-scrolly`), que es lo que pidió el dueño el 20 de agosto: *"quiero que sean
+diferentes… como el que hicimos para terrasol-web"*.
 
-⚠ **La portada NO carga GSAP**, y conviene que siga así: el escenario es su
-única animación de scroll, y sacarlo subió la nota móvil de 98 a 99.
+⚠ **HUBO UN SEGUNDO COMPONENTE Y SE BORRÓ.** `Recorrido.astro` hacía lo inverso
+—scrolleaba el texto y clavaba la imagen— y era el de `/manager`. Se dejaron los
+dos conviviendo un rato y el dueño, al verlos uno al lado del otro, pidió
+unificar: *"cambiá los del manager para que sean como estos, que la verdad
+quedaron mucho mejor"*. **No lo resucites**: si aparece la necesidad de un
+scrollytelling distinto, que sea una variante de `Escenario`.
+
+⚠ **La portada NO carga GSAP**, y conviene que siga así: sacarlo subió la nota
+móvil de 98 a 99. En `/manager` GSAP sigue estando, pero por `Alma`.
 
 ⚠ **Las capturas del juego NO van de fondo a sangre.** El fondo de Terrasol es
 una foto y aguanta el velo; una captura de interfaz estirada y oscurecida no se
@@ -597,8 +602,8 @@ Cosas que aprendí de Juan en esta sesión y que conviene respetar:
   fundamento, no una lista de opciones.
 - **Le importa el gasto en Higgsfield.** Pedir siempre las opciones baratas
   (`seedance1_5` a 4s/720p = 4,8 créditos; `kling3_0_turbo` a 8s/720p = 12) y
-  avisar cuánto se gastó. Van **~121 créditos usados de 1.050** (las nueve
-  imágenes de agosto costaron 1,35 con `z_image`, a 0,15 cada una).
+  avisar cuánto se gastó. Van **~124 créditos usados de 1.050** (las 25
+  imágenes del 20 de agosto costaron 3,75 con `z_image`, a 0,15 cada una).
 
 - ⚠ **Ojo con lo que dibujan los modelos de imagen.** De las seis primeras del
   arte de Player y Test, **dos salieron con guiños al fútbol americano** —una
@@ -618,7 +623,7 @@ Cosas que aprendí de Juan en esta sesión y que conviene respetar:
 ```bash
 npm run build
 npx astro preview --port 4400
-node scripts/probar.mjs   http://localhost:4400   # 49 funcionales, 6 páginas
+node scripts/probar.mjs   http://localhost:4400   # 53 funcionales, 6 páginas
 node scripts/revisar.mjs  http://localhost:4400   # visual + desbordes + ids
 node scripts/lighthouse.mjs http://localhost:4400 # las cuatro notas
 ```

@@ -2,7 +2,7 @@
  * LAS PRESENTACIONES DE LA PORTADA
  * ================================
  *
- * Un scrollytelling corto por juego: el texto baja a la izquierda y la imagen
+ * Un scrollytelling corto por juego: las imágenes bajan a la derecha y el texto
  * queda clavada a la derecha, cambiando con él. Lo dibuja `Recorrido.astro`,
  * el mismo componente que usa la página del Manager.
  *

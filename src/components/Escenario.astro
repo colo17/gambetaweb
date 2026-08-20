@@ -1,18 +1,16 @@
 ---
 /**
- * EL ESCENARIO — el scrollytelling de la portada
- * ==============================================
+ * EL ESCENARIO — el scrollytelling del sitio
+ * ===========================================
  *
- * ⚑ ES AL REVÉS DE `Recorrido.astro`, Y ESE ES EL PUNTO.
+ * ⚑ ES EL ÚNICO SCROLLYTELLING DEL SITIO: los tres de la portada y los dos de
+ *   /manager. Scrollean las IMÁGENES y queda fijo un PANEL de texto que se
+ *   reescribe solo.
  *
- *   Recorrido (el de /manager):  scrollea el TEXTO,  queda fija la IMAGEN.
- *   Escenario  (el de la portada): scrollean las IMÁGENES, queda fijo un PANEL
- *                                  de texto que se reescribe solo.
- *
- *   Está calcado del scrollytelling de terrasol-web, que es lo que pidió el
- *   dueño. Un panel grande que se va reescribiendo se lee como una película;
- *   una lista de textos que pasan se lee como un documento. La portada quiere
- *   lo primero.
+ *   Está calcado del de terrasol-web (site/assets/js/app.js, data-scrolly), que
+ *   es lo que pidió el dueño. Antes había otro componente, `Recorrido`, que
+ *   hacía lo inverso —scrolleaba el texto y clavaba la imagen— y se usaba en
+ *   /manager; el dueño lo vio al lado de este y pidió unificar. Se borró.
  *
  * ⚑ Y ATRÁS, UNA IMAGEN A SANGRE que cambia con la etapa, pegada a la ventana.
  *
@@ -28,9 +26,9 @@
  *   la convierte en contenedor de scroll y rompe el `sticky` de las dos
  *   columnas de adentro. El recorte del fondo lo hace su propio contenedor.
  *
- * ⚑ NO USA GSAP, a propósito. Es la única animación de scroll de la portada, y
- *   con esto la portada deja de bajar GSAP + ScrollTrigger (~70 KB) para nada.
- *   La cuenta es la misma de Terrasol y entra en veinte líneas.
+ * ⚑ NO USA GSAP, a propósito. La cuenta es la misma de Terrasol y entra en
+ *   veinte líneas. Gracias a eso la portada no baja GSAP + ScrollTrigger
+ *   (~70 KB) para nada; en /manager GSAP sigue estando, pero por `Alma`.
  */
 import type { Etapa } from '@/config/recorrido'
 
@@ -144,6 +142,10 @@ const numeroDe = (i: number) => `${String(i + 1).padStart(2, '0')} / ${total}`
       {
         etapas.map((etapa, indice) => {
           const esArte = etapa.tipo === 'arte'
+          /** Si la etapa trae imágenes extra, el marco se parte en mosaico. */
+          const mosaico = etapa.extra?.length
+            ? [{ imagen: etapa.imagen, pie: etapa.pie }, ...etapa.extra]
+            : null
           return (
             <li
               class="scroll-mt-28 pb-16 opacity-100 transition-opacity duration-500 lg:pb-[16vh] lg:opacity-40"
@@ -184,19 +186,46 @@ const numeroDe = (i: number) => `${String(i + 1).padStart(2, '0')} / ${total}`
                 <div
                   class:list={[
                     'flex aspect-[4/3] items-center justify-center',
-                    esArte ? '' : 'bg-[#070a12] p-2 lg:aspect-auto',
+                    esArte ? '' : 'bg-[#070a12] p-2',
+                    !esArte && !mosaico && 'lg:aspect-auto',
                   ]}
                 >
-                  <img
-                    src={etapa.imagen}
-                    alt={`${etapa.titulo} — ${etapa.pie}`}
-                    loading="lazy"
-                    decoding="async"
-                    class:list={[
-                      'h-full w-full',
-                      esArte ? 'object-cover' : 'object-contain lg:h-auto lg:max-h-[68vh]',
-                    ]}
-                  />
+                  {
+                    mosaico ? (
+                      /*
+                        Cuatro paneles a la vez: la etapa "y mucho más" no es
+                        una pantalla, es un montón de pantallas. Acá sí va
+                        proporción fija, porque la grilla necesita un alto.
+                      */
+                      <div class="grid h-full w-full grid-cols-2 grid-rows-2 gap-1">
+                        {mosaico.slice(0, 4).map((item) => (
+                          <div class="relative overflow-hidden rounded bg-[#070a12]">
+                            <img
+                              src={item.imagen}
+                              alt={item.pie}
+                              loading="lazy"
+                              decoding="async"
+                              class="h-full w-full object-cover object-top opacity-90"
+                            />
+                            <span class="absolute inset-x-0 bottom-0 bg-carbon-950/85 px-2 py-1 text-[0.6rem] uppercase tracking-wider text-hueso-400">
+                              {item.pie}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <img
+                        src={etapa.imagen}
+                        alt={`${etapa.titulo} — ${etapa.pie}`}
+                        loading="lazy"
+                        decoding="async"
+                        class:list={[
+                          'h-full w-full',
+                          esArte ? 'object-cover' : 'object-contain lg:h-auto lg:max-h-[68vh]',
+                        ]}
+                      />
+                    )
+                  }
                 </div>
                 <figcaption class="flex items-center justify-between gap-4 border-t border-white/8 bg-carbon-900/90 px-4 py-3">
                   <span class="truncate text-sm text-hueso-300">{etapa.pie}</span>

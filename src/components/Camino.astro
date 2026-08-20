@@ -3,7 +3,9 @@
  * SCROLLYTELLING #2 — "Tu camino en el juego"
  *
  * DOS recorridos: el del club (10 etapas, de la sala vacía a la tabla final) y
- * el de la selección (4). Los dos usan el mismo componente `Recorrido`.
+ * el de la selección (4). Los dos usan `Escenario`, el mismo componente que la
+ * portada: panel de texto fijo que se reescribe, imágenes que scrollean, y una
+ * ilustración a sangre atrás que cambia con la etapa.
  *
  * ⚑ LAS CAPTURAS SON DEL JUEGO DE VERDAD: salen de `npm run capturas`, que
  *   monta las pantallas reales de `cyberfoot-online` con los clubes y
@@ -11,11 +13,13 @@
  *   ilustración, y por eso está marcada.
  */
 
-import Recorrido from './Recorrido.astro'
+import Escenario from './Escenario.astro'
 
 const etapas = [
   {
     id: 'sala',
+    fondo: '/assets/generated/bg-manager-sala-1600.webp',
+    fondoChico: '/assets/generated/bg-manager-sala-900.webp',
     numero: '01',
     titulo: 'Creá la sala e invitá',
     texto:
@@ -25,6 +29,8 @@ const etapas = [
   },
   {
     id: 'editor',
+    fondo: '/assets/generated/bg-camino-editor-1600.webp',
+    fondoChico: '/assets/generated/bg-camino-editor-900.webp',
     numero: '02',
     titulo: 'Cambien lo que quieran',
     texto:
@@ -34,6 +40,8 @@ const etapas = [
   },
   {
     id: 'reparto',
+    fondo: '/assets/generated/bg-camino-reparto-1600.webp',
+    fondoChico: '/assets/generated/bg-camino-reparto-900.webp',
     numero: '03',
     titulo: 'Repartan los equipos',
     texto:
@@ -43,6 +51,8 @@ const etapas = [
   },
   {
     id: 'escritorio',
+    fondo: '/assets/generated/bg-camino-escritorio-1600.webp',
+    fondoChico: '/assets/generated/bg-camino-escritorio-900.webp',
     numero: '04',
     titulo: 'Administrá tu plantel',
     texto:
@@ -52,6 +62,8 @@ const etapas = [
   },
   {
     id: 'mercado',
+    fondo: '/assets/generated/bg-manager-mercado-1600.webp',
+    fondoChico: '/assets/generated/bg-manager-mercado-900.webp',
     numero: '05',
     titulo: 'Peleá el mercado de pases',
     texto:
@@ -61,6 +73,8 @@ const etapas = [
   },
   {
     id: 'equipo',
+    fondo: '/assets/generated/bg-manager-equipo-1600.webp',
+    fondoChico: '/assets/generated/bg-manager-equipo-900.webp',
     numero: '06',
     titulo: 'Armá tu equipo',
     texto:
@@ -70,6 +84,8 @@ const etapas = [
   },
   {
     id: 'partido',
+    fondo: '/assets/generated/bg-manager-partido-1600.webp',
+    fondoChico: '/assets/generated/bg-manager-partido-900.webp',
     numero: '07',
     titulo: 'Jugá la fecha en vivo',
     texto:
@@ -79,6 +95,8 @@ const etapas = [
   },
   {
     id: 'planilla',
+    fondo: '/assets/generated/bg-camino-planilla-1600.webp',
+    fondoChico: '/assets/generated/bg-camino-planilla-900.webp',
     numero: '08',
     titulo: 'Leé la planilla',
     texto:
@@ -88,6 +106,8 @@ const etapas = [
   },
   {
     id: 'tabla',
+    fondo: '/assets/generated/bg-manager-tabla-1600.webp',
+    fondoChico: '/assets/generated/bg-manager-tabla-900.webp',
     numero: '09',
     titulo: 'Y así hasta el final',
     texto:
@@ -97,6 +117,8 @@ const etapas = [
   },
   {
     id: 'mas',
+    fondo: '/assets/generated/bg-camino-mas-1600.webp',
+    fondoChico: '/assets/generated/bg-camino-mas-900.webp',
     numero: '10',
     titulo: 'Y mucho más',
     texto:
@@ -119,6 +141,8 @@ const etapas = [
 const etapasSeleccion = [
   {
     id: 'sel-elegir',
+    fondo: '/assets/generated/bg-sel-elegir-1600.webp',
+    fondoChico: '/assets/generated/bg-sel-elegir-900.webp',
     numero: '01',
     titulo: 'Te ofrecen tres',
     texto:
@@ -128,6 +152,8 @@ const etapasSeleccion = [
   },
   {
     id: 'sel-armar',
+    fondo: '/assets/generated/bg-sel-armar-1600.webp',
+    fondoChico: '/assets/generated/bg-sel-armar-900.webp',
     numero: '02',
     titulo: 'Armá los 23',
     texto:
@@ -137,6 +163,8 @@ const etapasSeleccion = [
   },
   {
     id: 'sel-plantel',
+    fondo: '/assets/generated/bg-sel-plantel-1600.webp',
+    fondoChico: '/assets/generated/bg-sel-plantel-900.webp',
     numero: '03',
     titulo: 'Dirigila como a tu club',
     texto:
@@ -146,6 +174,8 @@ const etapasSeleccion = [
   },
   {
     id: 'sel-mundial',
+    fondo: '/assets/generated/bg-mundial-1600.webp',
+    fondoChico: '/assets/generated/bg-mundial-900.webp',
     numero: '04',
     titulo: 'Y después, el Mundial',
     texto:
@@ -162,28 +192,18 @@ const etapasSeleccion = [
   class="relative isolate grano scroll-mt-24 border-t border-white/5 bg-carbon-950 py-24 md:py-32"
 >
   {/*
-    ⚑ ESTA SECCIÓN NO LLEVA FONDO, Y ES A PROPÓSITO.
+    ⚑ EL FONDO ES EL DEL ESCENARIO, Y NO SE DIBUJA ACÁ.
 
-    Se probaron cuatro y las cuatro se veían raras:
+    Durante meses esta sección no llevó fondo, porque se probaron cuatro y las
+    cuatro se veían raras (está contado en CONTEXTO §8). Lo que destrabó el
+    problema no fue un quinto fondo: fue cambiar QUÉ va de fondo. Ahora cada
+    etapa tiene su propia ilustración, hecha para ir a sangre, y la captura del
+    juego —que sigue siendo el punto— se muestra nítida y entera en su marco.
 
-      1. una foto estirada al alto del bloque — más de 10.000px de largo, salía
-         deformada;
-      2. un video con los fotogramas atados al scroll — dejó de deformarse pero
-         seguía tosco: una foto oscura y ruidosa atenuada da manchones;
-      3. un fondo dibujado por recorrido — dos costuras: franjas oscuras a los
-         costados (vivía dentro de `.contenedor`) y un corte horizontal al pasar
-         de un bloque al otro;
-      4. una sola capa a sangre con líneas de cal en SVG — sin costuras, pero
-         las líneas recortadas se leían como rayas sueltas, no como una cancha.
-
-    La quinta es no poner nada. El carbón liso es lo que usan Manager y Juegos,
-    así que además queda coherente, y las capturas del juego —que son el punto
-    de la sección— quedan como lo único que se mira. El grano ya viene de la
-    clase `grano` de la sección.
-
-    ⚠ Si alguna vez se vuelve a intentar: el fondo NUNCA va dentro de
-      `.contenedor` (deja franjas a los costados) y nada de degradés verticales
-      pegados a la ventana (dibujan bandas fijas que no se mueven con el texto).
+    ⚠ Las dos reglas que quedaron de aquellos intentos siguen valiendo, y
+      `Escenario` las respeta: el fondo NUNCA va dentro de `.contenedor` (deja
+      franjas a los costados) y nada de degradés pegados a la ventana que no se
+      muevan con el texto.
   */}
   <div class="contenedor">
     <header class="mx-auto mb-16 max-w-2xl text-center md:mb-24">
@@ -195,11 +215,13 @@ const etapasSeleccion = [
         Todas las pantallas son capturas del juego funcionando, no maquetas.
       </p>
     </header>
+  </div>
 
-    {/* ---- RECORRIDO 1: EL CLUB -------------------------------------- */}
-    <Recorrido etapas={etapas} />
+  {/* ---- RECORRIDO 1: EL CLUB ---------------------------------------- */}
+  <Escenario etapas={etapas} juego="El club" />
 
-    {/* ---- RECORRIDO 2: LA SELECCIÓN --------------------------------- */}
+  {/* ---- RECORRIDO 2: LA SELECCIÓN ----------------------------------- */}
+  <div class="contenedor">
     <div class="linea-cal my-20 md:my-28"></div>
 
     <header class="mx-auto mb-16 max-w-2xl text-center md:mb-24">
@@ -209,7 +231,7 @@ const etapasSeleccion = [
         <span class="texto-degrade">dirigí a tu selección</span>
       </h2>
     </header>
-
-    <Recorrido etapas={etapasSeleccion} />
   </div>
+
+  <Escenario etapas={etapasSeleccion} juego="La selección" />
 </section>
