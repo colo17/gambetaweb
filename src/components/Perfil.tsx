@@ -51,6 +51,8 @@ export default function Perfil({ juegos }: Props) {
   const [etapas, setEtapas] = useState<EtapaEntrenador[]>([])
   const [cargandoDatos, setCargandoDatos] = useState(false)
 
+  /** ¿Esta persona llegó por el link del mail de recuperar contraseña? */
+  const [recuperando, setRecuperando] = useState(false)
   const [modo, setModo] = useState<Modo>('entrar')
   const [email, setEmail] = useState('')
   const [clave, setClave] = useState('')
@@ -77,7 +79,18 @@ export default function Perfil({ juegos }: Props) {
         setSesion(usuario ? { id: usuario.id, email: usuario.email ?? null } : null)
         setArrancando(false)
 
-        const { data: escucha } = supabase.auth.onAuthStateChange((_evento: string, sesionNueva: any) => {
+        const { data: escucha } = supabase.auth.onAuthStateChange((evento: string, sesionNueva: any) => {
+          /**
+           * ⚑ `PASSWORD_RECOVERY` LLEGA CON SESIÓN ABIERTA, y por eso hay que
+           *   atajarlo antes.
+           *
+           * Cuando alguien entra por el link del mail, Supabase abre una sesión
+           * temporal. Si no marcáramos nada, la isla lo trataría como a
+           * cualquiera que entró bien y le mostraría su perfil — cuando lo que
+           * esa persona vino a hacer es justamente poner una contraseña nueva,
+           * porque no se la acuerda.
+           */
+          if (evento === 'PASSWORD_RECOVERY') setRecuperando(true)
           const u = sesionNueva?.user ?? null
           setSesion(u ? { id: u.id, email: u.email ?? null } : null)
         })
@@ -197,6 +210,40 @@ export default function Perfil({ juegos }: Props) {
     [email, clave, nombre, modo]
   )
 
+  /** La contraseña nueva, para el que llegó por el mail de recuperación. */
+  const guardarClaveNueva = useCallback(
+    async (evento: React.FormEvent) => {
+      evento.preventDefault()
+      setAviso(null)
+
+      if (clave.length < 6) {
+        setAviso({ texto: 'La contraseña tiene que tener al menos 6 caracteres.', bien: false })
+        return
+      }
+
+      setEnviando(true)
+      try {
+        const supabase = await clienteCuenta()
+        const { error } = await supabase.auth.updateUser({ password: clave })
+        if (error) throw error
+        setClave('')
+        setRecuperando(false)
+        /**
+         * ⚠ SE LIMPIA EL HASH DE LA URL. Ahí quedó el token del mail: si la
+         *   persona comparte o guarda ese link, comparte una llave de su cuenta.
+         *   Va con `replaceState` para no dejarlo tampoco en el historial.
+         */
+        window.history.replaceState(null, '', window.location.pathname)
+        setAviso({ texto: 'Listo, contraseña cambiada. Ya estás adentro.', bien: true })
+      } catch (error: any) {
+        setAviso({ texto: decirElError(error), bien: false })
+      } finally {
+        setEnviando(false)
+      }
+    },
+    [clave]
+  )
+
   const salir = useCallback(async () => {
     const supabase = await clienteCuenta()
     await supabase.auth.signOut()
@@ -228,6 +275,57 @@ export default function Perfil({ juegos }: Props) {
         <p className="text-sm text-hueso-500" role="status" aria-live="polite">
           Buscando tu sesión…
         </p>
+      </div>
+    )
+  }
+
+  // --- Llegó por el mail de recuperar la contraseña ------------------------
+  //
+  // ⚠ VA ANTES DEL CORTE DE "no entraste", y no después: en este momento la
+  //   persona SÍ tiene sesión —Supabase se la abrió con el token del mail—, así
+  //   que si esto fuera más abajo nunca se mostraría y le aparecería su perfil
+  //   en vez del formulario que vino a completar.
+
+  if (recuperando) {
+    return (
+      <div className="panel mx-auto max-w-md p-6 md:p-8">
+        <h2 className="text-2xl">Poné una contraseña nueva</h2>
+        <p className="mt-2 text-sm text-hueso-400">
+          Entraste por el link que te mandamos al mail. Elegí una nueva y listo.
+        </p>
+
+        <form className="mt-6 space-y-4" onSubmit={guardarClaveNueva} noValidate>
+          <label className="block">
+            <span className="mb-2 block text-sm font-medium text-hueso-200">Contraseña nueva</span>
+            <input
+              type="password"
+              value={clave}
+              onChange={(e) => setClave(e.target.value)}
+              required
+              autoComplete="new-password"
+              autoFocus
+              className="w-full rounded-lg border border-white/12 bg-carbon-900/80 px-4 py-3 text-hueso-100 focus:border-cesped-500 focus:outline-none"
+            />
+          </label>
+
+          <button
+            type="submit"
+            className="boton boton-primario w-full justify-center"
+            disabled={enviando}
+          >
+            {enviando ? 'Guardando…' : 'Guardar la contraseña'}
+          </button>
+
+          {aviso && (
+            <p
+              role="status"
+              aria-live="polite"
+              className={`text-sm ${aviso.bien ? 'text-cesped-300' : 'text-red-300'}`}
+            >
+              {aviso.texto}
+            </p>
+          )}
+        </form>
       </div>
     )
   }

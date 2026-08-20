@@ -80,8 +80,20 @@ export function clienteCuenta() {
         auth: {
           persistSession: true,
           autoRefreshToken: true,
-          // El sitio no recibe callbacks de OAuth: no hay nada que leer de la URL.
-          detectSessionInUrl: false,
+          /**
+           * ⚠ EN `true`, Y HACE FALTA.
+           *
+           * Estaba en `false` con el argumento de que el sitio no recibe
+           * callbacks de OAuth. Es cierto, pero **el de recuperar la contraseña
+           * sí es un callback**: el mail lleva a `/perfil` con el token en el
+           * hash de la URL, y con esto apagado el token se ignoraba y la
+           * persona caía en el login sin que pasara nada.
+           *
+           * Prendido, el cliente lee el token, abre una sesión temporal y
+           * dispara `PASSWORD_RECOVERY`, que es lo que la isla escucha para
+           * mostrar el formulario de contraseña nueva.
+           */
+          detectSessionInUrl: true,
           storageKey: 'gambeta-web-auth',
         },
       })
