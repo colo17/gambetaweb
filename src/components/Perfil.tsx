@@ -169,9 +169,26 @@ export default function Perfil({ juegos }: Props) {
           const { error } = await supabase.auth.signUp({
             email: correo,
             password: clave,
-            // ⚑ El mismo campo que usa el juego: de acá sale `display_name` en
-            //   `profiles`, porque el trigger `handle_new_user` lo lee de ahí.
-            options: { data: { display_name: nombre.trim() || correo.split('@')[0] } },
+            options: {
+              // ⚑ El mismo campo que usa el juego: de acá sale `display_name` en
+              //   `profiles`, porque el trigger `handle_new_user` lo lee de ahí.
+              data: { display_name: nombre.trim() || correo.split('@')[0] },
+              /**
+               * ⚠ EL MAIL DE CONFIRMACIÓN TAMBIÉN NECESITA SABER A DÓNDE VOLVER.
+               *
+               * Sin esto cae en la **Site URL** del proyecto, que es una sola y
+               * la comparten el juego y la web. Hoy vale `http://localhost:3000`,
+               * o sea que al que se registraba acá le llegaba un link a una
+               * máquina de desarrollo ajena.
+               *
+               * ⚑ LA REGLA, para no volver a pisar esto: **la web nunca depende
+               *   de la Site URL.** Cada vez que Supabase mande un mail por algo
+               *   que pidió este sitio, se le dice explícitamente a dónde
+               *   vuelve. Así la Site URL puede valer lo que el juego necesite,
+               *   sin que nos importe.
+               */
+              emailRedirectTo: `${window.location.origin}/perfil`,
+            },
           })
           if (error) throw error
           setClave('')
