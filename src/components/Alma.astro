@@ -7,26 +7,26 @@
  * con los once acomodándose. Es la única parte del sitio que no explica el
  * juego: cuenta por qué uno lo juega.
  *
- * ⚑ USA `Escenario`, COMO TODO EL RESTO DEL SITIO. Lo que en los demás bloques
- *   es una captura o una ilustración, acá es la pizarra: lo que cambia al
- *   scrollear no es una foto, es **cómo están parados los once**.
+ * ⚑ USA `Escenario`, COMO TODO EL RESTO DEL SITIO, pero en su modo "algo
+ *   clavado": el panel de texto se reescribe igual que en los demás bloques, y
+ *   donde ellos hacen pasar imágenes acá hay **una sola pizarra** en la que se
+ *   mueven los once.
  *
- * ⚠ ANTES ERA UNA ANIMACIÓN DE GSAP Y SE ROMPIÓ. Había una sola pizarra clavada
- *   y una línea de tiempo con `scrub` atada a la sección (`start: 'top top'`,
- *   `end: 'bottom bottom'`). Eso depende de que la sección mida cierto alto, y
- *   cuando el layout cambió la ventana se achicó tanto que el recorrido quedó
- *   en nada: **las fichas dejaron de moverse**. El dueño lo reportó mirando el
- *   sitio de verdad.
+ * ⚠ ANTES ERA UNA ANIMACIÓN DE GSAP Y SE ROMPIÓ. Una línea de tiempo con
+ *   `scrub` atada a la sección (`start: 'top top'`, `end: 'bottom bottom'`)
+ *   depende de que la sección mida cierto alto; cuando el layout cambió, la
+ *   ventana se achicó tanto que el recorrido quedó en nada y **las fichas
+ *   dejaron de moverse**, sin error y sin aviso. Lo reportó el dueño.
  *
- *   La lección no fue "arreglar el trigger": fue que una animación atada al
- *   alto de una sección se rompe callada cada vez que alguien toca el layout.
- *   Con una pizarra por etapa no hay nada que sincronizar. Y las fichas igual
- *   se mueven —cabecean dos píxeles, en CSS— así que la cancha nunca está
- *   muerta.
+ * ⚠ Y HUBO UN INTENTO INTERMEDIO QUE TAMBIÉN SE BAJÓ: cuatro pizarras que
+ *   scrolleaban como si fueran fotos, una por etapa. *"No quiero las 4 fotos de
+ *   la pizarra, quiero que solo aparezca 1 y las fichas se vayan moviendo"*.
+ *   El punto de esta sección es ver a los once moverse.
  *
  * ⚑ Y CON ESTO `/manager` DEJÓ DE CARGAR GSAP: era el último que lo usaba.
  */
 import Escenario from './Escenario.astro'
+import Pizarra from './Pizarra.astro'
 
 const momentos = [
   {
@@ -36,7 +36,6 @@ const momentos = [
     texto:
       'Once nombres y una flecha. Nadie te vio hacerlo, no salió en ningún lado, y sin embargo ahí empezó todo: en una pizarra, decidiendo quién juega y quién mira.',
     imagen: '',
-    pizarra: '4-2-3-1',
     pie: 'La pizarra',
   },
   {
@@ -46,7 +45,6 @@ const momentos = [
     texto:
       'El pibe de 17 o el veterano que ya no corre. Vender al 9 para pagar sueldos. Aguantar al hincha que quiere ganar hoy. Un manager es eso: elegir sabiendo que vas a estar solo si sale mal.',
     imagen: '',
-    pizarra: '4-4-2',
     pie: 'La semana',
   },
   {
@@ -56,7 +54,6 @@ const momentos = [
     texto:
       'Ahí ya no tocás nada. Mirás. Te agarrás la cabeza en el córner en contra, gritás un gol que decidiste el martes, y entendés que un cambio a los 70 puede valer una temporada entera.',
     imagen: '',
-    pizarra: '4-3-3',
     pie: 'El partido',
   },
   {
@@ -66,7 +63,6 @@ const momentos = [
     texto:
       'Los que dan la vuelta son ellos. Vos mirás desde el costado, con las manos en los bolsillos, sabiendo exactamente cuánto hay tuyo adentro de eso.',
     imagen: '',
-    pizarra: 'festejo',
     pie: 'La gloria',
   },
 ]
@@ -98,5 +94,11 @@ const momentos = [
     </header>
   </div>
 
-  <Escenario etapas={momentos} juego="El alma" />
+  {/*
+    ⚑ LA PIZARRA VA POR EL SLOT `fijo`: es UNA sola, clavada al costado, y lo
+      que cambia con el scroll son las fichas. Ver `Pizarra.astro`.
+  */}
+  <Escenario etapas={momentos} juego="El alma">
+    <Pizarra slot="fijo" formaciones={['4-2-3-1', '4-4-2', '4-3-3', 'festejo']} />
+  </Escenario>
 </section>

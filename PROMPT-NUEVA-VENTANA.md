@@ -53,14 +53,14 @@ El `README.md` explica *cómo* funciona; esos dos explican *por qué*.
   Hasta el 20 de agosto de 2026 era una sola página.
 - Lighthouse: **98–100 en las seis**, en teléfono y en escritorio, y 100 en
   accesibilidad, buenas prácticas y SEO.
-- `npm run probar` → 57 de 57 verificaciones funcionales.
+- `npm run probar` → 59 de 59 verificaciones funcionales.
 
 ## Cómo verificar (siempre antes de decir que algo está listo)
 
 ```bash
 npm run build
 npx astro preview --port 4400
-node scripts/probar.mjs     http://localhost:4400   # 57 funcionales, 6 páginas
+node scripts/probar.mjs     http://localhost:4400   # 59 funcionales, 6 páginas
 node scripts/revisar.mjs    http://localhost:4400   # visual + desbordes + alt
 node scripts/lighthouse.mjs http://localhost:4400   # las cuatro notas
 ```

@@ -70,7 +70,7 @@ Todo verde y desplegable:
 
 Accesibilidad, buenas prácticas y SEO: **100 en las seis**.
 
-- `npm run probar` → 57 de 57 verificaciones funcionales, sobre las seis páginas.
+- `npm run probar` → 59 de 59 verificaciones funcionales, sobre las seis páginas.
 - `npm run revisar` → sin desbordes, sin imágenes rotas, un solo `h1` por página,
   sin ids repetidos. Mira cada página a 1440, 390 y **430px**.
 - `npm run build` → sin errores.
@@ -214,6 +214,25 @@ pasó a `Escenario` el 20 de agosto. Sacarlo de la portada le subió la nota mó
 de 98 a 99. Si algo pide una animación de scroll, fijate primero si `Escenario`
 no lo resuelve.
 
+### ⚑ EL MODO "ALGO CLAVADO" DEL ESCENARIO
+
+`Escenario` tiene un slot `fijo`. Con el slot puesto, la columna derecha deja de
+hacer pasar imágenes y muestra **una sola cosa, clavada**, mientras los pasos se
+vuelven altura —lo único que le da recorrido al scroll—. Lo usa el bloque del
+alma con la pizarra.
+
+Quien va en el slot se entera de la etapa por el atributo
+`data-escenario-activo` que el escenario escribe en el bloque. **Una sola cuenta
+de "qué etapa manda", en un solo lugar**: la pieza clavada no mira el scroll.
+
+⚠ **En el teléfono el envoltorio del slot desaparece** (`display: contents`), y
+hace falta: un `sticky` se agarra de su padre, y dentro de un envoltorio que
+mide lo mismo que él no se pega a nada y se va de pantalla al primer scroll.
+
+⚠ **Y ahí va opaco y a todo el ancho.** Queda clavado arriba con los textos
+pasándole por debajo: con fondo traslúcido se leían las dos cosas superpuestas,
+y angosto el texto asomaba por los costados.
+
 ### ⚠ POR QUÉ SE MURIÓ LA PIZARRA DEL ALMA, Y QUÉ SE APRENDIÓ
 
 `Alma` tenía **una** pizarra clavada y una línea de tiempo de GSAP con `scrub`
@@ -223,9 +242,19 @@ la sección mida cierto alto**. Al reacomodar el layout esa ventana se achicó y
 el recorrido quedó en nada — las fichas se congelaron, sin error, sin aviso. Lo
 reportó el dueño mirando el sitio.
 
-Ahora hay **una pizarra por etapa** (`Pizarra.astro`) y lo que cambia la
-formación es el scroll, igual que en los demás escenarios cambia la imagen. No
-queda nada que sincronizar con el alto de nada.
+Ahora hay **UNA sola pizarra** (`Pizarra.astro`), clavada, y lo que se mueve son
+las fichas: el escenario dice qué etapa manda y la pizarra acomoda a los once
+con una transición de CSS. No queda nada que sincronizar con el alto de nada.
+
+⚠ **HUBO UN ARREGLO INTERMEDIO QUE TAMBIÉN SE BAJÓ**: cuatro pizarras que
+scrolleaban como si fueran fotos, una por etapa. *"No quiero las 4 fotos de la
+pizarra, quiero que solo aparezca 1 y las fichas se vayan moviendo"*. El punto
+de esa sección es ver a los once moverse.
+
+⚠ **La posición de cada ficha va en la propiedad CSS `transform`, no en el
+atributo del SVG**: las transiciones de CSS no animan atributos, así que con
+`transform="translate(…)"` las fichas saltaban de una formación a la otra en vez
+de viajar.
 
 ⚑ La lección no es "arreglar el trigger": **una animación atada al alto de una
 sección se rompe callada cada vez que alguien toca el layout.** Y `probar.mjs`

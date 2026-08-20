@@ -31,8 +31,6 @@
  *   (~70 KB) para nada; en /manager GSAP sigue estando, pero por `Alma`.
  */
 import type { Etapa } from '@/config/recorrido'
-import Pizarra from './Pizarra.astro'
-import { FORMACIONES } from '@/config/formaciones'
 
 interface Props {
   etapas: Etapa[]
@@ -43,6 +41,25 @@ interface Props {
 const { etapas, juego } = Astro.props
 const total = String(etapas.length).padStart(2, '0')
 const numeroDe = (i: number) => `${String(i + 1).padStart(2, '0')} / ${total}`
+
+/**
+ * ⚑ EL MODO "UNA SOLA COSA CLAVADA".
+ *
+ * Por defecto la columna derecha scrollea una imagen por etapa. Pero el bloque
+ * del alma no cambia de imagen: cambia **lo que pasa adentro de una sola
+ * pizarra**. Para eso, quien usa el componente le pasa ese algo por el slot
+ * `fijo`:
+ *
+ *     <Escenario etapas={momentos} juego="El alma">
+ *       <Pizarra slot="fijo" formaciones={[…]} />
+ *     </Escenario>
+ *
+ * Con el slot puesto, las etapas dejan de dibujar su figura y pasan a ser
+ * altura —lo que le da recorrido al scroll— y la columna derecha muestra una
+ * sola cosa, clavada. El resto —el panel de texto, los puntos, la cuenta de qué
+ * etapa manda— es idéntico.
+ */
+const hayFijo = Astro.slots.has('fijo')
 ---
 
 <div class="escenario relative" data-escenario>
@@ -154,7 +171,43 @@ const numeroDe = (i: number) => `${String(i + 1).padStart(2, '0')} / ${total}`
     </div>
 
     {/* ---- Los pasos, que scrollean ----------------------------------- */}
-    <ol class="min-w-0 lg:pt-[18vh] lg:pb-[34vh]">
+    <div class="relative min-w-0">
+      {
+        hayFijo && (
+          /*
+            ⚠ EN ESCRITORIO VA ABSOLUTO ENCIMA DE LA COLUMNA, con un "sticky"
+              adentro. El alto de la columna lo ponen los pasos; esta capa lo
+              copia con "inset-0" y clava su contenido mientras dura. Es el
+              mismo truco que usa el fondo a sangre de este componente.
+
+            ⚠ EN EL TELÉFONO EL ENVOLTORIO DESAPARECE, con "display: contents",
+              y hace falta. Un "sticky" se agarra de SU PADRE: dentro de un
+              envoltorio que mide lo mismo que él no se pega a nada y se va de
+              pantalla al primer scroll — se veía sólo una tira de la cancha
+              arriba de todo. Sin envoltorio, el padre pasa a ser la columna
+              entera y ahí sí se queda mientras pasan los textos.
+
+            ⚠ Y EN EL TELÉFONO VA EN EL FLUJO, NO FLOTANDO. Puesta encima, la
+              pizarra tapaba los párrafos por el medio. Acá ocupa su lugar
+              arriba y el texto le pasa por debajo, que es lo que hace un
+              scrollytelling.
+          */
+          <div class="contents lg:pointer-events-none lg:absolute lg:inset-0 lg:block">
+            <div
+              class="sticky top-[4.5rem] z-10 mb-10 flex justify-center lg:pointer-events-auto lg:top-28 lg:mb-0 lg:h-[calc(100svh-7rem)] lg:items-center lg:justify-start"
+            >
+              <slot name="fijo" />
+            </div>
+          </div>
+        )
+      }
+
+      <ol
+        class:list={[
+          'min-w-0',
+          hayFijo ? 'lg:pt-[10vh]' : 'lg:pt-[18vh] lg:pb-[34vh]',
+        ]}
+      >
       {
         etapas.map((etapa, indice) => {
           const esArte = etapa.tipo === 'arte'
@@ -164,7 +217,12 @@ const numeroDe = (i: number) => `${String(i + 1).padStart(2, '0')} / ${total}`
             : null
           return (
             <li
-              class="scroll-mt-28 pb-16 opacity-100 transition-opacity duration-500 lg:pb-[16vh] lg:opacity-40"
+              class:list={[
+                'scroll-mt-28 pb-16 opacity-100 transition-opacity duration-500 lg:opacity-40',
+                // Con algo clavado, los pasos son ALTURA: es lo único que le da
+                // recorrido al scroll, porque en escritorio no muestran nada.
+                hayFijo ? 'lg:h-[78vh] lg:pb-0' : 'lg:pb-[16vh]',
+              ]}
               data-paso={indice}
               data-etapa={etapa.id}
             >
@@ -184,6 +242,7 @@ const numeroDe = (i: number) => `${String(i + 1).padStart(2, '0')} / ${total}`
                 <p class="mt-3 text-hueso-400" data-paso-texto>{etapa.texto}</p>
               </div>
 
+              {!hayFijo && (
               <figure class="panel overflow-hidden">
                 {/*
                   ⚠ EN ESCRITORIO LA CAPTURA DEFINE SU PROPIO ALTO.
@@ -202,16 +261,13 @@ const numeroDe = (i: number) => `${String(i + 1).padStart(2, '0')} / ${total}`
                 <div
                   class:list={[
                     'flex items-center justify-center',
-                    // La pizarra trae su propia proporción: la cancha es alta.
-                    !etapa.pizarra && 'aspect-[4/3]',
-                    esArte || etapa.pizarra ? '' : 'bg-[#070a12] p-2',
-                    !esArte && !mosaico && !etapa.pizarra && 'lg:aspect-auto',
+                    'aspect-[4/3]',
+                    esArte ? '' : 'bg-[#070a12] p-2',
+                    !esArte && !mosaico && 'lg:aspect-auto',
                   ]}
                 >
                   {
-                    etapa.pizarra ? (
-                      <Pizarra formacion={etapa.pizarra} />
-                    ) : mosaico ? (
+                    mosaico ? (
                       /*
                         Cuatro paneles a la vez: la etapa "y mucho más" no es
                         una pantalla, es un montón de pantallas. Acá sí va
@@ -258,26 +314,22 @@ const numeroDe = (i: number) => `${String(i + 1).padStart(2, '0')} / ${total}`
                   <span
                     class:list={[
                       'shrink-0 rounded-full px-2 py-0.5 text-[0.6rem] font-semibold uppercase tracking-[0.12em]',
-                      esArte || etapa.pizarra
+                      esArte
                         ? 'bg-white/5 text-hueso-400 ring-1 ring-white/10'
                         : 'bg-cesped-500/15 text-cesped-300 ring-1 ring-cesped-500/30',
                     ]}
                   >
-                    {
-                      etapa.pizarra
-                        ? (FORMACIONES[etapa.pizarra]?.etiqueta ?? 'Pizarra')
-                        : esArte
-                          ? 'Arte'
-                          : 'Captura real'
-                    }
+                    {esArte ? 'Arte' : 'Captura real'}
                   </span>
                 </figcaption>
               </figure>
+              )}
             </li>
           )
         })
       }
-    </ol>
+      </ol>
+    </div>
   </div>
 </div>
 
@@ -365,6 +417,16 @@ const numeroDe = (i: number) => `${String(i + 1).padStart(2, '0')} / ${total}`
     const pintar = (indice: number) => {
       if (indice === actual) return
       actual = indice
+
+      /**
+       * ⚑ SE ANUNCIA LA ETAPA EN EL BLOQUE.
+       *
+       * Lo que va en el slot `fijo` —hoy la pizarra del alma— se cuelga de este
+       * atributo para saber qué mostrar. Así esa pieza no tiene que mirar el
+       * scroll por su cuenta: la cuenta de cuál etapa manda se hace UNA vez,
+       * acá, y no puede quedar desfasada del texto.
+       */
+      bloque.dataset.escenarioActivo = String(indice)
 
       fondos.forEach((fondo, i) => {
         fondo.style.opacity = i === indice ? '1' : '0'

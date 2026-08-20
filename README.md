@@ -32,7 +32,7 @@ Queda en <http://localhost:4321>.
 | `npm run assets` | Reprocesa logo, fondos, íconos y la imagen de compartir |
 | `npm run capturas` | Vuelve a fotografiar las pantallas del juego |
 | `npm run harness` | Levanta sólo el harness de capturas, para mirarlo a ojo |
-| `npm run probar` | Prueba funcional de las seis páginas (57 verificaciones) |
+| `npm run probar` | Prueba funcional de las seis páginas (59 verificaciones) |
 | `npm run revisar` | Revisión visual: cada página a 1440, 390 y 430px + chequeos |
 
 Las tres últimas piden que haya un servidor levantado; `probar` y `revisar`

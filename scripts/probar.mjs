@@ -298,24 +298,67 @@ verificar(
 verificar('el alma sigue estando', (await pagina.locator('#alma').count()) === 1)
 
 /**
- * La pizarra del alma: cuatro canchas, once fichas cada una, y las fichas
- * MOVIÉNDOSE. La versión anterior usaba una línea de tiempo de GSAP atada al
- * alto de la sección y se rompió callada al cambiar el layout: las fichas
- * quedaron quietas y lo tuvo que reportar el dueño. Esta prueba existe para que
- * no vuelva a pasar sin que nadie se entere.
+ * LA PIZARRA DEL ALMA.
+ *
+ * ⚠ ESTAS PRUEBAS EXISTEN POR DOS ERRORES QUE TUVO QUE REPORTAR EL DUEÑO:
+ *
+ *   1. la versión con GSAP se rompió al cambiar el layout y las fichas
+ *      quedaron congeladas, sin error ni aviso;
+ *   2. el arreglo se pasó de largo y puso CUATRO pizarras scrolleando como si
+ *      fueran fotos, cuando lo que tiene que haber es UNA con los once
+ *      moviéndose adentro.
+ *
+ * Por eso se verifica que haya una sola, y que las fichas cambien de lugar
+ * de verdad al pasar de una etapa a la otra.
  */
-verificar('la pizarra dibuja las cuatro formaciones', (await pagina.locator('#alma svg[role="img"]').count()) === 4)
 verificar(
-  'y cada una tiene sus once',
-  (await pagina.locator('#alma .ficha').count()) === 44,
+  'hay UNA sola pizarra',
+  (await pagina.locator('[data-pizarra]').count()) === 1,
+  `${await pagina.locator('[data-pizarra]').count()}`
+)
+verificar(
+  'con sus once fichas',
+  (await pagina.locator('#alma .ficha').count()) === 11,
   `${await pagina.locator('#alma .ficha').count()} fichas`
 )
 
-const posicionFicha = () =>
-  pagina.locator('#alma .ficha').first().evaluate((el) => getComputedStyle(el).translate)
-const fichaAntes = await posicionFicha()
+const dondeEsta = (ficha) =>
+  pagina.locator(`#alma [data-ficha="${ficha}"]`).evaluate((el) => getComputedStyle(el).transform)
+const laEtiqueta = () => pagina.locator('#alma [data-pizarra-etiqueta]').textContent()
+
+await pagina.locator('[data-etapa="alma-pizarra"]').scrollIntoViewIfNeeded()
+await pagina.waitForTimeout(1500)
+const formacionUno = await laEtiqueta()
+const fichaUno = await dondeEsta(9)
+
+await pagina.locator('[data-etapa="alma-partido"]').scrollIntoViewIfNeeded()
+await pagina.waitForTimeout(1600)
+const formacionDos = await laEtiqueta()
+const fichaDos = await dondeEsta(9)
+
+verificar(
+  'las fichas se mueven al cambiar de etapa',
+  fichaUno !== fichaDos,
+  `${fichaUno} → ${fichaDos}`
+)
+verificar(
+  'y la formación anunciada cambia con ellas',
+  formacionUno !== formacionDos,
+  `${formacionUno?.trim()} → ${formacionDos?.trim()}`
+)
+
+// El cabeceo permanente: aunque no se scrollee, la cancha no está muerta.
+const cabeceoAntes = await pagina
+  .locator('#alma .ficha')
+  .first()
+  .evaluate((el) => getComputedStyle(el).translate)
 await pagina.waitForTimeout(1100)
-verificar('las fichas de la pizarra se mueven', fichaAntes !== (await posicionFicha()), fichaAntes)
+verificar(
+  'y cabecean aunque no se scrollee',
+  cabeceoAntes !==
+    (await pagina.locator('#alma .ficha').first().evaluate((el) => getComputedStyle(el).translate)),
+  cabeceoAntes
+)
 
 verificar('y /manager dejó de cargar GSAP', !(await pagina.content()).includes('gsap'))
 

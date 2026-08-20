@@ -3,64 +3,83 @@
  * LA PIZARRA TÁCTICA
  * ==================
  *
- * La cancha vista de arriba con los once acomodados en una formación. Es la
- * misma que dibujaba `Alma.astro`, sacada afuera para que `Escenario` pueda
- * ponerla donde antes iba una captura del juego.
+ * UNA cancha vista de arriba, con los once reacomodándose entre formaciones a
+ * medida que se scrollea. Va clavada al costado del escenario del alma, en el
+ * lugar donde los demás bloques ponen una imagen.
  *
- * ⚑ POR QUÉ DEJÓ DE SER UNA ANIMACIÓN. Antes había UNA pizarra clavada y una
- *   línea de tiempo de GSAP que reacomodaba las fichas al scrollear. Dependía
- *   de que la sección midiera cierto alto —`start: 'top top'`, `end: 'bottom
- *   bottom'`, con `scrub`—, y cuando el layout cambió esa ventana se achicó y
- *   el recorrido quedó en nada: **las fichas dejaron de moverse**. El dueño lo
- *   reportó.
+ * ⚑ ES UNA SOLA PIZARRA, NO UNA POR ETAPA. Hubo una versión con cuatro canchas
+ *   que scrolleaban como si fueran fotos, y el dueño la bajó: *"no quiero las 4
+ *   fotos de la pizarra, quiero que solo aparezca 1 y las fichas se vayan
+ *   moviendo con el scrollytelling"*. Tenía razón: el punto de esta sección es
+ *   ver a los once moverse, no ver cuatro dibujos distintos.
  *
- *   Ahora hay una pizarra por etapa, cada una con su formación, y lo que
- *   cambia la formación es el scroll —igual que en los demás escenarios cambia
- *   la imagen—. No hay línea de tiempo que se pueda desincronizar del layout.
+ * ⚑ CÓMO SE ENTERA DE QUÉ ETAPA VA. `Escenario` le escribe al bloque un
+ *   `data-escenario-activo` con el índice, y acá se escucha ese atributo. Así
+ *   la pizarra no necesita saber nada de scroll: el escenario ya hizo esa
+ *   cuenta para el panel de texto y esto se cuelga de la misma.
  *
- * ⚑ Y LAS FICHAS SE MUEVEN SIEMPRE, un poquito. Es un cabeceo de dos píxeles,
- *   con un desfasaje distinto por ficha, que las hace parecer once personas
- *   moviéndose en la cancha en vez de once puntos pegados. Es CSS puro: no hay
- *   nada que se pueda romper.
+ * ⚠ LA POSICIÓN VA EN LA PROPIEDAD CSS `transform`, NO EN EL ATRIBUTO del SVG.
+ *   Las transiciones de CSS no animan atributos: con `transform="translate(…)"`
+ *   las fichas saltaban de una formación a la otra. Con la propiedad, el
+ *   navegador interpola solo.
+ *
+ * ⚠ Y EL CABECEO VA EN `translate`, que es otra propiedad. Si el vaivén también
+ *   usara `transform` pisaría la posición y las once se irían al centro. Las
+ *   dos se componen sin pelearse.
+ *
+ * ⚠ NADA DE GSAP. La versión vieja usaba una línea de tiempo con `scrub` atada
+ *   al alto de la sección, y cuando el layout cambió el recorrido quedó en nada
+ *   y las fichas se congelaron sin dar error. Está contado en CONTEXTO §5.
  */
 import { FORMACIONES } from '@/config/formaciones'
 
 interface Props {
-  /** La clave de `FORMACIONES`: '4-2-3-1', '4-4-2', '4-3-3' o 'festejo'. */
-  formacion: string
+  /** Las claves de `FORMACIONES`, una por etapa del escenario. */
+  formaciones: string[]
 }
 
-const { formacion } = Astro.props
-const puesta = FORMACIONES[formacion] ?? FORMACIONES['4-2-3-1']
+const { formaciones } = Astro.props
+const primera = FORMACIONES[formaciones[0]] ?? FORMACIONES['4-2-3-1']
+
+/** Todas las posiciones, para que el script las tenga sin recalcular nada. */
+const guion = formaciones.map((clave) => {
+  const f = FORMACIONES[clave] ?? FORMACIONES['4-2-3-1']
+  return { etiqueta: f.etiqueta, jugadores: f.jugadores, pelota: f.pelota }
+})
 ---
 
 {/*
-  ⚠ SIN FONDO PROPIO. La primera versión traía el suyo y, como el marco de
-    afuera (`.panel`) tiene otro tono, se veían dos bandas a los costados de la
-    cancha. El fondo lo pone el marco; acá va sólo la cancha.
+  ⚠ EN EL TELÉFONO VA CHICA. Clavada arriba, ocupa pantalla todo el rato que
+    dura la sección: a tamaño de escritorio se comía la mitad del teléfono.
 
-  ⚠ Y CON ANCHO MÁXIMO. La cancha es alta (400×600): estirada al ancho del
-    marco quedaba enorme y empujaba el pie de la figura fuera de pantalla.
+  ⚠ Y EN EL TELÉFONO VA OPACA Y A TODO EL ANCHO. Ahí queda clavada arriba y los
+    textos le pasan por debajo, así que:
+
+      · con el alfa de `panel` se leían las dos cosas superpuestas → un fondo
+        opaco debajo del degradé, que no le cambia el aspecto;
+      · angosta y centrada, el texto asomaba por los dos costados → ocupa todo
+        el ancho de la columna, con la cancha centrada adentro.
 */}
-<div class="mx-auto w-full max-w-[19rem] p-4 md:p-5">
+<div
+  class="panel pizarra-solida w-full p-3 lg:w-auto lg:p-5"
+  data-pizarra
+  data-guion={JSON.stringify(guion)}
+>
   <div class="mb-3 flex items-center justify-between">
     <p class="rotulo">La pizarra</p>
-    <p class="font-display text-sm tracking-widest text-hueso-500">{puesta.etiqueta}</p>
+    <p class="font-display text-sm tracking-widest text-hueso-500" data-pizarra-etiqueta>
+      {primera.etiqueta}
+    </p>
   </div>
 
   <svg
     viewBox="0 0 400 600"
-    class="w-full"
+    class="mx-auto block w-full max-w-[11rem] lg:max-w-[17rem]"
     role="img"
-    aria-label={`Cancha con los once acomodados en ${puesta.etiqueta}`}
+    aria-label="Cancha con los once acomodándose en distintas formaciones"
   >
     <defs>
-      {/*
-        ⚠ EL `id` DEL DEGRADÉ LLEVA EL NOMBRE DE LA FORMACIÓN. Hay cuatro
-          pizarras en la misma página y un `id` repetido hace que las cuatro
-          usen el degradé de la primera — o ninguno, según el navegador.
-      */}
-      <linearGradient id={`cesped-${formacion}`} x1="0" y1="0" x2="0" y2="1">
+      <linearGradient id="cesped-pizarra" x1="0" y1="0" x2="0" y2="1">
         <stop offset="0%" stop-color="#0b6e4f" stop-opacity="0.30" />
         <stop offset="100%" stop-color="#06382a" stop-opacity="0.14" />
       </linearGradient>
@@ -68,7 +87,7 @@ const puesta = FORMACIONES[formacion] ?? FORMACIONES['4-2-3-1']
 
     <!-- Las líneas de cal -->
     <g stroke="#e7e4dc" stroke-opacity="0.20" fill="none" stroke-width="1.5">
-      <rect x="14" y="14" width="372" height="572" rx="3" fill={`url(#cesped-${formacion})`} />
+      <rect x="14" y="14" width="372" height="572" rx="3" fill="url(#cesped-pizarra)" />
       <line x1="14" y1="300" x2="386" y2="300" />
       <circle cx="200" cy="300" r="56" />
       <circle cx="200" cy="300" r="2.5" fill="#e7e4dc" fill-opacity="0.3" stroke="none" />
@@ -81,11 +100,11 @@ const puesta = FORMACIONES[formacion] ?? FORMACIONES['4-2-3-1']
     <!-- Los once -->
     <g>
       {
-        puesta.jugadores.map(([x, y], i) => (
+        primera.jugadores.map(([x, y], i) => (
           <g
             class="ficha"
-            transform={`translate(${x} ${y})`}
-            style={`animation-delay:-${(i * 0.37).toFixed(2)}s;animation-duration:${(3 + (i % 4) * 0.4).toFixed(1)}s`}
+            data-ficha={i}
+            style={`transform:translate(${x}px,${y}px);animation-delay:-${(i * 0.37).toFixed(2)}s;animation-duration:${(3 + (i % 4) * 0.4).toFixed(1)}s`}
           >
             <circle r="13" fill="#12b76a" fill-opacity="0.16" />
             <circle r="8" fill="#12b76a" stroke="#050607" stroke-width="1.5" />
@@ -94,24 +113,38 @@ const puesta = FORMACIONES[formacion] ?? FORMACIONES['4-2-3-1']
       }
     </g>
 
-    <circle cx={puesta.pelota[0]} cy={puesta.pelota[1]} r="5" fill="#f59e0b" />
+    <circle
+      r="5"
+      fill="#f59e0b"
+      class="pelota"
+      data-pelota
+      style={`transform:translate(${primera.pelota[0]}px,${primera.pelota[1]}px)`}
+    />
   </svg>
 </div>
 
 <style>
   /**
-   * El cabeceo de cada ficha.
-   *
-   * ⚠ VA EN UN `<g>` QUE YA TIENE `transform`, así que la animación NO puede
-   *   usar `transform`: lo pisaría y las once fichas saltarían al centro. Se
-   *   anima `translate`, que es una propiedad aparte y se compone encima del
-   *   `transform` del atributo.
+   * El fondo opaco va DEBAJO del degradé de `.panel`, no en su lugar: se suman
+   * como dos capas (`background-color` + `background-image`) y el panel
+   * conserva su aspecto.
    */
+  .pizarra-solida {
+    background-color: var(--color-carbon-950);
+  }
+
   .ficha {
+    /* El cambio de formación. El escalonado sale del `transition-delay` que le
+       pone el script, para que no se muevan las once a la vez. */
+    transition: transform 1.1s cubic-bezier(0.16, 1, 0.3, 1);
     animation-name: cabecear;
     animation-timing-function: ease-in-out;
     animation-iteration-count: infinite;
     animation-direction: alternate;
+  }
+
+  .pelota {
+    transition: transform 1.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   @keyframes cabecear {
@@ -120,8 +153,65 @@ const puesta = FORMACIONES[formacion] ?? FORMACIONES['4-2-3-1']
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .ficha {
+    .ficha,
+    .pelota {
+      transition: none;
       animation: none;
     }
   }
 </style>
+
+<script>
+  /**
+   * Mueve los once cuando el escenario cambia de etapa.
+   *
+   * ⚑ NO MIRA EL SCROLL. Se cuelga del `data-escenario-activo` que `Escenario`
+   *   ya escribe para su panel de texto: una sola cuenta, un solo lugar donde
+   *   puede estar mal.
+   */
+  interface Puesta {
+    etiqueta: string
+    jugadores: [number, number][]
+    pelota: [number, number]
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-pizarra]').forEach((pizarra) => {
+    const guion: Puesta[] = JSON.parse(pizarra.dataset.guion ?? '[]')
+    const fichas = [...pizarra.querySelectorAll<SVGGElement>('[data-ficha]')]
+    const pelota = pizarra.querySelector<SVGCircleElement>('[data-pelota]')
+    const etiqueta = pizarra.querySelector<HTMLElement>('[data-pizarra-etiqueta]')
+    const bloque = pizarra.closest<HTMLElement>('[data-escenario]')
+    if (!guion.length || !fichas.length || !bloque) return
+
+    let actual = -1
+
+    const acomodar = (indice: number) => {
+      const puesta = guion[indice]
+      if (!puesta || indice === actual) return
+      actual = indice
+
+      fichas.forEach((ficha, i) => {
+        const destino = puesta.jugadores[i]
+        if (!destino) return
+        /**
+         * Un escalonado chico y desordenado: se ven como once personas
+         * acomodándose, no como una grilla que se desplaza de una pieza.
+         */
+        ficha.style.transitionDelay = `${((i * 7) % 11) * 0.045}s`
+        ficha.style.transform = `translate(${destino[0]}px,${destino[1]}px)`
+      })
+
+      if (pelota) pelota.style.transform = `translate(${puesta.pelota[0]}px,${puesta.pelota[1]}px)`
+      if (etiqueta) etiqueta.textContent = puesta.etiqueta
+    }
+
+    const leer = () => acomodar(Number(bloque.dataset.escenarioActivo ?? 0))
+
+    // El escenario reescribe el atributo en cada cambio de etapa.
+    new MutationObserver(leer).observe(bloque, {
+      attributes: true,
+      attributeFilter: ['data-escenario-activo'],
+    })
+    leer()
+  })
+</script>
