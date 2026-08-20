@@ -7,11 +7,22 @@ import tailwindcss from '@tailwindcss/vite'
 /**
  * Config del sitio de Gambeta.
  *
- * `site` no es decorativo: de ahí salen las URLs absolutas del sitemap y de las
- * etiquetas Open Graph. Si el dominio cambia, se cambia acá y nada más.
+ * `site` no es decorativo: de ahí salen el canonical, las URLs del sitemap y las
+ * de Open Graph. Si apunta a un dominio que no existe, **el link compartido sale
+ * sin imagen de vista previa**, porque la etiqueta `og:image` queda apuntando a
+ * un servidor que no contesta.
+ *
+ * ⚑ POR ESO SE PUEDE PISAR CON UNA VARIABLE. Mientras gambetagame.com no esté
+ *   apuntado, el sitio vive en `gambetaweb.vercel.app` y conviene que las
+ *   vistas previas funcionen ahí:
+ *
+ *       PUBLIC_SITIO=https://gambetaweb.vercel.app
+ *
+ *   El día que el dominio propio esté andando, **se borra esa variable** y todo
+ *   vuelve solo al valor de abajo. No hay nada más que tocar.
  */
 export default defineConfig({
-  site: 'https://gambetagame.com',
+  site: process.env.PUBLIC_SITIO?.trim() || 'https://gambetagame.com',
 
   integrations: [react(), sitemap()],
 
