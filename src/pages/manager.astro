@@ -1,0 +1,53 @@
+---
+/**
+ * LA PÁGINA DE GAMBETA MANAGER GAME
+ *
+ * Todo lo que hay hecho del juego: qué es, los modos, el recorrido completo de
+ * una temporada —diez etapas del club y cuatro de la selección, con capturas
+ * reales— y el cierre emocional.
+ *
+ * ⚑ LO QUE NO ESTÁ ACÁ: las ligas, los planteles y las figuras. Eso es del
+ *   mundo, no del Manager, y vive en `/gambeta`. Los tres juegos lo comparten.
+ */
+import Base from '@/layouts/Base.astro'
+import Header from '@/components/Header.astro'
+import Footer from '@/components/Footer.astro'
+import ManagerIntro from '@/components/ManagerIntro.astro'
+import Camino from '@/components/Camino.astro'
+import Alma from '@/components/Alma.astro'
+import Avisame from '@/components/Avisame.astro'
+import { juegoPorId } from '@/config/games'
+import numeros from '@/data/numeros.json'
+
+const juego = juegoPorId('manager')
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'VideoGame',
+  name: juego.nombre,
+  description: juego.descripcion,
+  inLanguage: 'es',
+  genre: ['Sports', 'Simulation', 'Manager'],
+  gamePlatform: 'Web browser',
+  applicationCategory: 'Game',
+  playMode: ['MultiPlayer', 'SinglePlayer'],
+  numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1 },
+  publisher: { '@type': 'Organization', name: 'Gambeta' },
+  ...(juego.url ? { url: juego.url } : {}),
+}
+---
+
+<Base
+  titulo="Gambeta Manager Game — Dirigí tu club y peleá la liga con tus amigos"
+  descripcion={`Un manager de fútbol por turnos en el navegador: sala con código, mercado de pases, táctica y la fecha en vivo. Con ${numeros.ligas} ligas y ${numeros.clubes.toLocaleString('es-AR')} clubes de verdad.`}
+  schema={schema}
+>
+  <Header />
+  <main id="contenido">
+    <ManagerIntro />
+    <Camino />
+    <Alma />
+    <Avisame />
+  </main>
+  <Footer />
+</Base>

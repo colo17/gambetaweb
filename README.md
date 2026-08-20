@@ -32,46 +32,86 @@ Queda en <http://localhost:4321>.
 | `npm run assets` | Reprocesa logo, fondos, íconos y la imagen de compartir |
 | `npm run capturas` | Vuelve a fotografiar las pantallas del juego |
 | `npm run harness` | Levanta sólo el harness de capturas, para mirarlo a ojo |
-| `npm run probar` | Prueba funcional del sitio (19 verificaciones) |
-| `npm run revisar` | Revisión visual: capturas a distintas alturas + chequeos |
+| `npm run probar` | Prueba funcional de las seis páginas (49 verificaciones) |
+| `npm run revisar` | Revisión visual: cada página a 1440, 390 y 430px + chequeos |
 
 Las tres últimas piden que haya un servidor levantado; `probar` y `revisar`
 aceptan la URL como argumento (`node scripts/probar.mjs http://localhost:4400`).
+
+⚠ **Medí siempre contra `astro preview`, nunca contra `dev`**: en desarrollo
+Vite no minifica y la nota de rendimiento no significa nada.
 
 ---
 
 ## Stack
 
 - **Astro 7** — el contenido sale en HTML de verdad, que es lo que necesita el SEO.
-- **React 19** — sólo para la isla interactiva (el explorador de ligas).
+- **React 19** — sólo para las tres islas: el explorador de ligas, el buscador de
+  futbolistas y el perfil. Todo lo demás es HTML.
 - **Tailwind CSS 4** — el tema entero vive en `src/styles/global.css`, no hay `tailwind.config`.
-- **GSAP + ScrollTrigger** — los dos scrollytelling.
-- **TypeScript** en la config y la isla.
+- **GSAP + ScrollTrigger** — los scrollytelling (tres en la portada, dos en `/manager`).
+- **Supabase JS** — sólo en `/perfil`, y se descarga sólo si las cuentas están prendidas.
+- **TypeScript** en la config y las islas.
 
-Todo estático: no hay servidor propio ni base de datos.
+Todo estático: **no hay servidor propio ni base de datos**. La página de perfil
+no es una excepción: habla desde el navegador con la base del juego, que ya
+existe.
 
 ---
 
 ## Cómo está organizado
 
+### Las seis páginas
+
+Hasta agosto de 2026 el sitio era **una sola página** con todo adentro. Quedó
+larguísima y se partió. Cada una tiene un trabajo y sólo uno:
+
+| Ruta | Qué hay | Qué NO hay |
+|---|---|---|
+| `/` | El hero y una presentación corta por juego, cada una con su scrollytelling | El detalle de nada: eso vive en las otras |
+| `/gambeta` | El mundo: las 81 ligas, los planteles club por club, las figuras, y el formulario para pedir que sumemos un equipo | Nada de un juego en particular |
+| `/manager` | Todo el Manager: los modos, el recorrido completo de una temporada y el alma | Los datos del catálogo: son del mundo, no del juego |
+| `/player` | Video de fondo y "muy pronto" | Todavía no hay juego que mostrar |
+| `/test` | Ídem | Ídem |
+| `/perfil` | Login y la carrera del entrenador, contra la base del juego | — |
+
+**El detalle se cuenta una sola vez.** Las tres etapas del Player se cuentan en
+la portada y no se repiten en `/player`: el mismo texto en dos URLs se pelea
+consigo mismo en Google.
+
+### Los archivos
+
 ```
 src/
-  config/games.ts        ← EL CATÁLOGO DE JUEGOS. Se agrega un juego acá.
+  config/
+    games.ts             ← EL CATÁLOGO DE JUEGOS. Se agrega un juego acá.
+    presentaciones.ts    ← el scrollytelling de portada de cada juego
+    recorrido.ts         ← la forma de una etapa (la comparten los tres)
+    puestos.ts           ← el vocabulario de puestos, copiado del juego
+  lib/cuenta.ts          ← el cliente de Supabase y los tipos del perfil
   data/*.json            ← generados por `npm run datos`, no editar a mano
   components/
-    Header · Hero
-    Camino               ← scrollytelling #2: "tu camino en el juego" (va 1º)
-    Manager              ← la sección con los datos del juego
-    LigasExplorer.tsx    ← la única isla React
-    Alma                 ← scrollytelling #1: "el alma del manager" (va 3º)
-    Juegos · Avisame · Footer
+    Header · Hero · Footer
+    PresentacionJuego    ← un juego en la portada
+    MundoGambeta         ← la banda de números que va debajo
+    Recorrido            ← EL scrollytelling; se usa cinco veces
+    Camino               ← las 10+4 etapas del Manager
+    Alma                 ← el scrollytelling emocional del Manager
+    ManagerIntro         ← la cabecera de /manager
+    MundoLigas · MundoFiguras
+    LigasExplorer.tsx    ← isla: las 81 ligas y sus clubes
+    PlantelExplorer.tsx  ← isla: los planteles y el buscador de futbolistas
+    Perfil.tsx           ← isla: login y carrera del entrenador
+    ProntoHero           ← la portada de un juego que no salió
+    Juegos · Avisame · SumaTuEquipo
   layouts/Base.astro     ← título, Open Graph, favicon, datos estructurados
-  pages/index.astro
+  pages/                 ← index · gambeta · manager · player · test · perfil · 404
 scripts/                 ← extracción de datos, assets, capturas, pruebas
 harness/                 ← monta los componentes del juego para fotografiarlos
 assets-src/              ← los originales de Higgsfield (no se publican)
 public/
   data/ligas/*.json      ← el detalle de cada liga, se pide bajo demanda
+  data/planteles/*.json  ← el plantel de cada club, por liga, bajo demanda
   assets/generated/      ← lo procesado y optimizado
   assets/screenshots/    ← las capturas del juego
 ```
@@ -80,9 +120,15 @@ public/
 
 ## Agregar un juego nuevo
 
-Se toca **un solo archivo**: `src/config/games.ts`. Se empuja un objeto a
-`JUEGOS` y aparecen solos la card del hub, el enlace del footer y la entrada en
-los datos estructurados de SEO.
+Se tocan **dos archivos**, y ninguna pantalla:
+
+1. `src/config/games.ts` — se empuja un objeto a `JUEGOS` y aparecen solos la
+   card del hub, el ítem del menú, el enlace del footer y la entrada en los
+   datos estructurados de SEO.
+2. `src/config/presentaciones.ts` — su bloque de portada, si va a tener uno.
+
+Y se crea `src/pages/<ruta>.astro`, que para un juego que todavía no salió son
+diez líneas: `ProntoHero` + `Avisame`. Mirá `player.astro`.
 
 ```ts
 {
@@ -95,6 +141,7 @@ los datos estructurados de SEO.
   icono: '🥅',
   claves: ['…', '…', '…'],
   acento: 'dorado',           // cesped | dorado | hueso
+  ruta: '/penales',           // su página dentro de este sitio
   url: null,                  // o la URL si ya se juega
 }
 ```
@@ -122,13 +169,50 @@ mandar de verdad:
 PUBLIC_FORM_ENDPOINT=https://formspree.io/f/xxxxxxx
 ```
 
-Sirve cualquier servicio que acepte un POST con JSON.
+Sirve cualquier servicio que acepte un POST con JSON. **Los dos formularios del
+sitio** —"avisame cuando salga" y "sumá tu equipo"— pegan ahí, y se distinguen
+por el campo `origen` del cuerpo.
+
+---
+
+## ⚑ Prender las cuentas (la página de perfil)
+
+`/perfil` se conecta a **la misma base que el juego**: quien se registró jugando
+entra acá con lo mismo y ve su carrera. No hay backend propio ni padrón aparte;
+la isla habla con Supabase desde el navegador.
+
+```
+PUBLIC_SUPABASE_URL=https://xxxxxxxx.supabase.co
+PUBLIC_SUPABASE_ANON_KEY=eyJhbGci…
+```
+
+La clave *anon* es pública por diseño —viaja en el bundle de cualquier app de
+Supabase, incluida la del juego— y no da acceso a nada por sí sola: lo que se
+puede leer lo decide la RLS de la base. **La clave de servicio no va acá ni en
+ningún lado de este repo.**
+
+Mientras las dos variables no estén, la página muestra un cartel que dice que
+las cuentas abren con el juego, y el paquete de Supabase **ni se descarga**: se
+importa en forma dinámica.
+
+De dónde salen los números del perfil (todo del juego, migración `0144`):
+
+| Función de la base | Qué trae |
+|---|---|
+| `coach_profile(uuid)` | nombre, ID de entrenador, fecha de alta, partidos, ganados/empatados/perdidos, puntos, títulos, clubes, salas y temporadas |
+| `coach_spells(uuid)` | una fila por etapa al frente de un club |
+
+⚠ **No hay "tiempo jugado"**: el juego no registra minutos de sesión en ningún
+lado. En su lugar se muestran las **temporadas dirigidas**, que es lo que sí
+lleva. Y no se usan `career_points` / `career_titles` / `career_matches` de la
+tabla `profiles`: existen desde la migración 0003 y **nadie las escribió nunca**,
+así que están en cero para todo el mundo.
 
 ---
 
 ## Los datos del juego
 
-La sección Manager no tiene datos inventados: todo sale del catálogo real de
+La página del mundo no tiene datos inventados: todo sale del catálogo real de
 `cyberfoot-online`, que `scripts/extract-catalog.mjs` lee **sin escribir nada**
 en esa carpeta.
 
@@ -143,8 +227,30 @@ replica la cadena de migraciones en orden:
 | `0119`–`0122` | la fuerza y las habilidades definitivas |
 | `0124` | los doce puestos finos y la pierna hábil |
 | `0126` | el techo (potencial) |
+| `0142` | River Plate de Montevideo y Nacionel suben de nivel; +4 al plantel de River |
+| `0149` | ningún club con menos de 21 jugadores, y ninguno sin arquero |
 
-Resultado: **81 ligas · 1.339 clubes · 37.160 futbolistas**, media mundial 64,6.
+Resultado: **81 ligas · 1.339 clubes · 37.329 futbolistas**, media mundial 64,6.
+
+**Qué se miró y se dejó afuera**, de la 0127 a la 0155: la `0133` cambia el país
+de quince jugadores (dobles nacionalidades del Mundial) y no mueve un número del
+sitio; la `0138` y la `0154` marcan quién está en venta, que es estado de una
+partida y no catálogo; y la `0143` recalcula el **valor de mercado** del plantel
+de River con una función de Postgres. De esa última sale una regla: **el sitio no
+publica el valor de mercado de un futbolista**, porque replicar esa fórmula acá
+sería una tercera copia de algo que el propio juego vigila con una prueba para
+que no se separe de la segunda.
+
+### Los planteles
+
+`npm run datos` escribe además `public/data/planteles/<liga>.json`: 81 archivos
+de unos 60 KB con el plantel completo de cada club. Es lo que come el buscador de
+futbolistas de `/gambeta`.
+
+⚑ **Por liga, y no todo junto ni uno por club.** Todo junto son varios megas que
+nadie mira; uno por club serían 1.339 archivos y veinte pedidos para abrir una
+liga. Por liga se baja uno solo y adentro la búsqueda es instantánea — el mismo
+trato que ya hacía el explorador de ligas.
 
 ### ⚠ Los nombres están cambiados a propósito
 
@@ -247,20 +353,21 @@ la imagen de compartir.
 | `bg-mundial.png` | `z_image` (16:9) | *Cinematic wide shot of a packed football stadium at night during a world tournament final, thousands of tiny lights and flags of many nations blurred in the stands, confetti drifting through floodlight beams, deep emerald pitch below, warm gold and green colour grade, epic premium video game key art, moody and atmospheric, no readable text, no letters, no logos, no faces in focus* |
 | `hero-1` … `hero-5` (los cinco clips del hero) | `seedance1_5` (4 s, 720p) y `kling3_0_turbo` (8 s, 1080p) para el nº 2 | El micro llegando al estadio bajo la lluvia · el partido de noche desde la tribuna · el entretiempo en el vestuario · el partido desde el césped · la vuelta olímpica con la copa. Los prompts completos están en el historial del proyecto; todos piden *documentary realism, natural human motion, no morphing, no readable text, no logos*. |
 
-### ⚠ Los fondos de los scrollytelling son video, y el scroll los mueve
+### ⚠ Los scrollytelling NO llevan fondo, y es a propósito
 
-No son loops: el video **no se reproduce nunca**. `Camino.astro` le fija
-`currentTime` en proporción a cuánto se bajó dentro del bloque, así que los
-fotogramas acompañan la lectura. Tres cosas que hacen falta para que ande:
+Esta sección decía lo contrario hasta agosto de 2026 y estaba vieja: el fondo de
+video se probó, no anduvo, y se sacó. **Se probaron cuatro y las cuatro se veían
+raras** — una foto estirada al alto del bloque, un video con los fotogramas
+atados al scroll, un fondo dibujado por recorrido y una capa a sangre con líneas
+de cal en SVG. La quinta versión fue no poner nada, y ahí cerró.
 
-- **Encodeados con `-g 5`** (un keyframe cada cinco cuadros). Con el GOP por
-  defecto, saltar a un punto cualquiera obliga a esperar al próximo keyframe y
-  el fondo se ve a los tirones.
-- **El video va en un `sticky` de un alto de pantalla**, no estirado al alto del
-  bloque. Un bloque de diez etapas mide más de 10.000px: puesto a `h-full`,
-  `object-cover` lo agranda unas doce veces y sólo se ve un pedazo borroso.
-- **Sólo se cargan en pantallas grandes**, igual que el del hero, y el póster
-  es un WebP chico. Con pósters en JPG de 87 KB la nota móvil se caía a 85.
+Está contado con detalle en [CONTEXTO.md](CONTEXTO.md) §8. Las dos reglas que
+salieron de ahí, por si alguien lo vuelve a intentar:
+
+- **El fondo nunca va dentro de `.contenedor`** — deja franjas oscuras a los costados.
+- **Nada de degradés verticales pegados a la ventana** — dibujan bandas fijas que
+  no se mueven con el texto, y en el corte entre un bloque y el siguiente se ve
+  una línea dura.
 
 ### Teléfono: tres cosas que estaban mal y cómo quedaron
 
@@ -371,26 +478,43 @@ ffmpeg -i assets-src/video-pizarra.mp4 -an -vf "scale=1280:-2" \
 Lighthouse sobre el build de producción (`npm run build && npm run preview`,
 después `node scripts/lighthouse.mjs http://localhost:4400`):
 
-| | Rendimiento | Accesibilidad | Buenas prácticas | SEO |
-|---|---|---|---|---|
-| Escritorio | **99** | **100** | **100** | **100** |
-| Teléfono | **91** | **100** | **100** | **100** |
+| Página | Teléfono | Escritorio |
+|---|---|---|
+| `/` | **98** | **100** |
+| `/gambeta` | **98** | **100** |
+| `/manager` | **98** | **100** |
+| `/player` y `/test` | **99** | **99** |
+| `/perfil` | **99** | **100** |
 
-Cuatro decisiones que sostienen esos números, y que conviene no deshacer sin medir:
+Accesibilidad, buenas prácticas y SEO dan **100 en las seis**.
+
+Decisiones que sostienen esos números, y que conviene no deshacer sin medir:
 
 - **Las capturas del juego van en WebP, no en PNG.** En PNG las dieciocho
-  sumaban 2,3 MB y la nota móvil se caía a 78; en WebP son 880 KB y vuelve a 91.
-
-- **En teléfono no se carga el video.** Ni las etiquetas `<source>` están en el
-  HTML: las agrega el script del hero, y sólo en pantallas grandes, sin
-  `prefers-reduced-motion` y sin ahorro de datos. El fondo es un WebP de 31 KB.
-  Esto solo bajó el peso móvil de 1.137 KB a 537 KB.
-- **El CSS va incrustado** (`inlineStylesheets: 'always'`). El LCP de la página
-  es un bloque de texto, así que lo único que lo demora es el CSS que bloquea el
-  render; un `<link>` cuesta un viaje entero de red en 4G.
-- **El detalle de las 81 ligas no viaja en el HTML.** Sólo la primera viene
-  precargada; las demás se piden a `/data/ligas/<slug>.json` cuando alguien las
-  abre.
+  sumaban 2,3 MB y la nota móvil se caía a 78; en WebP son 880 KB.
+- **Ninguna imagen de un scrollytelling va `eager`.** Es la que más caro salió:
+  las dos primeras de cada columna fija iban adelantadas, y al pasar de uno a
+  cinco recorridos eso se volvieron diez descargas tempranas. En el teléfono esa
+  columna ni se muestra —vive en un `hidden lg:block`— pero **`display:none` no
+  evita que el navegador baje una imagen `eager`**. Medido: la portada cayó de 92
+  a 87 en móvil y el LCP se fue a 3,9 s. Con todas perezosas: **98 y 2,3 s**.
+- **El preload del hero va SÓLO en la portada.** Es una prop del layout
+  (`precargarHero`), no algo que se hereda: en cualquier otra página serían 60 KB
+  compitiendo por el ancho de banda del primer segundo para una imagen que no
+  está.
+- **Los huecos de las islas se reservan con el alto que van a ocupar.** El perfil
+  usa `client:only`, así que el servidor no dibuja nada y la página crecía de
+  golpe al hidratar: el CLS móvil daba 0,169 (en rojo). Con un `min-h` medido,
+  0,001.
+- **El CSS va incrustado** (`inlineStylesheets: 'always'`). Con seis páginas esto
+  ahora repite ~12 KB comprimidos por página en vez de cachear uno solo; se dejó
+  igual porque medido da 98–100 en todas, y sacarlo agrega un viaje que bloquea
+  el render en cada primera visita. Está anotado en `astro.config.mjs`.
+- **Ni las 81 ligas ni los planteles viajan en el HTML.** El detalle de la
+  primera liga sí (11 KB, y le sirve a Google); el resto se pide bajo demanda a
+  `/data/ligas/<slug>.json` y `/data/planteles/<slug>.json`.
+- **El paquete de Supabase se importa en forma dinámica.** Sin cuentas
+  configuradas no se descarga; con cuentas, sólo en `/perfil`.
 
 ---
 
@@ -439,7 +563,9 @@ Igual, con `netlify.toml`. Build `npm run build`, publish `dist`.
 ## Notas
 
 - El sitio es oscuro siempre, a propósito: no hay modo claro.
-- `prefers-reduced-motion` apaga los dos scrollytelling y el video. Los textos
+- `prefers-reduced-motion` apaga los scrollytelling y los videos. Los textos
   quedan uno abajo del otro y se lee igual.
-- El explorador de ligas es la única parte que necesita JavaScript. Sin JS, la
-  Prenier League igual se ve completa porque viene renderizada en el HTML.
+- **Sin JavaScript el sitio se lee entero**, salvo tres cosas: el buscador de
+  futbolistas, el perfil y el cambio de liga del explorador. La Prenier League
+  igual se ve completa, porque viene renderizada en el HTML.
+- Hay un `404.astro`: Vercel lo sirve solo para cualquier ruta que no exista.

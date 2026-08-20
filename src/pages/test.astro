@@ -1,0 +1,42 @@
+---
+/**
+ * LA PÁGINA DE GAMBETA TEST
+ *
+ * Igual que `/player`: todavía no hay juego. Video de fondo, qué va a ser, y el
+ * formulario. El detalle se cuenta una sola vez, en la portada.
+ */
+import Base from '@/layouts/Base.astro'
+import Header from '@/components/Header.astro'
+import Footer from '@/components/Footer.astro'
+import ProntoHero from '@/components/ProntoHero.astro'
+import Avisame from '@/components/Avisame.astro'
+import { juegoPorId } from '@/config/games'
+
+const juego = juegoPorId('test')
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'VideoGame',
+  name: juego.nombre,
+  description: juego.descripcion,
+  inLanguage: 'es',
+  genre: ['Sports', 'Trivia', 'Casual'],
+  gamePlatform: 'Web browser',
+  applicationCategory: 'Game',
+  publisher: { '@type': 'Organization', name: 'Gambeta' },
+}
+---
+
+<Base
+  titulo="Gambeta Test — ¿Cuánto fútbol sabés de verdad?"
+  descripcion="Trivia rápida de fútbol para discutir en el grupo: formaciones, transferencias, camisetas y finales. Duelos y tabla entre amigos. Muy pronto en Gambeta."
+  schema={schema}
+>
+  <Header />
+  <main id="contenido">
+    {/* El clip 3 es el vestuario: la charla, que es de lo que va el juego. */}
+    <ProntoHero juego={juego} clip={3} poster="/assets/generated/bg-mundial" />
+    <Avisame />
+  </main>
+  <Footer />
+</Base>

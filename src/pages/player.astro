@@ -1,0 +1,44 @@
+---
+/**
+ * LA PÁGINA DE GAMBETA PLAYER GAME
+ *
+ * Todavía no hay juego, así que no hay nada que explicar en detalle: un video
+ * de fondo, qué va a ser, y dónde dejar el mail. Lo que sí se cuenta —las tres
+ * etapas de una carrera— vive en la portada, y repetirlo acá sería el mismo
+ * texto en dos URLs.
+ */
+import Base from '@/layouts/Base.astro'
+import Header from '@/components/Header.astro'
+import Footer from '@/components/Footer.astro'
+import ProntoHero from '@/components/ProntoHero.astro'
+import Avisame from '@/components/Avisame.astro'
+import { juegoPorId } from '@/config/games'
+
+const juego = juegoPorId('player')
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'VideoGame',
+  name: juego.nombre,
+  description: juego.descripcion,
+  inLanguage: 'es',
+  genre: ['Sports', 'Role-Playing', 'Simulation'],
+  gamePlatform: 'Web browser',
+  applicationCategory: 'Game',
+  publisher: { '@type': 'Organization', name: 'Gambeta' },
+}
+---
+
+<Base
+  titulo="Gambeta Player Game — Una carrera. Una sola."
+  descripcion="Del ascenso a la selección, pero desde adentro de la cancha. Elegís un pibe y cada decisión escribe una carrera que no se puede repetir. Muy pronto en Gambeta."
+  schema={schema}
+>
+  <Header />
+  <main id="contenido">
+    {/* El clip 4 es el partido visto desde el césped: es el punto de vista del juego. */}
+    <ProntoHero juego={juego} clip={4} poster="/assets/generated/bg-potrero" />
+    <Avisame />
+  </main>
+  <Footer />
+</Base>

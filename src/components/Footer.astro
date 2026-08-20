@@ -27,13 +27,19 @@ const redes = [
     <div class="grid gap-12 md:grid-cols-[1.4fr_1fr_1fr] md:gap-8">
       <!-- Marca -->
       <div>
-        <a href="#inicio" class="flex items-center gap-2.5" aria-label="Gambeta — inicio">
+        <a href="/" class="flex items-center gap-2.5" aria-label="Gambeta — inicio">
           <img src="/logo.svg" alt="" width="36" height="36" class="h-9 w-9" />
           <span class="font-display text-2xl tracking-wide text-hueso-50">Gambeta</span>
         </a>
+        {/*
+          ⚠ LOS `{' '}` NO SON ADORNO. Astro se come el espacio en blanco que hay
+            al final de una línea cuando la siguiente arranca con una expresión:
+            este párrafo se leía "Un mundo de81 ligas" y "clubes y37.329
+            futbolistas". O va todo en un renglón, o el espacio va explícito.
+        */}
         <p class="mt-5 max-w-sm text-sm leading-relaxed text-hueso-400">
-          Juegos de fútbol hechos en el Río de la Plata. Un mundo de
-          {numeros.ligas} ligas, {numeros.clubes.toLocaleString('es-AR')} clubes y
+          Juegos de fútbol hechos en el Río de la Plata. Un mundo de{' '}
+          {numeros.ligas} ligas, {numeros.clubes.toLocaleString('es-AR')} clubes y{' '}
           {numeros.jugadores.toLocaleString('es-AR')} futbolistas, compartido por todos
           nuestros juegos.
         </p>
@@ -78,7 +84,7 @@ const redes = [
             JUEGOS.map((juego) => (
               <li>
                 <a
-                  href={juego.url ?? '#juegos'}
+                  href={juego.url ?? juego.ruta}
                   class="flex items-center gap-2 text-sm text-hueso-400 transition-colors hover:text-hueso-50"
                   {...(juego.url ? { target: '_blank', rel: 'noopener' } : {})}
                 >

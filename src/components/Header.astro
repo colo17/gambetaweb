@@ -4,8 +4,13 @@
  *
  * Nace transparente sobre el hero y se vuelve sólida al bajar: así el logo
  * respira contra el video y, más abajo, el texto no compite con la foto.
+ *
+ * ⚑ EL MENÚ SON PÁGINAS, NO ANCLAS (ver `games.ts`). Por eso marca cuál está
+ *   abierta: en un sitio de una sola página no hacía falta, en uno de seis sí.
  */
-import { NAVEGACION, CTA_JUGAR } from '@/config/games'
+import { NAVEGACION, CTA_JUGAR, rutaActiva } from '@/config/games'
+
+const aqui = Astro.url.pathname
 ---
 
 <header
@@ -13,22 +18,35 @@ import { NAVEGACION, CTA_JUGAR } from '@/config/games'
   class="fixed inset-x-0 top-0 z-50 transition-[background-color,border-color,backdrop-filter] duration-500"
   data-cabecera
 >
-  <div class="contenedor flex h-16 items-center justify-between gap-6 md:h-20">
-    <a href="#inicio" class="group flex items-center gap-2.5" aria-label="Gambeta — inicio">
+  <div class="contenedor flex h-16 items-center justify-between gap-4 md:h-20 md:gap-6">
+    <a href="/" class="group flex shrink-0 items-center gap-2.5" aria-label="Gambeta — inicio">
       <img src="/logo.svg" alt="" width="36" height="36" class="h-8 w-8 md:h-9 md:w-9" />
       <span class="font-display text-xl tracking-wide text-hueso-50 md:text-2xl">Gambeta</span>
     </a>
 
-    <nav aria-label="Secciones" class="hidden items-center gap-8 lg:flex">
+    <nav aria-label="Secciones" class="hidden items-center gap-6 lg:flex xl:gap-8">
       {
-        NAVEGACION.map((item) => (
-          <a
-            href={item.href}
-            class="relative text-sm font-medium text-hueso-400 transition-colors hover:text-hueso-50"
-          >
-            {item.texto}
-          </a>
-        ))
+        NAVEGACION.map((item) => {
+          const activa = rutaActiva(item.href, aqui)
+          return (
+            <a
+              href={item.href}
+              aria-current={activa ? 'page' : undefined}
+              class:list={[
+                'relative text-sm font-medium transition-colors',
+                activa ? 'text-hueso-50' : 'text-hueso-400 hover:text-hueso-50',
+              ]}
+            >
+              {item.texto}
+              {activa && (
+                <span
+                  class="absolute -bottom-1.5 left-0 h-0.5 w-full rounded-full bg-cesped-500"
+                  aria-hidden="true"
+                />
+              )}
+            </a>
+          )
+        })
       }
     </nav>
 
@@ -62,17 +80,25 @@ import { NAVEGACION, CTA_JUGAR } from '@/config/games'
     class="hidden border-t border-white/10 bg-carbon-950/95 backdrop-blur-xl lg:hidden"
     data-menu
   >
-    <nav aria-label="Secciones" class="contenedor flex flex-col py-3">
+    <nav aria-label="Secciones (menú de teléfono)" class="contenedor flex flex-col py-3">
       {
-        NAVEGACION.map((item) => (
-          <a
-            href={item.href}
-            class="border-b border-white/5 py-3.5 text-base font-medium text-hueso-200 last:border-0"
-            data-cerrar-menu
-          >
-            {item.texto}
-          </a>
-        ))
+        NAVEGACION.map((item) => {
+          const activa = rutaActiva(item.href, aqui)
+          return (
+            <a
+              href={item.href}
+              aria-current={activa ? 'page' : undefined}
+              class:list={[
+                'flex items-center justify-between border-b border-white/5 py-3.5 text-base font-medium last:border-0',
+                activa ? 'text-cesped-300' : 'text-hueso-200',
+              ]}
+              data-cerrar-menu
+            >
+              {item.texto}
+              {activa && <span class="h-1.5 w-1.5 rounded-full bg-cesped-500" aria-hidden="true" />}
+            </a>
+          )
+        })
       }
     </nav>
   </div>

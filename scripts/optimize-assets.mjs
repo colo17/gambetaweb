@@ -143,7 +143,22 @@ async function generarOg() {
   const ANCHO = 1200
   const ALTO = 630
 
-  const fondo = await sharp(join(SRC, 'bg-pizarra.png'))
+  /**
+   * ⚠ EL ORIGINAL DE LA PIZARRA YA NO ESTÁ en `assets-src/`, y la imagen de
+   *   compartir que salió de él sí está en `public/` y anda bien. Sin esta
+   *   guarda, `npm run assets` reventaba entero en este paso y no llegaba a
+   *   procesar ningún fondo nuevo.
+   *
+   *   Si alguna vez hay que rehacer el og.jpg, hay que volver a generar ese
+   *   fondo o apuntar a otro de los que sí están.
+   */
+  const original = join(SRC, 'bg-pizarra.png')
+  if (!existsSync(original)) {
+    console.log('  · og.jpg: falta assets-src/bg-pizarra.png, se deja el que ya está')
+    return
+  }
+
+  const fondo = await sharp(original)
     .resize(ANCHO, ALTO, { fit: 'cover', position: 'centre' })
     .modulate({ brightness: 0.42, saturation: 1.1 })
     .toBuffer()

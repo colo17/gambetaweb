@@ -47,16 +47,20 @@ El `README.md` explica *cómo* funciona; esos dos explican *por qué*.
 - Astro 7 + React 19 + Tailwind 4 + GSAP. Sitio estático, oscuro, mobile-first.
 - En GitHub como `colo17/gambetaweb`, rama `main`, sincronizado.
 - Desplegando en Vercel.
-- Lighthouse: **99 escritorio / 92 teléfono**, y 100 en accesibilidad, buenas
-  prácticas y SEO.
-- `npm run probar` → 19 de 19 verificaciones funcionales.
+- **Son seis páginas**: `/` (portada con un scrollytelling por juego),
+  `/gambeta` (el mundo: ligas, planteles, figuras), `/manager` (todo el Manager),
+  `/player` y `/test` (muy pronto) y `/perfil` (login y carrera del entrenador).
+  Hasta el 20 de agosto de 2026 era una sola página.
+- Lighthouse: **98–100 en las seis**, en teléfono y en escritorio, y 100 en
+  accesibilidad, buenas prácticas y SEO.
+- `npm run probar` → 49 de 49 verificaciones funcionales.
 
 ## Cómo verificar (siempre antes de decir que algo está listo)
 
 ```bash
 npm run build
 npx astro preview --port 4400
-node scripts/probar.mjs     http://localhost:4400   # 19 funcionales
+node scripts/probar.mjs     http://localhost:4400   # 49 funcionales, 6 páginas
 node scripts/revisar.mjs    http://localhost:4400   # visual + desbordes + alt
 node scripts/lighthouse.mjs http://localhost:4400   # las cuatro notas
 ```
@@ -78,19 +82,26 @@ Pro Max: mide 430px, y varios breakpoints "justos" fallaron por eso.
 - **Cuando digo "SOLO MOBILE" es literal**: no toques el escritorio.
 - **Cuidá los créditos de Higgsfield.** Usá siempre la opción más barata que
   sirva (`seedance1_5` a 4s/720p = 4,8 créditos; `kling3_0_turbo` a 8s/720p =
-  12) y avisame cuánto se gastó. Van ~120 usados de 1.050.
+  12) y avisame cuánto se gastó. Van ~121 usados de 1.050.
 - **Mostrame el plan antes de gastar créditos** o antes de un cambio grande de
   estructura.
 - Revisá el trabajo con capturas de verdad antes de decirme que está listo.
 
-## Dos cosas pendientes que conviene tener presentes
+## Cosas pendientes que conviene tener presentes
 
-- **El link al juego es una variable de entorno**, no código: cuando el Manager
-  esté publicado, se define `PUBLIC_URL_MANAGER` en Vercel y todos los CTA
-  cambian solos. Igual `PUBLIC_FORM_ENDPOINT` para el formulario de mails.
-- **Los datos del juego pueden estar desactualizados**: la otra sesión sumó la
-  migración `0128_each_club_carries_its_strength` después de la última
-  extracción. Si vas a tocar la sección Manager, corré `npm run datos` primero.
+Nada de esto es código: son variables de entorno que se definen en Vercel y el
+sitio entero cambia solo.
+
+- **El link al juego**: cuando el Manager esté publicado se define
+  `PUBLIC_URL_MANAGER` y todos los CTA pasan de "Quiero jugar" a "Jugar ahora".
+- **Los formularios**: `PUBLIC_FORM_ENDPOINT` para los dos ("avisame cuando
+  salga" y "sumá tu equipo"). Hoy guardan en el navegador.
+- **Las cuentas**: `PUBLIC_SUPABASE_URL` y `PUBLIC_SUPABASE_ANON_KEY`, los
+  mismos dos valores que usa el juego. **Es lo único que le falta a `/perfil`
+  para funcionar**; hasta entonces muestra un cartel que lo dice.
+- **Los datos del juego** están al día hasta la migración **0155** (20 de
+  agosto). Si la otra sesión sumó más y vas a tocar `/gambeta`, corré
+  `npm run datos` y fijate si hace falta extender la cadena del extractor.
 
 ---
 

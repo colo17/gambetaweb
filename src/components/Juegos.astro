@@ -109,6 +109,14 @@ const ACENTOS = {
                 ))}
               </ul>
 
+              {/*
+                ⚑ LA CARD LLEVA A LA PÁGINA DEL JUEGO, no al formulario.
+
+                Cuando el sitio era uno solo, el único destino posible era el
+                ancla del formulario. Ahora cada juego tiene su página, y ese es
+                el paso natural desde el hub: el que quiere que le avisen tiene
+                el formulario acá abajo, en la misma pantalla.
+              */}
               <div class="relative mt-6 pt-1">
                 {juego.url ? (
                   <a
@@ -120,12 +128,12 @@ const ACENTOS = {
                     Jugar ahora
                   </a>
                 ) : juego.estado === 'live' ? (
-                  <a href="#avisame" class="boton boton-primario w-full !py-3 !text-sm">
-                    Quiero jugar
+                  <a href={juego.ruta} class="boton boton-primario w-full !py-3 !text-sm">
+                    Conocé el Manager
                   </a>
                 ) : (
-                  <a href="#avisame" class="boton boton-secundario w-full !py-3 !text-sm">
-                    Avisame cuando salga
+                  <a href={juego.ruta} class="boton boton-secundario w-full !py-3 !text-sm">
+                    Ver qué se viene
                   </a>
                 )}
               </div>
@@ -135,7 +143,7 @@ const ACENTOS = {
       }
     </div>
 
-    <p id="proximamente" class="mt-8 scroll-mt-32 text-sm text-hueso-500">
+    <p class="mt-8 text-sm text-hueso-500">
       ¿Se te ocurre otro juego de fútbol que te gustaría jugar? Escribinos: los
       dos que vienen salieron de charlas de grupo.
     </p>

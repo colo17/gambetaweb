@@ -3,8 +3,23 @@
  * UN RECORRIDO DE SCROLLYTELLING
  *
  * La columna de texto scrollea y la imagen queda clavada al costado, cambiando
- * a medida que avanza. Se usa dos veces en `Camino.astro`: una para el camino
- * del club y otra para el de la selección.
+ * a medida que avanza.
+ *
+ * Se usa cinco veces en el sitio: tres en la portada (una presentación por
+ * juego) y dos en `/manager` (el camino del club y el de la selección). El
+ * script que lo anima está al final de este mismo archivo y agarra todos los
+ * bloques que haya en la página.
+ *
+ * ⚠ TODAS LAS IMÁGENES VAN `loading="lazy"`, TAMBIÉN LAS PRIMERAS.
+ *
+ * Las dos primeras de la columna fija iban `eager`, y con un solo recorrido en
+ * la página no molestaba. Con cinco pasaron a ser diez descargas tempranas — y
+ * en el teléfono esa columna ni se muestra: vive dentro de un `hidden lg:block`,
+ * pero `display:none` NO evita que el navegador baje una imagen `eager`.
+ * Medido: la nota móvil de la portada cayó de 92 a 87 y el LCP se fue a 3,9 s.
+ *
+ * Ningún recorrido está nunca en la primera pantalla —arriba siempre hay un
+ * hero o una cabecera de alto completo—, así que no hay nada que adelantar.
  *
  * Cada etapa lleva:
  *   imagen   la captura o el arte que se muestra
@@ -12,16 +27,7 @@
  *   extra    imágenes adicionales; si están, el marco se parte en mosaico
  */
 
-export interface Etapa {
-  id: string
-  numero: string
-  titulo: string
-  texto: string
-  imagen: string
-  pie: string
-  tipo?: 'juego' | 'arte'
-  extra?: { imagen: string; pie: string }[]
-}
+import type { Etapa } from '@/config/recorrido'
 
 interface Props {
   etapas: Etapa[]
@@ -86,8 +92,14 @@ const { etapas } = Astro.props
                 etapa.tipo === 'arte' ? '' : 'bg-[#070a12] p-2',
               ]}
             >
+              {/*
+                ⚠ EN EL TELÉFONO VA LA COPIA CHICA cuando existe. El arte pesa
+                  ~120 KB a 1600px y ~50 KB a 900: en un marco de 350px de ancho
+                  la grande no se ve mejor, sólo tarda más. Las capturas del
+                  juego no tienen otra medida, así que ahí cae en la misma.
+              */}
               <img
-                src={etapa.imagen}
+                src={etapa.imagenChica ?? etapa.imagen}
                 alt={`${etapa.titulo} — ${etapa.pie}`}
                 loading="lazy"
                 decoding="async"
@@ -148,7 +160,7 @@ const { etapas } = Astro.props
                       <img
                         src={etapa.imagen}
                         alt={`${etapa.titulo} — ${etapa.pie}`}
-                        loading={indice < 2 ? 'eager' : 'lazy'}
+                        loading="lazy"
                         decoding="async"
                         class:list={[
                           'h-full w-full',
@@ -191,3 +203,68 @@ const { etapas } = Astro.props
   </div>
   </div>
 </div>
+
+<script>
+  import { gsap } from 'gsap'
+  import { ScrollTrigger } from 'gsap/ScrollTrigger'
+
+  gsap.registerPlugin(ScrollTrigger)
+
+  /**
+   * ⚑ HAY VARIOS RECORRIDOS EN LA MISMA PÁGINA —tres en la portada, uno por
+   *   juego, y dos en la del Manager— así que todas las búsquedas van ACOTADAS
+   *   a su bloque. Con un `document.querySelectorAll` suelto, el último pisaba
+   *   a los anteriores: al llegar al segundo se apagaban las imágenes del
+   *   primero y quedaba el marco vacío.
+   *
+   * ⚑ Y EL SCRIPT VIVE ACÁ, en el componente, no en quien lo usa. Astro lo
+   *   empaqueta UNA sola vez por página por más veces que se dibuje el
+   *   componente, y así cualquier página que meta un recorrido lo tiene andando
+   *   sin acordarse de copiar nada.
+   */
+  document.querySelectorAll<HTMLElement>('[data-recorrido]').forEach((bloque) => {
+    const etapas = gsap.utils.toArray<HTMLElement>(bloque.querySelectorAll('[data-etapa]'))
+    const figuras = gsap.utils.toArray<HTMLElement>(bloque.querySelectorAll('[data-camino-figura]'))
+    const progreso = bloque.querySelector<HTMLElement>('[data-camino-progreso]')
+    if (!etapas.length || !figuras.length) return
+
+    /** Deja visible una sola figura. El cambio es un fundido corto. */
+    const mostrar = (indice: number) => {
+      figuras.forEach((figura, i) => {
+        gsap.to(figura, { opacity: i === indice ? 1 : 0, duration: 0.45, ease: 'power2.out' })
+      })
+      etapas.forEach((etapa, i) => {
+        const punto = etapa.querySelector<HTMLElement>('[data-etapa-punto]')
+        if (!punto) return
+        const activo = i === indice
+        punto.classList.toggle('bg-cesped-500', activo)
+        punto.classList.toggle('text-carbon-950', activo)
+        punto.classList.toggle('border-cesped-500', activo)
+        punto.classList.toggle('bg-carbon-900', !activo)
+        punto.classList.toggle('text-cesped-400', !activo)
+      })
+    }
+
+    etapas.forEach((etapa, indice) => {
+      ScrollTrigger.create({
+        trigger: etapa,
+        // El disparo está a media pantalla: la etapa "manda" cuando su texto
+        // está en el centro de la vista, que es donde lo lee la gente.
+        start: 'top 55%',
+        end: 'bottom 55%',
+        onEnter: () => mostrar(indice),
+        onEnterBack: () => mostrar(indice),
+      })
+    })
+
+    mostrar(0)
+
+    if (progreso) {
+      gsap.to(progreso, {
+        width: '100%',
+        ease: 'none',
+        scrollTrigger: { trigger: bloque, start: 'top 60%', end: 'bottom 80%', scrub: 0.5 },
+      })
+    }
+  })
+</script>

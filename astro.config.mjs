@@ -28,8 +28,16 @@ export default defineConfig({
      * Con `auto`, las hojas grandes salen como <link> y en 4G eso cuesta un
      * viaje entero de ida y vuelta antes de poder pintar una letra.
      *
-     * El sitio es una sola página: no hay CSS compartido entre rutas que
-     * convenga cachear aparte, así que incrustar no tiene contra.
+     * ⚠ EL SITIO YA NO ES UNA SOLA PÁGINA, y esto se revisó cuando se partió en
+     *   seis (agosto de 2026). Ahora sí tiene una contra: el CSS se repite en
+     *   cada HTML —unos 12 KB comprimidos por página— en vez de bajarse una vez
+     *   y quedar en caché para las demás.
+     *
+     *   Se dejó igual porque se midió: con el CSS incrustado las seis páginas
+     *   dan entre 98 y 100 de rendimiento, en teléfono y en escritorio. Sacarlo
+     *   agrega un viaje que bloquea el render en CADA primera visita, que es la
+     *   que importa. Si algún día el CSS crece mucho, vale volver a medir con
+     *   `auto` antes de cambiarlo — pero medir, no suponer.
      */
     inlineStylesheets: 'always',
   },

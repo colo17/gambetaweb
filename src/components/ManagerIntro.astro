@@ -1,0 +1,125 @@
+---
+/**
+ * LA CABECERA DE LA PÁGINA DEL MANAGER
+ *
+ * La presentación del juego, los números del mundo y los cuatro modos.
+ *
+ * ⚑ ESTO ERA LA MITAD DE `Manager.astro`, la sección que vivía en la portada.
+ *   La otra mitad —el explorador de ligas, las figuras y las promesas— se fue a
+ *   `/gambeta`, porque son datos del MUNDO y no del juego: los tres juegos
+ *   comparten ese catálogo.
+ *
+ * ⚠ EL TÍTULO ES UN `h1`. Es la página del Manager, así que el nombre del juego
+ *   es el encabezado de la página y no un subtítulo. Un `h1` por página, y este
+ *   es el suyo.
+ */
+import numeros from '@/data/numeros.json'
+import { CTA_JUGAR } from '@/config/games'
+
+const modos = [
+  {
+    titulo: 'Liga con amigos',
+    estado: 'Andando',
+    texto:
+      'Se crea una sala, se pasa el código y cada uno agarra un club. Todos gestionan su semana, marcan «listo» y el servidor simula la fecha. Nadie puede hacer trampa: el resultado no lo calcula tu máquina.',
+  },
+  {
+    titulo: 'La fecha, en vivo',
+    estado: 'Andando',
+    texto:
+      'La fecha no es una pantalla de carga. Se ven los partidos mientras pasan, con la cancha dibujando cada jugada, y se puede pausar para hacer un cambio en el entretiempo.',
+  },
+  {
+    titulo: 'Mercado y copas',
+    estado: 'Andando',
+    texto:
+      'Fichajes, subastas, cesiones y cláusulas. Copa nacional, torneos continentales y selecciones con su propio calendario.',
+  },
+  {
+    titulo: 'Un jugador solo',
+    estado: 'En camino',
+    texto:
+      'La misma liga, pero contra la computadora, para el que quiere jugar sin esperar a nadie.',
+  },
+]
+---
+
+<section
+  id="manager"
+  class="relative isolate scroll-mt-24 bg-carbon-950 pt-28 pb-20 md:pt-36 md:pb-28"
+>
+  <div class="contenedor">
+    <div class="grid gap-12 lg:grid-cols-[1.1fr_1fr] lg:items-end lg:gap-20">
+      <div>
+        <p class="rotulo flex items-center gap-3">
+          <span class="relative flex h-2 w-2">
+            <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-cesped-400 opacity-70"></span>
+            <span class="relative inline-flex h-2 w-2 rounded-full bg-cesped-500"></span>
+          </span>
+          Jugable ahora
+        </p>
+        <h1 class="mt-5 text-[clamp(2.5rem,7vw,5rem)]">
+          Gambeta<br /><span class="texto-degrade">Manager Game</span>
+        </h1>
+        <p class="mt-7 max-w-xl text-lg leading-relaxed text-hueso-400">
+          Un manager de fútbol por turnos, en el navegador, para jugar una liga
+          entera con amigos. No jugás la pelota: elegís el club, armás el
+          plantel, peleás el mercado, plantás la táctica y te bancás los noventa
+          minutos desde el banco.
+        </p>
+        <div class="mt-9 flex flex-wrap gap-4">
+          <a
+            href={CTA_JUGAR.href}
+            class="boton boton-primario"
+            {...CTA_JUGAR.externo ? { target: '_blank', rel: 'noopener' } : {}}
+          >
+            {CTA_JUGAR.texto}
+          </a>
+          <a href="#camino" class="boton boton-secundario">Cómo se juega</a>
+        </div>
+      </div>
+
+      <!-- Los números del mundo -->
+      <dl class="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-white/8 bg-white/8">
+        {
+          [
+            { v: numeros.ligas, e: 'ligas oficiales' },
+            { v: numeros.clubes.toLocaleString('es-AR'), e: 'clubes' },
+            { v: numeros.jugadores.toLocaleString('es-AR'), e: 'futbolistas' },
+            { v: numeros.paises, e: 'países' },
+          ].map((dato) => (
+            <div class="dato-hover bg-carbon-900 px-5 py-6">
+              <dt class="dato-valor font-display text-4xl text-hueso-50 md:text-5xl">{dato.v}</dt>
+              <dd class="mt-1.5 text-xs uppercase tracking-[0.16em] text-hueso-500">{dato.e}</dd>
+            </div>
+          ))
+        }
+      </dl>
+    </div>
+
+    <!-- ---- Modos -------------------------------------------------------- -->
+    <div class="mt-20 md:mt-28">
+      <p class="rotulo mb-6">Qué se puede hacer</p>
+      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {
+          modos.map((modo) => (
+            <article class="panel tarjeta-hover flex flex-col p-5">
+              <span
+                class:list={[
+                  'mb-4 self-start rounded-full px-2.5 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.12em]',
+                  modo.estado === 'Andando'
+                    ? 'bg-cesped-500/15 text-cesped-300 ring-1 ring-cesped-500/30'
+                    : 'bg-white/5 text-hueso-500 ring-1 ring-white/10',
+                ]}
+              >
+                {modo.estado}
+              </span>
+              <h2 class="text-xl">{modo.titulo}</h2>
+              <p class="mt-3 text-sm leading-relaxed text-hueso-400">{modo.texto}</p>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+</section>

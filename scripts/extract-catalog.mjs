@@ -35,6 +35,23 @@
  *   0122  los sintéticos, llevados a la misma escala
  *   0124  los doce puestos finos + pierna hábil
  *   0126  el techo (potencial)
+ *   0142  River Plate de Montevideo y Nacionel suben de nivel; +4 al plantel de River
+ *   0149  ningún club con menos de 21 jugadores, y ninguno sin arquero
+ *
+ * ⚠ QUÉ SE MIRÓ Y SE DEJÓ AFUERA, a propósito, del 0127 al 0155:
+ *
+ *   0133  cambia el país de 15 jugadores (dobles nacionalidades del Mundial).
+ *         No mueve un solo número del sitio.
+ *   0138  y 0154 marcan quién está en venta o se puede pedir a préstamo. Eso es
+ *         estado de mercado de una partida, no catálogo.
+ *   0143  recalcula el VALOR y el SUELDO del plantel de River con
+ *         `player_market_value()`, que es una función de Postgres. Replicarla
+ *         acá sería una tercera copia de una fórmula que el propio juego vigila
+ *         con una prueba para que no se separe de la segunda. De ahí sale una
+ *         regla: **el sitio no publica el valor de mercado de un jugador**. Lo
+ *         único que sí se toma de la 0143 es la reputación de River, que es un
+ *         literal y sí se muestra.
+ *   0148  0150 a 0155 son funciones y reglas de sala. No tocan el catálogo.
  *
  * Uso:  node scripts/extract-catalog.mjs
  */
@@ -52,6 +69,7 @@ const MIGRATIONS = join(GAME, 'supabase/migrations')
 
 const OUT_SRC = join(ROOT, 'src/data')
 const OUT_PUBLIC = join(ROOT, 'public/data/ligas')
+const OUT_PLANTELES = join(ROOT, 'public/data/planteles')
 
 // ---------------------------------------------------------------------------
 // 1. Un parser de literales de Postgres, lo justo y necesario
@@ -133,7 +151,28 @@ function parseValue(rawToken) {
  *   `from (values` ... `) as v(a, b, c)`
  */
 function readBlocks(file) {
-  const sql = readFileSync(join(MIGRATIONS, file), 'utf8')
+  /**
+   * ⚠ ANTES DE PARTIR EN LÍNEAS, SE JUNTA LA CABECERA DE LOS `insert`.
+   *
+   * La 0081 y la 0112 escriben `insert into players (a, b, c) values` en un
+   * renglón, pero la 0149 —que la generó un script— parte la lista de columnas
+   * en tres:
+   *
+   *     insert into players (
+   *       id, database_id, team_id, ...
+   *     ) values
+   *
+   * El lector va línea por línea, así que sin esto no reconocía el bloque y la
+   * migración entera se leía como cero filas: silencioso, y peor que un error.
+   *
+   * No se colapsa si adentro hay un comentario `--`: al juntar los renglones,
+   * ese comentario se comería el resto de la sentencia.
+   */
+  const sql = readFileSync(join(MIGRATIONS, file), 'utf8').replace(
+    /insert\s+into\s+(\w+)\s*\(([^();]*?)\)\s*values/gis,
+    (todo, tabla, columnas) =>
+      columnas.includes('--') ? todo : `insert into ${tabla} (${columnas.replace(/\s+/g, ' ').trim()}) values`
+  )
   const lines = sql.split('\n')
   const blocks = []
 
@@ -362,7 +401,56 @@ for (const patch of rowsOf(readBlocks('0126_the_ceiling_is_real.sql'), (b) => b.
   player.potential = patch.potential
   withCeiling += 1
 }
-console.log(`  0126  ${withCeiling} jugadores con techo\n`)
+console.log(`  0126  ${withCeiling} jugadores con techo`)
+
+// --- 0142 (+ el retoque de la 0143): River de Montevideo crece ------------
+//
+// ⚑ VA A MANO Y NO POR `readBlocks`, porque no es un bloque de filas: son tres
+//   `update ... where id = '…'` sueltos. Copiar los valores es más honesto que
+//   forzar el parser a entender una forma que aparece una sola vez.
+//
+// El techo usa la fuerza VIEJA (`strength + 8`), que es lo que hace Postgres:
+// dentro de un mismo UPDATE todas las expresiones leen la fila como estaba. Con
+// la fuerza nueva quedaría un margen de 8 en vez de los 4 que buscaba la
+// migración.
+const RIVER_MVD = '5b73d041-50c7-5bef-83ea-07df1f907656'
+const NACIONEL = 'd2d526a0-51aa-5c99-8e41-06c438c947e3'
+
+const river = teams.get(RIVER_MVD)
+if (river) {
+  river.level = 16
+  river.base_budget = 37823278 // club_budget_for_level(16), el número que anota la propia 0142
+  river.reputation = 'national' // ← esto es de la 0143
+}
+const nacionel = teams.get(NACIONEL)
+if (nacionel) {
+  nacionel.level = 17
+  nacionel.base_budget = 45921046 // club_budget_for_level(17)
+}
+
+let riverPlantel = 0
+for (const p of players.values()) {
+  if (p.team_id !== RIVER_MVD) continue
+  const fuerzaVieja = p.strength
+  p.strength = Math.min(99, fuerzaVieja + 4)
+  if (typeof p.potential === 'number') {
+    p.potential = Math.min(99, Math.max(p.potential + 4, fuerzaVieja + 8))
+  }
+  riverPlantel += 1
+}
+console.log(`  0142  2 clubes de nivel · ${riverPlantel} jugadores de River +4`)
+
+// --- 0149: ningún club con menos de 21, ninguno sin arquero ---------------
+//
+// La generó `build-squad-topup-migration.mjs` contra producción: 55 clubes
+// tenían menos de 21 jugadores y 3 no tenían NI UN arquero. Son altas puras.
+let topup = 0
+for (const p of rowsOf(readBlocks('0149_every_club_reaches_21.sql'), (b) => b.kind === 'insert' && b.table === 'players')) {
+  if (players.has(p.id)) continue
+  players.set(p.id, p)
+  topup += 1
+}
+console.log(`  0149  +${topup} jugadores para completar planteles\n`)
 
 // ---------------------------------------------------------------------------
 // 4. Armar el modelo que consume el sitio
@@ -474,6 +562,7 @@ leagues.sort((a, b) => b.media - a.media)
 
 if (!existsSync(OUT_SRC)) mkdirSync(OUT_SRC, { recursive: true })
 if (!existsSync(OUT_PUBLIC)) mkdirSync(OUT_PUBLIC, { recursive: true })
+if (!existsSync(OUT_PLANTELES)) mkdirSync(OUT_PLANTELES, { recursive: true })
 
 const write = (path, data) => {
   writeFileSync(path, JSON.stringify(data, null, 0), 'utf8')
@@ -507,6 +596,61 @@ for (const league of leagues) {
 // La liga que se muestra abierta al entrar viaja EN el HTML: sin spinner en el
 // primer pintado, y con contenido de verdad para el buscador.
 write(join(OUT_SRC, 'liga-destacada.json'), detalle(leagues[0]))
+
+// 5.2b LOS PLANTELES, uno por liga. Es lo que come el buscador de jugadores.
+//
+// ⚑ POR QUÉ POR LIGA Y NO POR CLUB, ni todo junto:
+//
+//   · todo junto     37.160 jugadores son varios MB. Nadie los mira.
+//   · uno por club   1.339 archivos, y abrir una liga para ver quién juega
+//                    dónde pediría veinte requests seguidas.
+//   · por liga       81 archivos de ~60 KB (bastante menos servidos con gzip),
+//                    uno solo por liga abierta, y ya tenemos el mismo patrón
+//                    andando con el detalle de ligas.
+//
+// ⚠ NO VA EL VALOR DE MERCADO. La 0143 lo recalcula con una función de
+//   Postgres que no se replica acá (ver la cabecera del archivo), así que el
+//   valor del plantel de River estaría mal. Un dato que no se publica no puede
+//   estar desactualizado.
+//
+// ⚠ NI EL UUID DE CADA JUGADOR. Son 36 caracteres por fila para usarlos de key
+//   de React y nada más; la lista de un club no cambia nunca, así que el índice
+//   alcanza. Con 37.160 filas, sacarlo son ~1,3 MB menos en total.
+const plantelJugador = (p) => ({
+  nombre: p.name,
+  dorsal: p.shirt_number ?? null,
+  puesto: p.position,
+  pierna: FOOT_LABEL[p.side] ?? null,
+  fuerza: p.strength,
+  techo: p.potential ?? null,
+  edad: p.age,
+  pais: countries.get(p.country_id)?.code ?? null,
+})
+
+for (const league of leagues) {
+  write(join(OUT_PLANTELES, `${league.slug}.json`), {
+    slug: league.slug,
+    nombre: league.nombre,
+    paisNombre: league.paisNombre,
+    clubes: league.clubes.map((club) => ({
+      id: club.id,
+      nombre: club.nombre,
+      sigla: club.sigla,
+      ciudad: club.ciudad,
+      colores: club.colores,
+      estadio: club.estadio,
+      tecnico: club.tecnico,
+      media: club.media,
+      mediaTitulares: club.mediaTitulares,
+      // De mayor a menor fuerza: el que abre un plantel quiere ver primero al
+      // mejor, no al que tenga el número 1 en la espalda.
+      jugadores: (squadOf.get(club.id) ?? [])
+        .slice()
+        .sort((a, b) => b.strength - a.strength)
+        .map(plantelJugador),
+    })),
+  })
+}
 
 // 5.3 Las figuras del mundo.
 const everyone = [...players.values()].filter((p) => teamById.has(p.team_id))

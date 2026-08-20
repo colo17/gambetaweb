@@ -1,0 +1,71 @@
+---
+/**
+ * LA PRESENTACIÓN DE UN JUEGO EN LA PORTADA
+ *
+ * Cabecera + scrollytelling corto + un botón que lleva a la página del juego.
+ * El contenido sale de `src/config/presentaciones.ts`; acá sólo se dibuja.
+ *
+ * ⚑ SE USA TRES VECES SEGUIDAS EN LA PORTADA. Lo que separa un juego del
+ *   siguiente no es esta sección sino la banda del mundo que va en el medio,
+ *   que viene en otro tono: tres bloques iguales pegados se leen como una sola
+ *   tira infinita, que es justo el problema que vino a resolver partir el sitio.
+ */
+import Recorrido from './Recorrido.astro'
+import { juegoPorId } from '@/config/games'
+import type { Presentacion } from '@/config/presentaciones'
+
+interface Props {
+  presentacion: Presentacion
+}
+
+const { presentacion } = Astro.props
+const juego = juegoPorId(presentacion.juego)
+const proximo = juego.estado === 'coming-soon'
+---
+
+<section
+  id={`presentacion-${juego.id}`}
+  class="relative isolate grano scroll-mt-24 border-t border-white/5 bg-carbon-950 py-24 md:py-32"
+  aria-labelledby={`titulo-${juego.id}`}
+>
+  <div class="contenedor">
+    <header class="mx-auto mb-16 max-w-2xl text-center md:mb-24">
+      <p class="rotulo flex items-center justify-center gap-3">
+        {
+          !proximo && (
+            <span class="relative flex h-2 w-2">
+              <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-cesped-400 opacity-70" />
+              <span class="relative inline-flex h-2 w-2 rounded-full bg-cesped-500" />
+            </span>
+          )
+        }
+        {presentacion.rotulo}
+      </p>
+
+      <p class="mt-6 font-display text-sm uppercase tracking-[0.3em] text-hueso-500">
+        {juego.nombre}
+      </p>
+      <h2 id={`titulo-${juego.id}`} class="mt-3 text-[clamp(2rem,5.5vw,4rem)]">
+        {presentacion.titulo}{' '}
+        <span class="texto-degrade">{presentacion.tituloResaltado}</span>
+      </h2>
+      <p class="mt-5 text-lg text-hueso-400">{presentacion.bajada}</p>
+    </header>
+
+    <Recorrido etapas={presentacion.etapas} />
+
+    <div class="mt-14 flex flex-wrap items-center justify-center gap-4 md:mt-20">
+      <a href={juego.ruta} class:list={['boton', proximo ? 'boton-secundario' : 'boton-primario']}>
+        {proximo ? `Ver qué se viene` : `Todo sobre el Manager`}
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path
+            d="M3 8h10M9 4l4 4-4 4"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"></path>
+        </svg>
+      </a>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,66 @@
+---
+/**
+ * LA PÁGINA DE PERFIL
+ *
+ * Una cuenta para todos los juegos de Gambeta, y la carrera del entrenador
+ * sumando todas las partidas.
+ *
+ * ⚑ NO HAY BACKEND PROPIO. El sitio sigue siendo estático: la isla habla
+ *   directo con el Supabase del juego desde el navegador. Ver `src/lib/cuenta.ts`
+ *   para las dos variables de entorno que lo prenden.
+ *
+ * ⚠ `client:only="react"` Y NO `client:load`. Esto depende de la sesión guardada
+ *   en el navegador: renderizarlo en el build sólo puede producir el estado
+ *   "no entraste", que después parpadea a "entraste" en cuanto hidrata. Un
+ *   formulario de login que aparece y desaparece se ve roto.
+ */
+import Base from '@/layouts/Base.astro'
+import Header from '@/components/Header.astro'
+import Footer from '@/components/Footer.astro'
+import Perfil from '@/components/Perfil.tsx'
+import { JUEGOS } from '@/config/games'
+
+/** Lo mínimo que la isla necesita de cada juego. */
+const juegos = JUEGOS.map((juego) => ({
+  id: juego.id,
+  nombre: juego.nombre,
+  estado: juego.estado,
+  icono: juego.icono,
+  ruta: juego.ruta,
+}))
+---
+
+<Base
+  titulo="Tu perfil — Gambeta"
+  descripcion="Entrá con tu cuenta de Gambeta y mirá tu carrera de entrenador: partidos dirigidos, títulos, temporadas y todos los clubes por los que pasaste."
+>
+  <Header />
+  <main id="contenido">
+    <section class="relative isolate grano min-h-[70svh] bg-carbon-950 pt-28 pb-20 md:pt-36 md:pb-28">
+      <div class="contenedor">
+        <div class="mb-10 max-w-2xl">
+          <p class="rotulo">Tu cuenta</p>
+          <h1 class="mt-5 text-[clamp(2.25rem,6vw,4rem)]">
+            Tu carrera,<br /><span class="texto-degrade">en un solo lugar</span>
+          </h1>
+          <p class="mt-6 text-lg leading-relaxed text-hueso-400">
+            Una cuenta para todos los juegos de Gambeta. Acá vas a ver desde
+            cuándo estás, cuántos partidos dirigiste, los títulos que levantaste
+            y todos los clubes por los que pasaste.
+          </p>
+        </div>
+
+        {/*
+          ⚠ EL HUECO SE RESERVA ACÁ. Con `client:only` el servidor no dibuja
+            NADA: la página nace corta y crece de golpe cuando React monta. Sin
+            este alto mínimo el CLS móvil daba 0,169 —en rojo— por ese solo
+            salto. El número sale de medir el estado más chico de la isla.
+        */}
+        <div class="min-h-[34rem]">
+          <Perfil client:only="react" juegos={juegos} />
+        </div>
+      </div>
+    </section>
+  </main>
+  <Footer />
+</Base>

@@ -1,0 +1,105 @@
+---
+/**
+ * LOS QUE MANDAN EN EL MUNDO: figuras y promesas.
+ *
+ * Sale entero del catálogo (`npm run datos`). Ni un dato de marketing.
+ *
+ * ⚠ NO SE MUESTRA EL VALOR DE MERCADO. La migración 0143 del juego lo recalcula
+ *   con una función de Postgres que el extractor no replica (ver su cabecera),
+ *   así que el valor de un plantel puede estar viejo. Fuerza, techo y edad sí
+ *   están al día.
+ */
+import figuras from '@/data/figuras.json'
+import promesas from '@/data/promesas.json'
+---
+
+<section id="figuras" class="scroll-mt-24 border-t border-white/5 bg-carbon-950 py-20 md:py-28">
+  <div class="contenedor">
+    <!-- ---- Las figuras del mundo ---------------------------------------- -->
+    <div class="mb-8">
+      <p class="rotulo">Los mejores del mundo</p>
+      <h2 class="mt-3 text-[clamp(1.75rem,4vw,3rem)]">Los que valen una temporada</h2>
+      <p class="mt-3 max-w-xl text-hueso-400">
+        Las {figuras.length} fuerzas más altas del catálogo. Que uno de estos
+        aparezca en tu mercado es, literalmente, la noticia del año.
+      </p>
+    </div>
+
+    <ul class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      {
+        figuras.slice(0, 8).map((figura) => (
+          <li class="panel tarjeta-hover group relative overflow-hidden p-5">
+            <div
+              class="absolute inset-x-0 top-0 h-0.5 opacity-70"
+              style={`background:${figura.clubColores?.primary ?? '#12b76a'}`}
+              aria-hidden="true"
+            />
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0">
+                <p class="truncate text-lg font-semibold text-hueso-50">{figura.nombre}</p>
+                <p class="mt-0.5 truncate text-xs text-hueso-500">
+                  {figura.puestoLabel} · {figura.edad} años
+                </p>
+              </div>
+              <span class="font-display text-4xl leading-none text-cesped-400">
+                {figura.fuerza}
+              </span>
+            </div>
+
+            <div class="mt-4 flex items-center gap-2 border-t border-white/5 pt-3">
+              <span
+                class="h-4 w-1 rounded-full"
+                style={`background:${figura.clubColores?.primary ?? '#2c3531'}`}
+                aria-hidden="true"
+              />
+              <p class="truncate text-sm text-hueso-300">{figura.club}</p>
+            </div>
+            <p class="mt-1 truncate text-xs text-hueso-500">{figura.liga}</p>
+          </li>
+        ))
+      }
+    </ul>
+
+    <!-- ---- Promesas ------------------------------------------------------ -->
+    <div class="mt-16 md:mt-20">
+      <div class="mb-6">
+        <p class="rotulo">Los que todavía no son</p>
+        <h2 class="mt-3 text-[clamp(1.5rem,3.5vw,2.5rem)]">Las joyas del mercado</h2>
+        <p class="mt-3 max-w-xl text-hueso-400">
+          Sub-21 con el techo más alto del mundo. La fuerza de hoy no es la que
+          van a tener: el juego los hace crecer según lo que les falta para
+          llegar.
+        </p>
+      </div>
+
+      <ul class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {
+          promesas.slice(0, 6).map((joya) => (
+            <li class="panel tarjeta-hover flex items-center gap-4 p-4">
+              <div class="text-center">
+                <p class="font-display text-2xl text-hueso-300">{joya.fuerza}</p>
+                <p class="text-[0.6rem] uppercase tracking-wider text-hueso-500">hoy</p>
+              </div>
+              <div class="flex flex-col items-center text-dorado-500" aria-hidden="true">
+                <svg width="26" height="10" viewBox="0 0 26 10" fill="none">
+                  <path d="M0 5h22M18 1l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                <span class="mt-0.5 text-[0.6rem] font-semibold">+{joya.margen}</span>
+              </div>
+              <div class="text-center">
+                <p class="font-display text-2xl text-dorado-400">{joya.techo}</p>
+                <p class="text-[0.6rem] uppercase tracking-wider text-hueso-500">techo</p>
+              </div>
+              <div class="min-w-0 flex-1 border-l border-white/8 pl-4">
+                <p class="truncate font-medium text-hueso-100">{joya.nombre}</p>
+                <p class="truncate text-xs text-hueso-500">
+                  {joya.edad} años · {joya.puesto} · {joya.club}
+                </p>
+              </div>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </div>
+</section>

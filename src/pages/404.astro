@@ -1,0 +1,47 @@
+---
+/**
+ * LA PÁGINA QUE NO EXISTE
+ *
+ * Desde que el sitio tiene seis rutas, una URL mal escrita es un caso real y no
+ * una rareza. Vercel sirve este archivo tal cual para cualquier ruta que no
+ * exista, sin configurar nada.
+ */
+import Base from '@/layouts/Base.astro'
+import Header from '@/components/Header.astro'
+import Footer from '@/components/Footer.astro'
+import { NAVEGACION } from '@/config/games'
+---
+
+<Base
+  titulo="Esta página no existe — Gambeta"
+  descripcion="La página que buscabas no está. Volvé al inicio y seguí por otro lado."
+  noindex
+>
+  <Header />
+  <main id="contenido">
+    <section class="grano grid min-h-[70svh] place-items-center bg-carbon-950 px-4 pt-28 pb-20">
+      <div class="contenedor text-center">
+        <p class="font-display text-[clamp(5rem,20vw,12rem)] leading-none text-cesped-700/60">404</p>
+        <h1 class="mt-4 text-[clamp(1.75rem,5vw,3rem)]">Se fue afuera</h1>
+        <p class="mx-auto mt-5 max-w-md text-lg text-hueso-400">
+          Esta página no existe. Puede que la hayamos movido, o que el link
+          viniera mal escrito.
+        </p>
+
+        <nav aria-label="A dónde ir" class="mt-10 flex flex-wrap justify-center gap-3">
+          {
+            NAVEGACION.map((item) => (
+              <a
+                href={item.href}
+                class="rounded-full border border-white/12 px-4 py-2 text-sm text-hueso-300 transition-colors hover:border-cesped-500 hover:text-cesped-300"
+              >
+                {item.texto}
+              </a>
+            ))
+          }
+        </nav>
+      </div>
+    </section>
+  </main>
+  <Footer />
+</Base>

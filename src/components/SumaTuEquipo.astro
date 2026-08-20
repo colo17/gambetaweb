@@ -1,0 +1,213 @@
+---
+/**
+ * "SUMÁ TU EQUIPO"
+ *
+ * El pedido para que un club, una liga o una selección entren al mundo de
+ * Gambeta. Es el cierre natural de la página del mundo: el visitante acaba de
+ * recorrer 81 ligas y lo primero que hace es fijarse si está el suyo.
+ *
+ * ⚠ NO HAY BACKEND TODAVÍA. Postea al mismo endpoint que el formulario de
+ *   avisos —`PUBLIC_FORM_ENDPOINT`— y mientras no exista guarda el pedido en el
+ *   propio navegador y agradece igual. Nada se pierde y nadie ve un error.
+ *
+ *       PUBLIC_FORM_ENDPOINT=https://formspree.io/f/xxxxxxx
+ *
+ * ⚑ EL `origen` VIAJA EN EL CUERPO. Los dos formularios del sitio pegan al
+ *   mismo lado, así que sin ese campo no habría manera de saber si lo que llegó
+ *   es un mail para avisar o un pedido de club.
+ */
+const endpoint = import.meta.env.PUBLIC_FORM_ENDPOINT?.trim() ?? ''
+
+const tipos = [
+  { valor: 'club', texto: 'Un club' },
+  { valor: 'liga', texto: 'Una liga entera' },
+  { valor: 'seleccion', texto: 'Una selección' },
+  { valor: 'otro', texto: 'Otra cosa' },
+]
+---
+
+<section
+  id="sumate"
+  class="relative isolate scroll-mt-24 overflow-hidden border-t border-white/5 py-20 md:py-28"
+>
+  <!-- Fondo -->
+  <div class="absolute inset-0 -z-10">
+    <img
+      src="/assets/generated/bg-potrero-1600.webp"
+      alt=""
+      loading="lazy"
+      decoding="async"
+      class="h-full w-full object-cover opacity-25"
+    />
+    <div class="absolute inset-0 bg-gradient-to-b from-carbon-950/90 via-carbon-950/85 to-carbon-950"></div>
+  </div>
+
+  <div class="contenedor">
+    <div class="panel mx-auto max-w-3xl p-6 md:p-10">
+      <div class="max-w-xl">
+        <p class="rotulo">¿No está el tuyo?</p>
+        <h2 class="mt-4 text-[clamp(1.75rem,4.5vw,2.75rem)]">
+          Pedinos que lo agreguemos
+        </h2>
+        <p class="mt-4 text-hueso-400">
+          El catálogo arrancó con 81 ligas y no se termina ahí. Si falta tu
+          club, tu liga o tu selección, escribinos cuál es y lo miramos. Los que
+          más se piden son los que entran primero.
+        </p>
+      </div>
+
+      <form class="mt-8" data-sumate data-endpoint={endpoint} novalidate>
+        <div class="grid gap-4 sm:grid-cols-2">
+          <label class="block">
+            <span class="mb-2 block text-sm font-medium text-hueso-200">Qué falta</span>
+            <select
+              name="tipo"
+              class="w-full rounded-lg border border-white/12 bg-carbon-900 px-4 py-3 text-hueso-100 focus:border-cesped-500 focus:outline-none"
+            >
+              {tipos.map((tipo) => <option value={tipo.valor}>{tipo.texto}</option>)}
+            </select>
+          </label>
+
+          <label class="block">
+            <span class="mb-2 block text-sm font-medium text-hueso-200">Cómo se llama</span>
+            <input
+              type="text"
+              name="nombre"
+              required
+              placeholder="Ferro Carril Oeste"
+              class="w-full rounded-lg border border-white/12 bg-carbon-900/80 px-4 py-3 text-hueso-100 placeholder:text-hueso-500 focus:border-cesped-500 focus:outline-none"
+            />
+          </label>
+
+          <label class="block">
+            <span class="mb-2 block text-sm font-medium text-hueso-200">De qué país</span>
+            <input
+              type="text"
+              name="pais"
+              required
+              placeholder="Argentina"
+              autocomplete="country-name"
+              class="w-full rounded-lg border border-white/12 bg-carbon-900/80 px-4 py-3 text-hueso-100 placeholder:text-hueso-500 focus:border-cesped-500 focus:outline-none"
+            />
+          </label>
+
+          <label class="block">
+            <span class="mb-2 block text-sm font-medium text-hueso-200">Tu mail</span>
+            <input
+              type="email"
+              name="email"
+              required
+              autocomplete="email"
+              placeholder="tu@mail.com"
+              class="w-full rounded-lg border border-white/12 bg-carbon-900/80 px-4 py-3 text-hueso-100 placeholder:text-hueso-500 focus:border-cesped-500 focus:outline-none"
+            />
+          </label>
+
+          <label class="block sm:col-span-2">
+            <span class="mb-2 block text-sm font-medium text-hueso-200">
+              Contanos algo más <span class="text-hueso-500">(opcional)</span>
+            </span>
+            <textarea
+              name="detalle"
+              rows="3"
+              placeholder="La división en la que juega, el estadio, o cualquier dato que nos sirva."
+              class="w-full rounded-lg border border-white/12 bg-carbon-900/80 px-4 py-3 text-hueso-100 placeholder:text-hueso-500 focus:border-cesped-500 focus:outline-none"
+            ></textarea>
+          </label>
+        </div>
+
+        <!-- Trampa para robots: una persona nunca la completa. -->
+        <label class="solo-lectores" aria-hidden="true">
+          No completar
+          <input type="text" name="apodo" tabindex="-1" autocomplete="off" />
+        </label>
+
+        <div class="mt-6 flex flex-wrap items-center gap-4">
+          <button type="submit" class="boton boton-primario">Mandar el pedido</button>
+          <p class="text-sm" role="status" aria-live="polite" data-sumate-mensaje></p>
+        </div>
+
+        <p class="mt-4 text-xs text-hueso-500">
+          Usamos tu mail sólo para contestarte por este pedido.
+        </p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<script>
+  const formulario = document.querySelector<HTMLFormElement>('[data-sumate]')
+  const mensaje = document.querySelector<HTMLElement>('[data-sumate-mensaje]')
+
+  const decir = (texto: string, bien: boolean) => {
+    if (!mensaje) return
+    mensaje.textContent = texto
+    mensaje.className = `text-sm ${bien ? 'text-cesped-300' : 'text-red-300'}`
+  }
+
+  formulario?.addEventListener('submit', async (evento) => {
+    evento.preventDefault()
+
+    const datos = new FormData(formulario)
+    const leer = (campo: string) => String(datos.get(campo) ?? '').trim()
+
+    // Si la trampa vino completa es un robot: se le agradece y no se hace nada.
+    if (leer('apodo')) {
+      decir('¡Listo! Lo miramos.', true)
+      return
+    }
+
+    const email = leer('email')
+    const nombre = leer('nombre')
+    const pais = leer('pais')
+
+    if (!nombre || !pais) {
+      decir('Falta el nombre o el país. Sin eso no sabemos qué buscar.', false)
+      return
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
+      decir('Ese mail no parece válido. Revisalo y probá de nuevo.', false)
+      return
+    }
+
+    const boton = formulario.querySelector('button[type="submit"]') as HTMLButtonElement | null
+    if (boton) { boton.disabled = true; boton.textContent = 'Mandando…' }
+
+    const pedido = {
+      origen: 'gambetagame.com/gambeta — sumá tu equipo',
+      tipo: leer('tipo'),
+      nombre,
+      pais,
+      email,
+      detalle: leer('detalle'),
+      fecha: new Date().toISOString(),
+    }
+
+    try {
+      const endpoint = formulario.dataset.endpoint
+      if (endpoint) {
+        const respuesta = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify(pedido),
+        })
+        if (!respuesta.ok) throw new Error(String(respuesta.status))
+      } else {
+        /**
+         * Todavía no hay a dónde mandarlo. Se guarda en el navegador para no
+         * perderlo el día que el endpoint exista.
+         */
+        const guardados = JSON.parse(localStorage.getItem('gambeta:pedidos') ?? '[]')
+        guardados.push(pedido)
+        localStorage.setItem('gambeta:pedidos', JSON.stringify(guardados))
+      }
+
+      formulario.reset()
+      decir('¡Listo! Anotado. Si entra, te escribimos.', true)
+    } catch {
+      decir('No pudimos guardarlo. Probá de nuevo en un rato.', false)
+    } finally {
+      if (boton) { boton.disabled = false; boton.textContent = 'Mandar el pedido' }
+    }
+  })
+</script>

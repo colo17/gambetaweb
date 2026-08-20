@@ -4,7 +4,7 @@
 > antes de tocar nada**. El README explica *cómo* funciona el proyecto; esto
 > explica *por qué* está como está, y qué ya se probó y no funcionó.
 >
-> Última actualización: 14 de agosto de 2026.
+> Última actualización: 20 de agosto de 2026.
 
 ---
 
@@ -47,17 +47,34 @@ son tuyos y no hay que tocarlos.
 
 ## 3. Estado actual
 
+**El sitio son SEIS páginas desde el 20 de agosto de 2026.** Antes era una sola
+y el dueño la bajó por larga. Cada una tiene un trabajo:
+
+| Ruta | Qué hay |
+|---|---|
+| `/` | El hero, y una presentación corta por juego con su scrollytelling |
+| `/gambeta` | El mundo: las 81 ligas, los planteles, las figuras, y el formulario de "sumá tu equipo" |
+| `/manager` | Todo el Manager: modos, el recorrido completo (10+4 etapas) y el alma |
+| `/player` · `/test` | Video de fondo y "muy pronto" |
+| `/perfil` | Login contra la base del juego y la carrera del entrenador |
+
 Todo verde y desplegable:
 
-| | Rendimiento | Accesibilidad | Buenas prácticas | SEO |
-|---|---|---|---|---|
-| Escritorio | 99 | 100 | 100 | 100 |
-| Teléfono | 92 | 100 | 100 | 100 |
+| Página | Teléfono | Escritorio |
+|---|---|---|
+| `/` | 98 | 100 |
+| `/gambeta` | 98 | 100 |
+| `/manager` | 98 | 100 |
+| `/player` · `/test` | 99 | 99 |
+| `/perfil` | 99 | 100 |
 
-- `npm run probar` → 19 de 19 verificaciones funcionales.
-- `npm run revisar` → sin desbordes, sin imágenes rotas, un solo `h1`.
+Accesibilidad, buenas prácticas y SEO: **100 en las seis**.
+
+- `npm run probar` → 49 de 49 verificaciones funcionales, sobre las seis páginas.
+- `npm run revisar` → sin desbordes, sin imágenes rotas, un solo `h1` por página,
+  sin ids repetidos. Mira cada página a 1440, 390 y **430px**.
 - `npm run build` → sin errores.
-- Último commit: `f1ca7bc`, rama `main`, sincronizado con el remoto.
+- Rama `main`.
 
 ---
 
@@ -73,19 +90,33 @@ Todo verde y desplegable:
    formulario) a "Jugar ahora" (que lleva al juego). **No hay que tocar código**:
    está centralizado en `URL_MANAGER` y `CTA_JUGAR`, en `src/config/games.ts`.
 
-2. **Conectar el formulario de mails.** Hoy guarda en `localStorage`. Para que
-   mande de verdad:
+2. **Conectar los formularios.** Son dos —"avisame cuando salga" y "sumá tu
+   equipo"— y los dos guardan hoy en `localStorage`. Para que manden de verdad:
 
    ```
    PUBLIC_FORM_ENDPOINT=https://formspree.io/f/xxxxxxx
    ```
 
+   Pegan al mismo endpoint y se distinguen por el campo `origen` del cuerpo.
+
+2b. **Prender las cuentas (`/perfil`).** ⚠ **Esto es lo único que falta para que
+   la página de perfil funcione**, y no hay código que tocar:
+
+   ```
+   PUBLIC_SUPABASE_URL=https://xxxxxxxx.supabase.co
+   PUBLIC_SUPABASE_ANON_KEY=eyJhbGci…
+   ```
+
+   Son los mismos dos valores que usa el juego. La clave *anon* es pública por
+   diseño (viaja en el bundle del juego igual); **la de servicio no va acá ni en
+   ningún lado de este repo.** Mientras falten, la página muestra un cartel que
+   dice que las cuentas abren con el juego y el paquete de Supabase ni se baja.
+
 3. **El dominio.** En Vercel → *Settings → Domains*, agregar `gambetagame.com` y
    `www.gambetagame.com`, y apuntar el DNS.
 
 4. **Regenerar datos cuando el juego cambie.** `npm run datos` relee el catálogo.
-   Ojo: la otra sesión sumó la migración `0128_each_club_carries_its_strength`
-   después de la última extracción, así que **las medias pueden haber cambiado**.
+   Al 20 de agosto está al día hasta la migración **0155** del juego (ver §6).
 
 5. **Pantallas del juego que quedaron sin capturar**: el recap de fin de
    temporada (no existe como pantalla propia) y el Mundial jugándose (pide
@@ -97,22 +128,43 @@ Todo verde y desplegable:
 
 ```
 src/
-  config/games.ts        ← EL CATÁLOGO DE JUEGOS. Se agrega un juego acá y nada más.
+  config/
+    games.ts             ← EL CATÁLOGO DE JUEGOS. Se agrega un juego acá.
+    presentaciones.ts    ← el scrollytelling de portada de cada juego
+    recorrido.ts         ← la forma de una etapa (vive suelta porque de un
+                            .astro no se puede importar un tipo)
+    puestos.ts           ← vocabulario de puestos, copiado de src/game del juego
+  lib/cuenta.ts          ← cliente de Supabase + tipos del perfil
   data/*.json            ← generados por `npm run datos`. NO editar a mano.
   components/
     Header · Hero        ← el hero son 5 clips de video en secuencia
-    Camino               ← scrollytelling: 10 etapas del club + 4 de la selección
-    Recorrido.astro      ← el componente que dibuja UN recorrido (se usa 2 veces)
-    Manager              ← la sección con los datos reales del catálogo
-    LigasExplorer.tsx    ← la ÚNICA isla React
-    Alma                 ← scrollytelling con la pizarra que cambia de formación
-    Juegos · Avisame · Footer
+    Recorrido.astro      ← EL scrollytelling. Se usa 5 veces y trae su propio
+                            script: agarra todos los bloques de la página.
+    PresentacionJuego    ← un juego en la portada · MundoGambeta ← la banda
+    Camino               ← las 10+4 etapas del Manager
+    Alma                 ← la pizarra que cambia de formación
+    ManagerIntro · MundoLigas · MundoFiguras
+    LigasExplorer.tsx    ← isla: las 81 ligas
+    PlantelExplorer.tsx  ← isla: planteles y buscador de futbolistas
+    Perfil.tsx           ← isla: login y carrera del entrenador
+    ProntoHero           ← la portada de un juego que no salió
+    Juegos · Avisame · SumaTuEquipo · Footer
   layouts/Base.astro     ← SEO, Open Graph, favicon, datos estructurados
-  pages/index.astro      ← el orden de las secciones
+  pages/                 ← index · gambeta · manager · player · test · perfil · 404
 scripts/                 ← extracción, assets, capturas y pruebas
 harness/                 ← monta las pantallas del juego para fotografiarlas
-assets-src/              ← originales de Higgsfield (se versionan, ~33 MB)
+assets-src/              ← originales de Higgsfield (se versionan, ~60 MB)
+public/data/planteles/   ← 81 archivos, el plantel de cada club por liga
 ```
+
+⚑ **Dónde va cada cosa.** La regla que ordenó la partición: lo que es del
+**mundo** (ligas, clubes, planteles, figuras) va en `/gambeta`, porque lo
+comparten los tres juegos; lo que es de **un juego** va en su página. La sección
+Manager de la portada vieja se partió justo por ahí.
+
+⚑ **El detalle se cuenta UNA sola vez.** Las tres etapas del Player están en la
+portada y no se repiten en `/player`. El mismo texto en dos URLs se pelea
+consigo mismo en Google.
 
 ### Los comandos
 
@@ -148,8 +200,37 @@ porque el estado final de un jugador no está en un solo archivo:
 | `0119`–`0122` | la fuerza y las habilidades definitivas |
 | `0124` | los doce puestos finos y la pierna hábil |
 | `0126` | el techo (potencial) |
+| `0142` | River de Montevideo a nivel 16 y Nacionel a 17; +4 al plantel de River |
+| `0149` | ningún club con menos de 21 jugadores, y ninguno sin arquero |
 
-Resultado: **81 ligas · 1.339 clubes · 37.160 futbolistas**, media mundial 64,6.
+Resultado: **81 ligas · 1.339 clubes · 37.329 futbolistas**, media mundial 64,6.
+
+### ⚠ Qué se miró de la 0127 a la 0155 y se dejó AFUERA
+
+Que algo no esté en la cadena no significa que se haya olvidado:
+
+- **`0133`** cambia el país de quince jugadores (dobles nacionalidades del
+  Mundial). No mueve un solo número del sitio.
+- **`0138` y `0154`** marcan quién está en venta o se puede pedir a préstamo.
+  Eso es estado de mercado de una partida, no catálogo.
+- **`0143`** recalcula el **valor y el sueldo** del plantel de River con
+  `player_market_value()`, que es una función de Postgres. Replicarla acá sería
+  una tercera copia de una fórmula que el propio juego vigila con una prueba
+  para que no se separe de la segunda. **De ahí sale una regla del sitio: no se
+  publica el valor de mercado de un futbolista.** Lo único que sí se tomó de la
+  0143 es la reputación de River, que es un literal.
+- **`0148` y de la `0150` a la `0155`** son funciones y reglas de sala.
+
+### ⚠ Dos trampas más del extractor, nuevas
+
+- **La `0142` no se parsea, se copia a mano.** No es un bloque de filas: son
+  tres `update ... where id = '…'` sueltos. Y el techo usa la fuerza **vieja**
+  (`strength + 8`), porque dentro de un mismo UPDATE Postgres lee la fila como
+  estaba; con la nueva quedaría un margen de 8 en vez de los 4 que buscaba.
+- **La `0149` escribe el `insert` con las columnas en varias líneas**, y el
+  lector va renglón por renglón. Sin juntar esa cabecera antes de partir, la
+  migración entera se leía como **cero filas**: silencioso, y peor que un error.
+  Lo arregla un `replace` al principio de `readBlocks`.
 
 ### ⚠ Los nombres están cambiados a propósito
 
@@ -252,6 +333,38 @@ de degradés verticales pegados a la ventana.
   inventa humo) y `cinematic_studio_3_0` a 8s (zoom excesivo, figuras blandas).
   El que sirvió para el diorama fue `kling3_0_turbo`.
 
+### Las imágenes adelantadas del scrollytelling (agosto 2026)
+
+Al partir el sitio, la portada pasó de tener **un** recorrido a tener **tres**, y
+`/manager` dos. Cada recorrido cargaba sus dos primeras imágenes con
+`loading="eager"` — algo que con un solo bloque no molestaba y que de golpe se
+volvieron **diez descargas tempranas**.
+
+Lo peor: en el teléfono esa columna **ni se muestra**, vive dentro de un
+`hidden lg:block`. Pero **`display:none` NO evita que el navegador baje una
+imagen `eager`.**
+
+Medido en la portada: **92 → 87** de rendimiento móvil, LCP de 3,0 a **3,9 s**.
+Con todas perezosas: **98 y 2,3 s** — mejor que antes de partir el sitio.
+
+⚠ **Regla:** ningún recorrido está nunca en la primera pantalla (arriba siempre
+hay un hero o una cabecera de alto completo), así que **no hay nada que
+adelantar**. Si alguien vuelve a poner un `eager` ahí, que mida primero.
+
+### Los huecos de las islas, y el CLS (agosto 2026)
+
+Dos saltos de layout, los dos por lo mismo: **una isla que ocupa un lugar
+distinto antes y después de cargar**.
+
+- `/perfil` usa `client:only`, o sea que el servidor **no dibuja nada**: la
+  página nacía corta y crecía de golpe. CLS móvil **0,169**, en rojo.
+- El buscador de futbolistas mostraba un "cargando" de 24rem y después una tabla
+  de 1.047px.
+
+La solución en los dos casos es la misma y es aburrida: **reservar el alto que
+va a ocupar, medido**, no estimado. `min-h-[34rem]` en el perfil (0,169 → 0,001)
+y `min-h-[65rem] lg:min-h-[55rem]` en el buscador.
+
 ### Las capturas en el teléfono
 
 1. **Fotografiar el juego a 420px.** A ese ancho **los paneles del juego
@@ -260,6 +373,41 @@ de degradés verticales pegados a la ventana.
    veía siempre por la mitad y con un alto distinto en cada etapa.
 3. **La que quedó:** `object-contain` en un marco de proporción fija. Chicas,
    pero enteras y todas iguales. *Chica y completa le gana a grande y cortada.*
+
+---
+
+## 8b. La página de perfil, y lo que la base sí y no tiene
+
+`/perfil` **no inventa un padrón propio**: entra contra el Supabase del juego, y
+le pide la carrera a dos funciones que ya existen (migración `0144` del juego):
+
+| Función | Qué devuelve |
+|---|---|
+| `coach_profile(uuid)` | nombre, ID de entrenador `GM-XXXXX`, fecha de alta, partidos, G/E/P, puntos, títulos, clubes, salas y temporadas |
+| `coach_spells(uuid)` | una fila por **etapa** al frente de un club (dirigir dos veces al mismo club son dos renglones) |
+
+Las dos son `security definer` **a propósito**: la RLS del juego sólo deja leer
+las salas donde uno es miembro, y un perfil de carrera es justo lo contrario —la
+suma de todas.
+
+⚠ **NO HAY "TIEMPO JUGADO".** El dueño lo pidió y no existe: el juego no registra
+minutos de sesión en ningún lado. En su lugar se muestran las **temporadas
+dirigidas**, que es lo que sí lleva. Si algún día se quiere de verdad, hay que
+agregarlo del lado del juego primero.
+
+⚠ **No se usan `career_points` / `career_titles` / `career_matches`** de la tabla
+`profiles`. Existen desde la migración 0003 y **nadie las escribió nunca**: están
+en cero para todo el mundo. Los números salen de `manager_spells`.
+
+⚑ Existen además `search_coaches()` y `my_friends()` (migración `0145`), que hoy
+el sitio no usa. Ahí está la puerta si alguna vez se quiere ver el perfil de un
+amigo.
+
+⚠ **El corte de "todavía no cargó" va DESPUÉS de todos los hooks** en
+`Perfil.tsx` y en `PlantelExplorer.tsx`. Escribirlo arriba —que es donde sale
+naturalmente— deja los `useMemo` de abajo sin ejecutar en el primer render y
+ejecutados en el segundo: React cuenta los hooks por orden y la isla revienta
+entera justo cuando llegan los datos.
 
 ---
 
@@ -282,7 +430,13 @@ saber:
   imagen que no usaba y no precargaba la que sí: **el LCP móvil pasó de 3,0 a
   3,8 s**. Tiene que apuntar siempre al mismo archivo que el `<img>` del hero.
 - **Dos elementos con `id="manager"`** — la sección y la card del hub. El enlace
-  del menú caía en la card.
+  del menú caía en la card. **Volvió a pasar** al armar la portada nueva: la
+  presentación de cada juego usaba `id="juego-<id>"`, el mismo de su card. Ahora
+  la presentación es `presentacion-<id>` y **`revisar.mjs` chequea ids repetidos
+  en cada página**, así que la tercera vez la agarra sola.
+- **Dos `<nav>` con el mismo nombre accesible** — el menú de escritorio y el de
+  teléfono se llamaban los dos "Secciones". Además de ser confuso para un lector
+  de pantalla, hacía que cualquier selector contara doce enlaces donde hay seis.
 - **Claves `comment` en `vercel.json`** — JSON no admite comentarios y Vercel
   valida contra un esquema estricto: rechazaba el deploy entero.
 - **Los "hipervínculos" de la tabla no son del sitio** — no hay ni un `<a>` en
@@ -313,7 +467,14 @@ saber:
   oscurecía la pantalla entera y el video casi no se veía.
 - **El CSS va incrustado** (`inlineStylesheets: 'always'`). El LCP de la página
   es un bloque de texto, así que lo único que lo demora es el CSS que bloquea el
-  render.
+  render. ⚠ Con seis páginas esto ahora repite ~12 KB comprimidos por página en
+  vez de cachear un archivo; se volvió a medir y se dejó igual (98–100 en todas).
+  Si el CSS crece mucho, vale reevaluarlo — **midiendo**.
+- **El preload del hero es una prop del layout** (`precargarHero`), no algo que
+  se hereda: va sólo en la portada, que es la única donde esa imagen existe.
+- **El paquete de Supabase se importa en forma dinámica**, así que las cinco
+  páginas que no son `/perfil` no lo bajan nunca — y `/perfil` tampoco, si las
+  cuentas no están configuradas.
 - **El detalle de las 81 ligas no viaja en el HTML.** Sólo la primera viene
   precargada; las demás se piden a `/data/ligas/<slug>.json`.
 - **A la isla se le pasan sólo 4 campos por liga.** Las props de un componente
@@ -340,6 +501,20 @@ partida al medio.
 última cambia con el ancho, y sin padding el número toca el borde y se ve
 cortado.
 
+**La tabla de planteles sigue exactamente el mismo criterio:**
+
+| | Desde |
+|---|---|
+| N° · Futbolista · Fuerza | siempre |
+| + Techo | `sm` (640px) |
+| + Edad | `md` (768px) |
+| + Pierna | `lg` (1024px) |
+
+Y una diferencia deliberada entre las dos islas: el explorador de ligas elige
+liga con una **tira de pestañas**, y el de planteles con un **`select`**. Allá la
+liga *es* el contenido; acá el contenido es el plantel, y 81 pestañas encima de
+la tira de clubes dejaban la tabla abajo del pliegue en el teléfono.
+
 ---
 
 ## 12. Cómo trabaja el dueño
@@ -353,7 +528,16 @@ Cosas que aprendí de Juan en esta sesión y que conviene respetar:
   fundamento, no una lista de opciones.
 - **Le importa el gasto en Higgsfield.** Pedir siempre las opciones baratas
   (`seedance1_5` a 4s/720p = 4,8 créditos; `kling3_0_turbo` a 8s/720p = 12) y
-  avisar cuánto se gastó. Van ~120 créditos usados de 1.050.
+  avisar cuánto se gastó. Van **~121 créditos usados de 1.050** (las nueve
+  imágenes de agosto costaron 1,35 con `z_image`, a 0,15 cada una).
+
+- ⚠ **Ojo con lo que dibujan los modelos de imagen.** De las seis primeras del
+  arte de Player y Test, **dos salieron con guiños al fútbol americano** —una
+  pelota ovalada con costuras y una camiseta con hombreras— y una tercera con
+  **las tres tiras y el logo de Adidas**. En un sitio que le cambia una letra a
+  los nombres justamente por derechos, una marca real no puede quedar. Hay que
+  **mirar cada imagen** y, en el prompt, pedir explícitamente
+  *"association football, no american football, no brand logos"*.
 - **Si algo se ve raro tres veces, hay que cambiar de enfoque**, no seguir
   ajustando. Con el fondo del scrollytelling la respuesta correcta terminó
   siendo sacarlo.
@@ -365,10 +549,14 @@ Cosas que aprendí de Juan en esta sesión y que conviene respetar:
 ```bash
 npm run build
 npx astro preview --port 4400
-node scripts/probar.mjs   http://localhost:4400   # 19 funcionales
-node scripts/revisar.mjs  http://localhost:4400   # visual + desbordes
+node scripts/probar.mjs   http://localhost:4400   # 49 funcionales, 6 páginas
+node scripts/revisar.mjs  http://localhost:4400   # visual + desbordes + ids
 node scripts/lighthouse.mjs http://localhost:4400 # las cuatro notas
 ```
+
+⚠ **Lighthouse mide UNA URL.** Después de un cambio grande hay que pasarle las
+seis, una por una: `node scripts/lighthouse.mjs http://localhost:4400/gambeta`,
+etc. `probar` y `revisar` sí recorren todas solas.
 
 Y si tocaste algo que se ve en el teléfono, **miralo a 390 y a 430px**. La
 mayoría de los problemas de esta sesión aparecieron sólo ahí.

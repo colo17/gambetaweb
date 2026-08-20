@@ -1,0 +1,166 @@
+---
+/**
+ * LA PORTADA DE UN JUEGO QUE TODAVÍA NO SALIÓ
+ *
+ * Video de fondo, el nombre del juego y un "muy pronto". La usan `/player` y
+ * `/test`, que por ahora es lo único que tienen para mostrar.
+ *
+ * ⚑ EL VIDEO ES UNO DE LOS CINCO DEL HERO, REUTILIZADO, y eso fue a propósito:
+ *   generar clips propios cuesta créditos de Higgsfield y estas dos páginas son
+ *   un cartel de "esperá". El día que haya juego de verdad, habrá material
+ *   propio y se cambia acá.
+ *
+ * ⚑ UN SOLO CLIP EN LOOP, no la secuencia de cinco. Acá el video es fondo y no
+ *   relato: encadenar cinco sería bajar 1,1 MB para una página que dice tres
+ *   frases.
+ *
+ * ⚠ Y NO SE CARGA SI PIDIERON MENOS MOVIMIENTO O SI LA CONEXIÓN ES CARA. Igual
+ *   que en el hero: queda el póster, que ya es una buena foto.
+ */
+import type { Juego } from '@/config/games'
+
+interface Props {
+  juego: Juego
+  /** Cuál de los cinco clips del hero se usa de fondo (1 a 5). */
+  clip: number
+  /** La imagen que se ve antes del video, y la que queda si el video no carga. */
+  poster: string
+}
+
+const { juego, clip, poster } = Astro.props
+---
+
+<section
+  id="inicio"
+  class="relative isolate grano flex min-h-[100svh] flex-col justify-center overflow-hidden"
+>
+  <!-- Fondo -->
+  <div class="absolute inset-0 -z-10">
+    <img
+      src={`${poster}-900.webp`}
+      srcset={`${poster}-900.webp 900w, ${poster}-1600.webp 1600w`}
+      sizes="100vw"
+      alt=""
+      width="1600"
+      height="900"
+      fetchpriority="high"
+      decoding="async"
+      class="absolute inset-0 h-full w-full object-cover opacity-55 transition-opacity duration-1000 md:opacity-40"
+      data-imagen-pronto
+    />
+
+    <video
+      class="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-[1200ms]"
+      muted
+      loop
+      playsinline
+      preload="none"
+      aria-hidden="true"
+      data-video-pronto={String(clip)}></video>
+
+    <!-- El velo. Parejo, porque acá el texto va centrado en los dos tamaños. -->
+    <div
+      class="absolute inset-0 bg-[radial-gradient(130%_95%_at_50%_15%,transparent_0%,#050607_85%)]"
+    >
+    </div>
+    <div class="absolute inset-0 bg-carbon-950/45"></div>
+    <div
+      class="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-carbon-950 to-transparent"
+    >
+    </div>
+  </div>
+
+  <div class="contenedor py-28 text-center md:py-32">
+    <p class="rotulo">
+      <span
+        class="inline-flex items-center gap-2 rounded-full border border-dorado-500/30 bg-dorado-500/10 px-3.5 py-1.5 text-dorado-300"
+      >
+        Muy pronto
+      </span>
+    </p>
+
+    <h1 class="mx-auto mt-8 max-w-4xl text-[clamp(2.5rem,8vw,5.5rem)] leading-[1.04]">
+      <span class="block">{juego.nombre.replace('Gambeta ', '')}</span>
+      <span class="texto-degrade block pt-1">{juego.tagline}</span>
+    </h1>
+
+    <p class="mx-auto mt-8 max-w-2xl text-lg leading-relaxed text-hueso-300 md:text-xl">
+      {juego.descripcion}
+    </p>
+
+    <ul class="mx-auto mt-10 flex max-w-3xl flex-wrap justify-center gap-3">
+      {
+        juego.claves.map((clave) => (
+          <li class="rounded-full border border-white/12 bg-carbon-950/60 px-4 py-2 text-sm text-hueso-300 backdrop-blur">
+            {clave}
+          </li>
+        ))
+      }
+    </ul>
+
+    <div class="mt-12 flex flex-wrap items-center justify-center gap-4">
+      <a href="#avisame" class="boton boton-primario">
+        Avisame cuando salga
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path
+            d="M8 3v10M4 9l4 4 4-4"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"></path>
+        </svg>
+      </a>
+      <a href="/manager" class="boton boton-secundario">Mientras tanto, jugá el Manager</a>
+    </div>
+  </div>
+</section>
+
+<script>
+  /**
+   * UN CLIP DE FONDO, EN LOOP.
+   *
+   * Mismas barreras que el hero de la portada: nada de video si pidieron menos
+   * movimiento o si el navegador avisa que la conexión es cara. Y en pantallas
+   * chicas se baja el clip de teléfono, que es el mismo a 720px (unos 220 KB
+   * contra 600).
+   */
+  const video = document.querySelector<HTMLVideoElement>('[data-video-pronto]')
+  const imagen = document.querySelector<HTMLElement>('[data-imagen-pronto]')
+
+  const quieto = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  const conexion = (navigator as any).connection
+  const lenta = /(^|-)[23]g$/.test(conexion?.effectiveType ?? '')
+  const ahorroDatos = conexion?.saveData === true || lenta
+
+  if (video && !quieto && !ahorroDatos) {
+    const anchoChico = window.matchMedia('(max-width: 1023px)').matches
+    const numero = video.dataset.videoPronto ?? '1'
+    const OPACIDAD = window.matchMedia('(max-width: 767px)').matches ? '0.5' : '0.38'
+
+    video.src = `/assets/generated/hero-${numero}${anchoChico ? '-mob' : ''}.mp4`
+    video.preload = 'auto'
+    video.load()
+
+    video.addEventListener(
+      'canplay',
+      () => {
+        video.play().catch(() => {})
+        video.style.opacity = OPACIDAD
+        /**
+         * ⚠ LA IMAGEN SE APAGA CON ESTILO EN LÍNEA, no sacando clases. Lleva
+         *   `opacity-55 md:opacity-40`: quitar "opacity-40" no hace nada porque
+         *   la clase que existe es `md:opacity-40`, y en escritorio la imagen
+         *   quedaba trabada encima del video. Ya pasó una vez en el hero.
+         */
+        if (imagen) imagen.style.opacity = '0'
+      },
+      { once: true }
+    )
+
+    // Si el clip no carga, queda el póster y listo. Nadie ve un error.
+    video.addEventListener('error', () => {
+      video.style.opacity = '0'
+      if (imagen) imagen.style.opacity = ''
+    })
+  }
+</script>

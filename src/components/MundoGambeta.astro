@@ -1,0 +1,111 @@
+---
+/**
+ * LA BANDA DEL MUNDO GAMBETA
+ *
+ * Va después de la presentación de cada juego, y es el puente a `/gambeta`.
+ *
+ * ⚑ CADA JUEGO MUESTRA UNA CARA DISTINTA DEL MISMO MUNDO, y no los mismos tres
+ *   números tres veces. Repetir "81 ligas · 1.339 clubes" abajo de cada bloque
+ *   sería ruido: la tercera vez ya nadie lo lee. Al Manager le importan las
+ *   competiciones, al Player los futbolistas, al Test la trivia que sale de ahí.
+ *
+ * Todos los números salen de `numeros.json`, o sea del catálogo del juego. Acá
+ * no hay una sola cifra inventada.
+ */
+import numeros from '@/data/numeros.json'
+
+interface Props {
+  /** Qué cara del mundo se muestra. Es el id del juego que viene arriba. */
+  variante: 'manager' | 'player' | 'test'
+}
+
+const { variante } = Astro.props
+const n = (valor: number) => valor.toLocaleString('es-AR')
+
+const CARAS = {
+  manager: {
+    rotulo: 'El mundo Gambeta',
+    titulo: 'Todo esto ya está adentro',
+    texto:
+      'No son clubes de relleno: cada liga tiene sus divisiones, sus fechas, sus descensos y sus copas, y cada club su plantel, su estadio y su técnico.',
+    cifras: [
+      { valor: n(numeros.ligas), etiqueta: 'ligas oficiales' },
+      { valor: n(numeros.clubes), etiqueta: 'clubes' },
+      { valor: n(numeros.paises), etiqueta: 'países' },
+    ],
+  },
+  player: {
+    rotulo: 'El mundo Gambeta',
+    titulo: 'Y esta es la gente que lo habita',
+    texto:
+      'El mismo padrón que dirigís en el Manager es el que vas a caminar en el Player Game. Tu carrera empieza siendo uno más de esta lista.',
+    cifras: [
+      { valor: n(numeros.jugadores), etiqueta: 'futbolistas' },
+      { valor: String(numeros.mediaMundial).replace('.', ','), etiqueta: 'media mundial' },
+      { valor: n(numeros.estrellas), etiqueta: 'estrellas' },
+    ],
+  },
+  test: {
+    rotulo: 'El mundo Gambeta',
+    titulo: 'De acá salen las preguntas',
+    texto:
+      'Nombres, camisetas, estadios, medias y ligas de todo el planeta. El que juega el Manager llega con ventaja, y ese es medio el chiste.',
+    cifras: [
+      { valor: n(numeros.clubes), etiqueta: 'clubes' },
+      { valor: n(numeros.jugadores), etiqueta: 'futbolistas' },
+      { valor: n(numeros.confederaciones), etiqueta: 'confederaciones' },
+    ],
+  },
+} as const
+
+const cara = CARAS[variante]
+---
+
+<section
+  class="border-t border-white/5 bg-carbon-900 py-14 md:py-16"
+  aria-label={`El mundo de Gambeta — ${cara.titulo}`}
+>
+  <div class="contenedor">
+    <div class="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center lg:gap-16">
+      <div>
+        <p class="rotulo">{cara.rotulo}</p>
+        <h2 class="mt-3 text-[clamp(1.5rem,3.5vw,2.25rem)]">{cara.titulo}</h2>
+        <p class="mt-3 max-w-xl text-hueso-400">{cara.texto}</p>
+        <a
+          href="/gambeta"
+          class="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-cesped-300 transition-colors hover:text-cesped-200"
+        >
+          Meterse en el mundo Gambeta
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path
+              d="M3 8h10M9 4l4 4-4 4"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"></path>
+          </svg>
+        </a>
+      </div>
+
+      {/*
+        ⚠ Tres columnas también en el teléfono, con el número en `clamp`. Con
+          `grid-cols-1` la banda medía tres pantallas de alto y dejaba de ser
+          una banda; el clamp los achica en vez de apilarlos.
+      */}
+      <dl class="grid grid-cols-3 gap-px overflow-hidden rounded-xl border border-white/8 bg-white/8 lg:min-w-[26rem]">
+        {
+          cara.cifras.map((cifra) => (
+            <div class="dato-hover bg-carbon-950 px-3 py-5 text-center md:px-6 md:py-6">
+              <dt class="dato-valor font-display text-[clamp(1.5rem,6vw,2.5rem)] leading-none text-hueso-50">
+                {cifra.valor}
+              </dt>
+              <dd class="mt-2 text-[0.65rem] uppercase tracking-[0.12em] text-hueso-500 md:text-xs">
+                {cifra.etiqueta}
+              </dd>
+            </div>
+          ))
+        }
+      </dl>
+    </div>
+  </div>
+</section>

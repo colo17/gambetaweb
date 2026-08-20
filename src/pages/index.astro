@@ -1,31 +1,47 @@
 ---
+/**
+ * LA PORTADA
+ *
+ * ⚑ ACÁ SE CUENTA, NO SE EXPLICA. Hasta agosto de 2026 esta página era el sitio
+ *   entero —el camino completo del Manager, los datos del catálogo, el alma y
+ *   el hub, todo seguido— y el dueño la bajó por larga. Ahora es el hilo: el
+ *   hero, y después una presentación corta por juego con su scrollytelling.
+ *   Lo que se explica en detalle vive en `/manager`, `/gambeta`, `/player` y
+ *   `/test`.
+ *
+ * ⚠ Si se agrega un juego, la portada NO se toca: se empuja a `JUEGOS` y se
+ *   escribe su presentación en `presentaciones.ts`. El bucle de abajo hace el
+ *   resto.
+ */
 import Base from '@/layouts/Base.astro'
 import Header from '@/components/Header.astro'
 import Hero from '@/components/Hero.astro'
-import Alma from '@/components/Alma.astro'
-import Manager from '@/components/Manager.astro'
-import Camino from '@/components/Camino.astro'
+import PresentacionJuego from '@/components/PresentacionJuego.astro'
+import MundoGambeta from '@/components/MundoGambeta.astro'
 import Juegos from '@/components/Juegos.astro'
 import Avisame from '@/components/Avisame.astro'
 import Footer from '@/components/Footer.astro'
+import { PRESENTACIONES } from '@/config/presentaciones'
 ---
 
 <Base
   titulo="Gambeta — Juegos de fútbol. Sé el DT y escribí tu historia."
   descripcion="Gambeta es la casa de nuestros juegos de fútbol. Empezá por Gambeta Manager Game: dirigí un club, armá el plantel y peleá la liga con tus amigos, con 81 ligas y 1.339 clubes."
+  precargarHero
 >
   <Header />
   <main id="contenido">
     <Hero />
-    {/*
-      El orden importa y es el que pidió el dueño: primero se muestra QUÉ se
-      hace en el juego (Camino), después los datos del mundo (Manager), y recién
-      al final el porqué emocional (Alma). El que llega quiere ver el juego, no
-      que le cuenten un sentimiento.
-    */}
-    <Camino />
-    <Manager />
-    <Alma />
+
+    {
+      PRESENTACIONES.map((presentacion) => (
+        <>
+          <PresentacionJuego presentacion={presentacion} />
+          <MundoGambeta variante={presentacion.juego as 'manager' | 'player' | 'test'} />
+        </>
+      ))
+    }
+
     <Juegos />
     <Avisame />
   </main>

@@ -1,0 +1,66 @@
+---
+/**
+ * EL EXPLORADOR DE LIGAS, EN LA PÁGINA DEL MUNDO
+ *
+ * ⚠ SOBRE LOS NOMBRES. El catálogo dice "Prenier League" y "Arsenel" a
+ *   propósito: el juego muta los nombres reales una letra por una cuestión de
+ *   derechos, y acá se muestra exactamente lo que ve el jugador. No es un error
+ *   de tipeo y no hay que "arreglarlo".
+ */
+import ligas from '@/data/ligas.json'
+import numeros from '@/data/numeros.json'
+import ligaDestacada from '@/data/liga-destacada.json'
+import LigasExplorer from './LigasExplorer.tsx'
+
+const confederaciones = [...new Set(ligas.map((l) => l.confederacion))].filter(Boolean)
+const porConfederacion = confederaciones.map((c) => ({
+  nombre: c,
+  ligas: ligas.filter((l) => l.confederacion === c).length,
+}))
+
+/**
+ * Lo que se le pasa a la isla, y NADA más.
+ *
+ * ⚑ Las props de un componente con `client:*` viajan DOS veces: una en el HTML
+ *   ya renderizado y otra como JSON para que React se hidrate. Mandar las 81
+ *   ligas enteras metía ~54 KB de campos que el explorador ni mira (medias,
+ *   clubesTop, fechas). Con los cuatro que usa la pestaña y el buscador, son 6.
+ */
+const ligasParaIsla = ligas.map((liga) => ({
+  slug: liga.slug,
+  nombre: liga.nombre,
+  pais: liga.pais,
+  paisNombre: liga.paisNombre,
+}))
+---
+
+<section id="ligas" class="scroll-mt-24 border-t border-white/5 bg-carbon-950 py-20 md:py-28">
+  <div class="contenedor">
+    <div class="mb-8 flex flex-wrap items-end justify-between gap-6">
+      <div>
+        <p class="rotulo">Las competiciones</p>
+        <h2 class="mt-3 text-[clamp(1.75rem,4vw,3rem)]">
+          {numeros.ligas} ligas. {numeros.clubes.toLocaleString('es-AR')} clubes. Todos jugables.
+        </h2>
+      </div>
+      <ul class="flex flex-wrap gap-2">
+        {
+          porConfederacion.map((c) => (
+            <li class="tarjeta-hover rounded-full border border-white/10 px-3 py-1.5 text-xs text-hueso-400 hover:text-hueso-100">
+              {c.nombre} <span class="ml-1 text-hueso-500">{c.ligas}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+
+    <LigasExplorer client:visible ligas={ligasParaIsla} detalleInicial={ligaDestacada} />
+
+    <p class="mt-4 text-xs leading-relaxed text-hueso-500">
+      Los nombres de clubes y ligas están alterados a propósito dentro del
+      juego, y acá se muestran tal cual. La fuerza de cada jugador es un valor
+      propio de Gambeta, calibrado a partir de edad, jerarquía y nivel del
+      club.
+    </p>
+  </div>
+</section>

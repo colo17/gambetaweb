@@ -13,12 +13,27 @@ interface Props {
   descripcion: string
   /** Imagen de compartir, relativa a /public. */
   imagen?: string
+  /**
+   * Precargar el fondo del hero.
+   *
+   * ⚠ SÓLO LA PORTADA. El preload existe porque ahí esa imagen es el LCP; en
+   *   cualquier otra página sería bajar 60 KB que nadie va a mirar, compitiendo
+   *   por ancho de banda justo en el primer segundo.
+   */
+  precargarHero?: boolean
+  /** Datos estructurados propios de la página. Si no vienen, va el de la marca. */
+  schema?: Record<string, unknown>
+  /** Para páginas que no aportan nada a una búsqueda (el 404). */
+  noindex?: boolean
 }
 
 const {
   titulo,
   descripcion,
   imagen = '/assets/generated/og.jpg',
+  precargarHero = false,
+  schema,
+  noindex = false,
 } = Astro.props
 
 const url = new URL(Astro.url.pathname, Astro.site)
@@ -28,7 +43,7 @@ const imagenAbsoluta = new URL(imagen, Astro.site)
  * Datos estructurados: un VideoGameSeries que agrupa los juegos de la marca.
  * Se arma desde `games.ts`, así que sumar un juego también lo suma al SEO.
  */
-const datosEstructurados = {
+const datosEstructurados = schema ?? {
   '@context': 'https://schema.org',
   '@type': 'VideoGameSeries',
   name: 'Gambeta',
@@ -93,14 +108,19 @@ const datosEstructurados = {
         el navegador precargaba una imagen que no usaba y NO precargaba la que
         sí: medido, el LCP móvil pasó de 3,0 a 3,8 s y la nota cayó de 93 a 88.
     */}
-    <link
-      rel="preload"
-      as="image"
-      href="/assets/generated/hero-inicio-900.webp"
-      imagesrcset="/assets/generated/hero-inicio-900.webp 900w, /assets/generated/hero-inicio-1600.webp 1600w"
-      imagesizes="100vw"
-      fetchpriority="high"
-    />
+    {
+      precargarHero && (
+        <link
+          rel="preload"
+          as="image"
+          href="/assets/generated/hero-inicio-900.webp"
+          imagesrcset="/assets/generated/hero-inicio-900.webp 900w, /assets/generated/hero-inicio-1600.webp 1600w"
+          imagesizes="100vw"
+          fetchpriority="high"
+        />
+      )
+    }
+    {noindex && <meta name="robots" content="noindex, follow" />}
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
