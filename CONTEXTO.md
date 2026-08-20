@@ -143,8 +143,8 @@ src/
                             3 en /manager) y trae su propio script.
     PresentacionJuego    ← un juego en la portada · MundoGambeta ← la banda
     Camino               ← las 10+4 etapas del Manager
-    Alma                 ← los cuatro momentos, con la pizarra por etapa
-    Pizarra.astro        ← la cancha con una formación dibujada
+    Alma                 ← los cuatro momentos, con UNA pizarra clavada
+    Pizarra.astro        ← la cancha; las fichas viajan entre formaciones
     ManagerIntro · MundoLigas · MundoFiguras
     LigasExplorer.tsx    ← isla: las 81 ligas
     PlantelExplorer.tsx  ← isla: planteles y buscador de futbolistas

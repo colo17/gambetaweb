@@ -99,8 +99,8 @@ src/
     Escenario            ← EL scrollytelling: panel de texto fijo, imágenes que
                             scrollean y una ilustración a sangre atrás
     Camino               ← las 10+4 etapas del Manager
-    Alma                 ← los cuatro momentos, con la pizarra por etapa
-    Pizarra              ← la cancha con una formación dibujada
+    Alma                 ← los cuatro momentos, con UNA pizarra clavada
+    Pizarra              ← la cancha; las fichas viajan entre formaciones
     ManagerIntro         ← la cabecera de /manager
     MundoLigas · MundoFiguras
     LigasExplorer.tsx    ← isla: las 81 ligas y sus clubes
