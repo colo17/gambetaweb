@@ -403,6 +403,42 @@ en cero para todo el mundo. Los números salen de `manager_spells`.
 el sitio no usa. Ahí está la puerta si alguna vez se quiere ver el perfil de un
 amigo.
 
+### ⚠ LA WEB NUNCA DEPENDE DE LA *SITE URL* DE SUPABASE
+
+Es la regla más fácil de romper de todo el perfil, porque no falla en el
+navegador: falla en la casilla de mail de otra persona, días después.
+
+La **Site URL** del proyecto es **un solo valor compartido con el juego**. Al 20
+de agosto vale `http://localhost:3000`, que es donde la otra ventana corre el
+juego. Y Supabase la usa como destino por defecto **cada vez que quien pide algo
+no dice a dónde volver**.
+
+Con eso, dos mails nuestros llevaban a esa máquina de desarrollo ajena:
+
+| Llamada | Qué se le pasa |
+|---|---|
+| `resetPasswordForEmail` | `redirectTo: ${origin}/perfil` |
+| `signUp` | `options.emailRedirectTo: ${origin}/perfil` |
+
+**Si alguna vez se agrega algo que mande otro mail** —cambio de mail, magic
+link, invitaciones— hay que pasarle su destino explícito igual. No alcanza con
+que la URL esté en la lista blanca: la lista blanca dice qué destinos se
+*permiten*, no cuál se *usa*.
+
+⛔ **Y NO se arregla cambiando la Site URL.** Es de la otra sesión: apuntarla a
+la web le rompe los mails al juego, y el día que el juego se publique la va a
+querer apuntando a él. Que valga lo que el juego necesite; a la web tiene que
+darle igual.
+
+Lo que sí hay del lado de Supabase, ya hecho: `https://gambetaweb.vercel.app/**`
+está en **Authentication → URL Configuration → Redirect URLs**. Sin eso, Supabase
+ignora el `redirectTo` y cae de nuevo en la Site URL.
+
+⚠ **`gambetagame.com` NO está en esa lista, a propósito**: el dominio todavía no
+es del dueño. Poner en la lista blanca un dominio que no controlás es dejar que,
+si otro lo registra, los tokens de tus usuarios terminen ahí. Se agrega el día
+que lo compre.
+
 ⚠ **El corte de "todavía no cargó" va DESPUÉS de todos los hooks** en
 `Perfil.tsx` y en `PlantelExplorer.tsx`. Escribirlo arriba —que es donde sale
 naturalmente— deja los `useMemo` de abajo sin ejecutar en el primer render y
