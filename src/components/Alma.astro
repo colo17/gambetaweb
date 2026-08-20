@@ -23,6 +23,12 @@
  *   la pizarra, quiero que solo aparezca 1 y las fichas se vayan moviendo"*.
  *   El punto de esta sección es ver a los once moverse.
  *
+ * ⚑ Y CADA MOMENTO TIENE SU FONDO, como los demás escenarios: la pizarra a
+ *   oscuras, el campo de entrenamiento vacío al amanecer, el banco de
+ *   suplentes mirando la cancha iluminada, y los papelitos cayendo con el
+ *   festejo desenfocado a lo lejos. Antes había una sola foto fija de potrero
+ *   para toda la sección.
+ *
  * ⚑ Y CON ESTO `/manager` DEJÓ DE CARGAR GSAP: era el último que lo usaba.
  */
 import Escenario from './Escenario.astro'
@@ -31,6 +37,8 @@ import Pizarra from './Pizarra.astro'
 const momentos = [
   {
     id: 'alma-pizarra',
+    fondo: '/assets/generated/bg-alma-pizarra-1600.webp',
+    fondoChico: '/assets/generated/bg-alma-pizarra-900.webp',
     numero: '01',
     titulo: 'Primero es una idea',
     texto:
@@ -40,6 +48,8 @@ const momentos = [
   },
   {
     id: 'alma-semana',
+    fondo: '/assets/generated/bg-alma-semana-1600.webp',
+    fondoChico: '/assets/generated/bg-alma-semana-900.webp',
     numero: '02',
     titulo: 'Después son seis días de dudas',
     texto:
@@ -49,6 +59,8 @@ const momentos = [
   },
   {
     id: 'alma-partido',
+    fondo: '/assets/generated/bg-alma-partido-1600.webp',
+    fondoChico: '/assets/generated/bg-alma-partido-900.webp',
     numero: '03',
     titulo: 'Y llegan los noventa minutos',
     texto:
@@ -58,6 +70,8 @@ const momentos = [
   },
   {
     id: 'alma-gloria',
+    fondo: '/assets/generated/bg-alma-gloria-1600.webp',
+    fondoChico: '/assets/generated/bg-alma-gloria-900.webp',
     numero: '04',
     titulo: 'La vuelta no es tuya. Pero un poco sí',
     texto:
@@ -73,18 +87,6 @@ const momentos = [
   class="relative isolate grano border-t border-white/5 bg-carbon-950 py-24 md:py-32"
   aria-label="El alma del manager"
 >
-  <!-- El fondo del potrero, quieto. -->
-  <div class="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-    <img
-      src="/assets/generated/bg-potrero-1600.webp"
-      alt=""
-      loading="lazy"
-      decoding="async"
-      class="h-full w-full object-cover opacity-20"
-    />
-    <div class="absolute inset-0 bg-gradient-to-b from-carbon-950 via-carbon-950/80 to-carbon-950"></div>
-  </div>
-
   <div class="contenedor">
     <header class="mx-auto mb-16 max-w-2xl text-center md:mb-24">
       <p class="rotulo">El alma del manager</p>
