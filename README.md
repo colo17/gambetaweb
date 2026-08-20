@@ -92,6 +92,7 @@ src/
   lib/cuenta.ts          ← el cliente de Supabase y los tipos del perfil
   data/*.json            ← generados por `npm run datos`, no editar a mano
   components/
+    Simbolos             ← iconitos de fútbol flotando en los márgenes
     Header · Hero · Footer
     PresentacionJuego    ← un juego en la portada
     MundoGambeta         ← la banda de números que va debajo

@@ -137,6 +137,7 @@ src/
   lib/cuenta.ts          ← cliente de Supabase + tipos del perfil
   data/*.json            ← generados por `npm run datos`. NO editar a mano.
   components/
+    Simbolos.astro       ← iconitos de fútbol flotando en los márgenes
     Header · Hero        ← el hero son 5 clips de video en secuencia
     Escenario.astro      ← EL scrollytelling. Se usa 5 veces (3 en la portada,
                             2 en /manager) y trae su propio script.
@@ -156,6 +157,33 @@ harness/                 ← monta las pantallas del juego para fotografiarlas
 assets-src/              ← originales de Higgsfield (se versionan, ~60 MB)
 public/data/planteles/   ← 81 archivos, el plantel de cada club por liga
 ```
+
+### ⚑ LOS SÍMBOLOS DE FONDO, Y EL INTENTO QUE NO FUE
+
+`Simbolos.astro` apoya iconitos de fútbol dibujados a línea —pelota, botín,
+silbato, arco, banderín, cronómetro, trofeo, camiseta— en los **márgenes** de
+una sección, en verde y al 18% de opacidad, flotando apenas. La referencia la
+dio el dueño: es lo que hace nexora-media.com con el `</>` y la paleta.
+
+⚠ **NO TOCAN EL FONDO, Y ESA ES LA DIFERENCIA.** Antes de esto se probó pintar
+el fondo entero —manchas de color derivando y una trama de cancha— y el dueño lo
+bajó al verlo: *"no me gustó como quedaron los efectos, dejalo como antes"*. Es
+el quinto intento de darle fondo a este sitio y el quinto que se saca. **El
+carbón liso es la identidad, no una carencia**; lo que sí funciona es apoyarle
+símbolos encima.
+
+Cómo se usa: la sección tiene que ser `relative` y el componente va como primer
+hijo, con una `semilla` distinta para que dos secciones seguidas no muestren los
+mismos dibujos en los mismos huecos.
+
+⚠ **VIVEN EN LOS MÁRGENES, NUNCA ATRÁS DEL TEXTO.** Al 18% igual ensucian si
+caen sobre un párrafo. Y en el teléfono no hay margen lateral: de los ocho
+quedan dos, reubicados a los bordes por CSS.
+
+⚠ **`hidden lg:block` NO SIRVE ACÁ.** Astro acota el `<style>` del componente
+con un atributo propio, y eso lo vuelve más específico que una clase suelta de
+Tailwind: `.simbolo[data-astro-cid-…]` le gana a `.hidden` y los ocho aparecían
+igual en el teléfono. La visibilidad se resuelve dentro del propio componente.
 
 ### ⚑ HAY UN SOLO SCROLLYTELLING: `Escenario`
 

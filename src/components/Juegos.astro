@@ -7,6 +7,7 @@
  * su estado, su badge y su CTA.
  */
 import { JUEGOS } from '@/config/games'
+import Simbolos from './Simbolos.astro'
 
 const ACENTOS = {
   cesped: {
@@ -30,7 +31,8 @@ const ACENTOS = {
 } as const
 ---
 
-<section id="juegos" class="scroll-mt-24 border-t border-white/5 bg-carbon-950 py-24 md:py-32">
+<section id="juegos" class="relative scroll-mt-24 border-t border-white/5 bg-carbon-950 py-24 md:py-32">
+  <Simbolos semilla={0} />
   <div class="contenedor">
     <header class="mb-14 max-w-2xl">
       <p class="rotulo">El hub</p>

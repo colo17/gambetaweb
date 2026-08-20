@@ -18,6 +18,7 @@ import MundoLigas from '@/components/MundoLigas.astro'
 import MundoFiguras from '@/components/MundoFiguras.astro'
 import SumaTuEquipo from '@/components/SumaTuEquipo.astro'
 import PlantelExplorer from '@/components/PlantelExplorer.tsx'
+import Simbolos from '@/components/Simbolos.astro'
 import ligas from '@/data/ligas.json'
 import numeros from '@/data/numeros.json'
 
@@ -51,6 +52,7 @@ const schema = {
   <main id="contenido">
     <!-- ---- Presentación --------------------------------------------- -->
     <section class="relative isolate grano bg-carbon-950 pt-28 pb-16 md:pt-36 md:pb-20">
+      <Simbolos semilla={2} />
       <div class="contenedor">
         <div class="max-w-3xl">
           <p class="rotulo">El mundo</p>

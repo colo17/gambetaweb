@@ -11,9 +11,11 @@
  */
 import figuras from '@/data/figuras.json'
 import promesas from '@/data/promesas.json'
+import Simbolos from './Simbolos.astro'
 ---
 
-<section id="figuras" class="scroll-mt-24 border-t border-white/5 bg-carbon-950 py-20 md:py-28">
+<section id="figuras" class="relative scroll-mt-24 border-t border-white/5 bg-carbon-950 py-20 md:py-28">
+  <Simbolos semilla={5} />
   <div class="contenedor">
     <!-- ---- Las figuras del mundo ---------------------------------------- -->
     <div class="mb-8">

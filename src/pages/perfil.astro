@@ -18,6 +18,7 @@ import Base from '@/layouts/Base.astro'
 import Header from '@/components/Header.astro'
 import Footer from '@/components/Footer.astro'
 import Perfil from '@/components/Perfil.tsx'
+import Simbolos from '@/components/Simbolos.astro'
 import { JUEGOS } from '@/config/games'
 
 /** Lo mínimo que la isla necesita de cada juego. */
@@ -37,6 +38,7 @@ const juegos = JUEGOS.map((juego) => ({
   <Header />
   <main id="contenido">
     <section class="relative isolate grano min-h-[70svh] bg-carbon-950 pt-28 pb-20 md:pt-36 md:pb-28">
+      <Simbolos semilla={6} />
       <div class="contenedor">
         <div class="mb-10 max-w-2xl">
           <p class="rotulo">Tu cuenta</p>

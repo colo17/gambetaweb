@@ -1,0 +1,192 @@
+---
+/**
+ * SÍMBOLOS DE FONDO
+ * =================
+ *
+ * Iconitos de fútbol dibujados a línea, sueltos en los márgenes de una sección,
+ * flotando apenas. Es lo mismo que hace nexora-media.com con el `</>` y la
+ * paleta, que es la referencia que pasó el dueño el 20 de agosto.
+ *
+ * ⚠ NO TOCAN EL FONDO, Y ESA ES LA DIFERENCIA. El intento anterior fue pintar
+ *   el fondo entero —manchas de color derivando y una trama de cancha— y el
+ *   dueño lo bajó: *"no me gustó como quedaron los efectos, dejalo como antes"*.
+ *   El carbón liso se queda; esto sólo le apoya símbolos encima.
+ *
+ * ⚑ CÓMO SE USA. La sección tiene que ser `relative` (casi todas ya lo son) y
+ *   el componente va como primer hijo:
+ *
+ *       <section class="relative ...">
+ *         <Simbolos semilla={2} />
+ *         …
+ *
+ *   `semilla` corre la lista para que dos secciones seguidas no muestren los
+ *   mismos iconos en los mismos lugares.
+ *
+ * ⚠ VIVEN EN LOS MÁRGENES, no atrás del texto. Están al 20% de opacidad y aun
+ *   así, encima de un párrafo, ensucian. Todas las posiciones caen fuera de la
+ *   franja central donde vive el contenido.
+ *
+ * ⚠ Y CASI TODOS SON SÓLO DE ESCRITORIO. En un teléfono no hay margen lateral:
+ *   ahí quedarían justo abajo del texto, que es lo único que hay que evitar. Se
+ *   dejan dos, arriba y abajo, donde hay aire de sobra.
+ */
+
+/** Los iconos, dibujados a línea. `viewBox` 24×24 y sin relleno. */
+const ICONOS: Record<string, string> = {
+  pelota: `<circle cx="12" cy="12" r="9"/><path d="M12 7.4l3.4 2.5-1.3 4H9.9l-1.3-4z"/><path d="M12 3v4.4M20.6 10.1l-4.2 1.4M17.3 19.6l-2.6-3.6M6.7 19.6l2.6-3.6M3.4 10.1l4.2 1.4"/>`,
+  botin: `<path d="M2.5 12.2c2.6-1 4.2-2.6 6.2-2.6 2 0 2.6 1.6 4.6 2.3 2 .7 4.6.6 6.1 1.8 1 .8 1.6 2 1.6 3.3v.9H2.5z"/><path d="M6 18.4v2.1M10 18.4v2.1M14 18.4v2.1M18 18.4v2.1"/>`,
+  silbato: `<path d="M2 12h7"/><rect x="9" y="7" width="13" height="10" rx="5"/><circle cx="16.5" cy="12" r="2.3"/>`,
+  /**
+   * ⚠ EL ARCO VA CON POCA RED. La primera versión tenía tres verticales y dos
+   *   horizontales, y a 40px de alto se leía como una grilla, no como un arco.
+   *   Con dos líneas alcanza para que se entienda.
+   */
+  arco: `<path d="M3 20V6h18v14"/><path d="M3 20h18"/><path d="M12 6v14"/><path d="M3 13h18"/>`,
+  banderin: `<path d="M6.5 21V3.5"/><path d="M6.5 4.6h10.2l-3.1 3.2 3.1 3.2H6.5"/>`,
+  cronometro: `<circle cx="12" cy="13.5" r="7.5"/><path d="M12 9.8v3.9l2.6 1.8"/><path d="M9.6 2.5h4.8M12 2.5v3.5"/>`,
+  trofeo: `<path d="M7.5 3.5h9v5.2a4.5 4.5 0 0 1-9 0z"/><path d="M7.5 5.6H5a2.8 2.8 0 0 0 2.8 2.8M16.5 5.6H19a2.8 2.8 0 0 1-2.8 2.8"/><path d="M12 13.2v4.3M9 20.5h6M10.2 17.5h3.6"/>`,
+  camiseta: `<path d="M8.7 3.2L4.2 5.6l1.9 4.4 2.1-.9v11.7h7.6V9.1l2.1.9 1.9-4.4-4.5-2.4a3.4 3.4 0 0 1-6.6 0z"/>`,
+}
+
+/**
+ * Las posiciones. Cada una dice dónde cae, qué tamaño tiene y cuánto tarda su
+ * vaivén; los tiempos son distintos a propósito para que no floten todos al
+ * mismo compás, que es lo que delata que es una animación.
+ */
+const LUGARES = [
+  { icono: 'pelota',     estilo: 'top:14%;left:4%',    tamano: 44, duracion: 15, retraso: 0,   movil: false },
+  { icono: 'silbato',    estilo: 'top:8%;right:6%',    tamano: 38, duracion: 19, retraso: 1.5, movil: false },
+  { icono: 'botin',      estilo: 'bottom:16%;left:7%', tamano: 42, duracion: 17, retraso: 3,   movil: false },
+  { icono: 'trofeo',     estilo: 'bottom:10%;right:5%',tamano: 36, duracion: 21, retraso: 0.8, movil: false },
+  { icono: 'arco',       estilo: 'top:44%;right:3%',   tamano: 40, duracion: 23, retraso: 2.2, movil: false },
+  { icono: 'banderin',   estilo: 'top:38%;left:2%',    tamano: 34, duracion: 18, retraso: 4,   movil: false },
+  { icono: 'cronometro', estilo: 'top:6%;left:26%',    tamano: 30, duracion: 16, retraso: 2.8, movil: 'a' },
+  { icono: 'camiseta',   estilo: 'bottom:5%;right:28%',tamano: 32, duracion: 20, retraso: 1.2, movil: 'b' },
+] as const
+
+interface Props {
+  /** Corre la lista para que dos secciones seguidas no queden iguales. */
+  semilla?: number
+}
+
+const { semilla = 0 } = Astro.props
+
+/**
+ * ⚑ LO QUE ROTA ES EL ICONO, NO EL LUGAR. Las posiciones están elegidas para
+ *   caer en los márgenes de la sección; si rotaran también, un icono terminaría
+ *   arriba del texto. Así cada sección muestra otro dibujo en el mismo hueco.
+ */
+const puestos = LUGARES.map((lugar, i) => ({
+  ...lugar,
+  icono: LUGARES[(i + semilla) % LUGARES.length].icono,
+}))
+---
+
+<div class="simbolos" aria-hidden="true">
+  {
+    puestos.map((lugar) => (
+      <span
+        class:list={['simbolo', lugar.movil ? `movil-${lugar.movil}` : 'solo-escritorio']}
+        style={`${lugar.estilo};width:${lugar.tamano}px;height:${lugar.tamano}px;animation-duration:${lugar.duracion}s;animation-delay:-${lugar.retraso}s`}
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" set:html={ICONOS[lugar.icono]} />
+      </span>
+    ))
+  }
+</div>
+
+<style>
+  /**
+   * ⚠ `overflow: hidden` NO, y `pointer-events: none` SÍ.
+   *
+   * El overflow convertiría a la sección en contenedor de scroll y rompería los
+   * `sticky` que hay adentro de varias. Y sin apagar el puntero, un icono
+   * invisible se come el click de un botón que tenga debajo.
+   */
+  .simbolos {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .simbolo {
+    position: absolute;
+    display: block;
+    color: var(--color-cesped-500);
+    opacity: 0.18;
+    animation-name: flotar;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+    will-change: transform;
+  }
+
+  .simbolo :global(svg) {
+    width: 100%;
+    height: 100%;
+  }
+
+  /**
+   * ⚠ LO DE ESCONDER EN EL TELÉFONO VA ACÁ Y NO CON `hidden lg:block`.
+   *
+   * Astro le agrega a este estilo un atributo propio para acotarlo al
+   * componente, y eso lo vuelve MÁS específico que una clase suelta de
+   * Tailwind: `.simbolo[data-astro-cid-…]` le gana a `.hidden`, así que los
+   * ocho iconos aparecían igual en el teléfono. Medido: 8 visibles a 430px
+   * cuando tenían que ser 2.
+   */
+  .simbolo.solo-escritorio {
+    display: none;
+  }
+
+  @media (min-width: 1024px) {
+    .simbolo.solo-escritorio {
+      display: block;
+    }
+  }
+
+  /**
+   * ⚠ LOS DOS QUE SOBREVIVEN EN EL TELÉFONO SE REUBICAN.
+   *
+   * Sus posiciones están pensadas para escritorio, donde hay margen lateral. En
+   * un teléfono el texto ocupa todo el ancho y el primero caía justo encima del
+   * rótulo "JUGABLE AHORA". Acá se los manda a los bordes, donde no llega el
+   * texto: arriba a la derecha y abajo a la izquierda.
+   *
+   * El `!important` no es pereza: la posición de escritorio va en un `style`
+   * en línea —cada icono tiene la suya— y un estilo en línea le gana a
+   * cualquier hoja. Sin esto la regla no hace nada.
+   */
+  @media (max-width: 1023px) {
+    .simbolo.movil-a {
+      top: 7% !important;
+      right: 5% !important;
+      left: auto !important;
+      bottom: auto !important;
+    }
+
+    .simbolo.movil-b {
+      bottom: 4% !important;
+      left: 6% !important;
+      top: auto !important;
+      right: auto !important;
+    }
+  }
+
+  /**
+   * El vaivén es CHICO a propósito: doce píxeles y seis grados. El dueño lo
+   * pidió así —"que floten y se muevan mínimamente"—, y además un icono que
+   * cruza media pantalla deja de ser fondo y pasa a ser un distractor.
+   */
+  @keyframes flotar {
+    from { transform: translate3d(0, 0, 0) rotate(-3deg); }
+    to   { transform: translate3d(0, -12px, 0) rotate(3deg); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .simbolo {
+      animation: none;
+    }
+  }
+</style>

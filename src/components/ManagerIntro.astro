@@ -15,6 +15,7 @@
  */
 import numeros from '@/data/numeros.json'
 import { CTA_JUGAR } from '@/config/games'
+import Simbolos from './Simbolos.astro'
 
 const modos = [
   {
@@ -48,6 +49,7 @@ const modos = [
   id="manager"
   class="relative isolate scroll-mt-24 bg-carbon-950 pt-28 pb-20 md:pt-36 md:pb-28"
 >
+  <Simbolos semilla={3} />
   <div class="contenedor">
     <div class="grid gap-12 lg:grid-cols-[1.1fr_1fr] lg:items-end lg:gap-20">
       <div>
