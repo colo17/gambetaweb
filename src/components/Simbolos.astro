@@ -35,13 +35,11 @@
 const ICONOS: Record<string, string> = {
   pelota: `<circle cx="12" cy="12" r="9"/><path d="M12 7.4l3.4 2.5-1.3 4H9.9l-1.3-4z"/><path d="M12 3v4.4M20.6 10.1l-4.2 1.4M17.3 19.6l-2.6-3.6M6.7 19.6l2.6-3.6M3.4 10.1l4.2 1.4"/>`,
   botin: `<path d="M2.5 12.2c2.6-1 4.2-2.6 6.2-2.6 2 0 2.6 1.6 4.6 2.3 2 .7 4.6.6 6.1 1.8 1 .8 1.6 2 1.6 3.3v.9H2.5z"/><path d="M6 18.4v2.1M10 18.4v2.1M14 18.4v2.1M18 18.4v2.1"/>`,
-  silbato: `<path d="M2 12h7"/><rect x="9" y="7" width="13" height="10" rx="5"/><circle cx="16.5" cy="12" r="2.3"/>`,
-  /**
-   * ⚠ EL ARCO VA CON POCA RED. La primera versión tenía tres verticales y dos
-   *   horizontales, y a 40px de alto se leía como una grilla, no como un arco.
-   *   Con dos líneas alcanza para que se entienda.
-   */
-  arco: `<path d="M3 20V6h18v14"/><path d="M3 20h18"/><path d="M12 6v14"/><path d="M3 13h18"/>`,
+  /** La cancha vista de arriba: dos áreas, la línea del medio y el círculo. */
+  pizarra: `<rect x="2.5" y="4.5" width="19" height="15" rx="1.6"/><path d="M12 4.5v15"/><circle cx="12" cy="12" r="2.9"/><path d="M2.5 9h3v6h-3M21.5 9h-3v6h3"/>`,
+  cono: `<path d="M12 3.8L17.8 17.5H6.2z"/><path d="M4 20.2h16"/><path d="M9.3 12.6h5.4"/>`,
+  /** El guante: cuatro dedos, el pulgar y el puño. Sin el puño se lee "mano". */
+  guante: `<path d="M8 11.4V7.6a1.5 1.5 0 0 1 3 0v3.8"/><path d="M11 11.4V6.4a1.5 1.5 0 0 1 3 0v5"/><path d="M14 11.4V7.9a1.5 1.5 0 0 1 3 0v3.5"/><path d="M17 12.4V10a1.5 1.5 0 0 1 3 0v5.6c0 3-2.2 5.4-5.2 5.4h-3.4C8.4 21 6 18.7 6 15.7v-3.6a1.5 1.5 0 0 1 3 0"/><path d="M7 17.6h11.6"/>`,
   banderin: `<path d="M6.5 21V3.5"/><path d="M6.5 4.6h10.2l-3.1 3.2 3.1 3.2H6.5"/>`,
   cronometro: `<circle cx="12" cy="13.5" r="7.5"/><path d="M12 9.8v3.9l2.6 1.8"/><path d="M9.6 2.5h4.8M12 2.5v3.5"/>`,
   trofeo: `<path d="M7.5 3.5h9v5.2a4.5 4.5 0 0 1-9 0z"/><path d="M7.5 5.6H5a2.8 2.8 0 0 0 2.8 2.8M16.5 5.6H19a2.8 2.8 0 0 1-2.8 2.8"/><path d="M12 13.2v4.3M9 20.5h6M10.2 17.5h3.6"/>`,
@@ -54,14 +52,38 @@ const ICONOS: Record<string, string> = {
  * mismo compás, que es lo que delata que es una animación.
  */
 const LUGARES = [
-  { icono: 'pelota',     estilo: 'top:14%;left:4%',    tamano: 44, duracion: 15, retraso: 0,   movil: false },
-  { icono: 'silbato',    estilo: 'top:8%;right:6%',    tamano: 38, duracion: 19, retraso: 1.5, movil: false },
-  { icono: 'botin',      estilo: 'bottom:16%;left:7%', tamano: 42, duracion: 17, retraso: 3,   movil: false },
-  { icono: 'trofeo',     estilo: 'bottom:10%;right:5%',tamano: 36, duracion: 21, retraso: 0.8, movil: false },
-  { icono: 'arco',       estilo: 'top:44%;right:3%',   tamano: 40, duracion: 23, retraso: 2.2, movil: false },
-  { icono: 'banderin',   estilo: 'top:38%;left:2%',    tamano: 34, duracion: 18, retraso: 4,   movil: false },
-  { icono: 'cronometro', estilo: 'top:6%;left:26%',    tamano: 30, duracion: 16, retraso: 2.8, movil: 'a' },
-  { icono: 'camiseta',   estilo: 'bottom:5%;right:28%',tamano: 32, duracion: 20, retraso: 1.2, movil: 'b' },
+  { estilo: 'top:14%;left:4%',     tamano: 44, duracion: 15, retraso: 0,   movil: false },
+  { estilo: 'top:8%;right:6%',     tamano: 38, duracion: 19, retraso: 1.5, movil: false },
+  { estilo: 'bottom:16%;left:7%',  tamano: 42, duracion: 17, retraso: 3,   movil: false },
+  { estilo: 'bottom:10%;right:5%', tamano: 36, duracion: 21, retraso: 0.8, movil: false },
+  { estilo: 'top:44%;right:3%',    tamano: 40, duracion: 23, retraso: 2.2, movil: false },
+  { estilo: 'top:38%;left:2%',     tamano: 34, duracion: 18, retraso: 4,   movil: false },
+  { estilo: 'top:6%;left:26%',     tamano: 30, duracion: 16, retraso: 2.8, movil: 'a' },
+  { estilo: 'bottom:5%;right:28%', tamano: 32, duracion: 20, retraso: 1.2, movil: 'b' },
+] as const
+
+/**
+ * El orden en que se reparten los dibujos por los huecos.
+ *
+ * ⚑ SON NUEVE PARA OCHO LUGARES, y está bien: al correrlos con la `semilla`,
+ *   cada sección deja uno afuera y muestra una combinación distinta.
+ *
+ * ⚠ ACÁ HUBO UN SILBATO Y UN ARCO Y SE SACARON. El dueño los vio en producción
+ *   y no los reconoció: *"sacá estos 2 que no sé ni lo que es"*. A 35px el
+ *   silbato se leía como una lupa y el arco como una ventana. La lección, para
+ *   cuando se agregue otro: **el dibujo tiene que entenderse por su silueta**,
+ *   porque a ese tamaño el detalle interior no existe.
+ */
+const ORDEN = [
+  'pelota',
+  'pizarra',
+  'botin',
+  'trofeo',
+  'guante',
+  'banderin',
+  'cronometro',
+  'camiseta',
+  'cono',
 ] as const
 
 interface Props {
@@ -78,7 +100,7 @@ const { semilla = 0 } = Astro.props
  */
 const puestos = LUGARES.map((lugar, i) => ({
   ...lugar,
-  icono: LUGARES[(i + semilla) % LUGARES.length].icono,
+  icono: ORDEN[(i + semilla) % ORDEN.length],
 }))
 ---
 
