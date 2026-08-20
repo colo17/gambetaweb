@@ -138,8 +138,8 @@ src/
   data/*.json            ← generados por `npm run datos`. NO editar a mano.
   components/
     Header · Hero        ← el hero son 5 clips de video en secuencia
-    Recorrido.astro      ← EL scrollytelling. Se usa 5 veces y trae su propio
-                            script: agarra todos los bloques de la página.
+    Escenario.astro      ← el scrollytelling de la PORTADA (3 veces)
+    Recorrido.astro      ← el scrollytelling de /manager (2 veces)
     PresentacionJuego    ← un juego en la portada · MundoGambeta ← la banda
     Camino               ← las 10+4 etapas del Manager
     Alma                 ← la pizarra que cambia de formación
@@ -156,6 +156,39 @@ harness/                 ← monta las pantallas del juego para fotografiarlas
 assets-src/              ← originales de Higgsfield (se versionan, ~60 MB)
 public/data/planteles/   ← 81 archivos, el plantel de cada club por liga
 ```
+
+### ⚑ HAY DOS SCROLLYTELLING DISTINTOS, Y ES A PROPÓSITO
+
+No los unifiques. Son inversos, y cada uno sirve para algo distinto:
+
+| | `Recorrido` (/manager) | `Escenario` (portada) |
+|---|---|---|
+| Scrollea | el **texto** | las **imágenes** |
+| Queda fijo | la **imagen** | un **panel de texto** que se reescribe |
+| Fondo | ninguno | una imagen a sangre que hace crossfade |
+| Motor | GSAP + ScrollTrigger | JavaScript a secas, ~20 líneas |
+
+El de la portada está calcado del de `terrasol-web` (`site/assets/js/app.js`,
+buscar `data-scrolly`), que es lo que pidió el dueño el 20 de agosto: *"quiero
+que sean diferentes… como el que hicimos para terrasol-web"*. Un panel que se
+reescribe se lee como una película; una lista de textos que pasan se lee como un
+documento. La portada quiere lo primero, y la página del Manager —que sí es una
+explicación larga— quiere lo segundo.
+
+⚠ **La portada NO carga GSAP**, y conviene que siga así: el escenario es su
+única animación de scroll, y sacarlo subió la nota móvil de 98 a 99.
+
+⚠ **Las capturas del juego NO van de fondo a sangre.** El fondo de Terrasol es
+una foto y aguanta el velo; una captura de interfaz estirada y oscurecida no se
+lee, y `object-cover` le come columnas enteras (§8, los cuatro intentos). Una
+etapa `tipo: 'juego'` manda su captura al fondo **difuminada**, como ambiente, y
+la muestra nítida y entera en su marco. El arte de Player y Test sí va nítido.
+
+⚠ **Y el marco de la captura NO tiene proporción fija en escritorio.** Las
+capturas van de 1,10 a 1,96 de proporción —la fecha en vivo es casi cuadrada, el
+mercado es una banda—, así que cualquier marco fijo le deja aire muerto a la
+mitad. En el teléfono sí lleva marco fijo, porque apiladas y de altos distintos
+quedaban como un collage.
 
 ⚑ **Dónde va cada cosa.** La regla que ordenó la partición: lo que es del
 **mundo** (ligas, clubes, planteles, figuras) va en `/gambeta`, porque lo

@@ -10,7 +10,7 @@
  *   que viene en otro tono: tres bloques iguales pegados se leen como una sola
  *   tira infinita, que es justo el problema que vino a resolver partir el sitio.
  */
-import Recorrido from './Recorrido.astro'
+import Escenario from './Escenario.astro'
 import { juegoPorId } from '@/config/games'
 import type { Presentacion } from '@/config/presentaciones'
 
@@ -51,9 +51,17 @@ const proximo = juego.estado === 'coming-soon'
       </h2>
       <p class="mt-5 text-lg text-hueso-400">{presentacion.bajada}</p>
     </header>
+  </div>
 
-    <Recorrido etapas={presentacion.etapas} />
+  {/*
+    ⚠ EL ESCENARIO VA FUERA DE `.contenedor`. Adentro lleva un fondo a sangre, y
+      un fondo metido en el contenedor deja dos franjas oscuras a los costados
+      apenas la pantalla es más ancha que el contenido. Él se pone su propio
+      `.contenedor` adentro, sólo alrededor de las columnas.
+  */}
+  <Escenario etapas={presentacion.etapas} juego={juego.nombre} />
 
+  <div class="contenedor">
     <div class="mt-14 flex flex-wrap items-center justify-center gap-4 md:mt-20">
       <a href={juego.ruta} class:list={['boton', proximo ? 'boton-secundario' : 'boton-primario']}>
         {proximo ? `Ver qué se viene` : `Todo sobre el Manager`}

@@ -92,8 +92,8 @@ verificar('la página abierta queda marcada en el menú', marcado?.trim() === 'G
 console.log('\nPortada')
 
 await ir('/')
-const recorridos = await pagina.locator('[data-recorrido]').count()
-verificar('hay un scrollytelling por juego', recorridos === 3, `${recorridos} recorridos`)
+const escenarios = await pagina.locator('[data-escenario]').count()
+verificar('hay un scrollytelling por juego', escenarios === 3, `${escenarios} escenarios`)
 
 verificar(
   'las tres cards del hub están',
@@ -101,29 +101,45 @@ verificar(
 )
 
 /**
- * El scrollytelling responde al scroll.
+ * El escenario responde al scroll: el panel fijo se reescribe y el fondo cambia.
  *
- * ⚠ NO SE MIRA LA OPACIDAD DE LA FIGURA 0 y punto: según dónde caiga el scroll
- *   al entrar, la etapa activa puede no ser la primera, y entonces "0 → 0" no
- *   prueba nada. Lo que se compara es CUÁL es la figura encendida antes y
- *   después, que es lo que el visitante ve.
+ * ⚠ NO SE MIRA UN ELEMENTO SUELTO: según dónde caiga el scroll al entrar, la
+ *   etapa activa puede no ser la primera, y comparar contra la 0 no probaría
+ *   nada. Lo que se compara es CUÁL etapa manda antes y después.
  */
-const figuraEncendida = async () =>
+const estadoEscenario = async () =>
   pagina.evaluate(() => {
-    const figuras = [...document.querySelectorAll('#presentacion-manager [data-camino-figura]')]
-    return figuras.findIndex((f) => Number(getComputedStyle(f).opacity) > 0.5)
+    const bloque = document.querySelector('#presentacion-manager [data-escenario]')
+    const fondos = [...bloque.querySelectorAll('[data-escenario-fondo]')]
+    return {
+      titulo: bloque.querySelector('[data-escenario-titulo]')?.textContent?.trim() ?? '',
+      fondo: fondos.findIndex((f) => f.style.opacity === '1'),
+    }
   })
 
 await pagina.locator('#presentacion-manager [data-etapa="p-sala"]').scrollIntoViewIfNeeded()
 await pagina.waitForTimeout(900)
-const figuraArriba = await figuraEncendida()
+const arriba = await estadoEscenario()
 await pagina.locator('#presentacion-manager [data-etapa="p-tabla"]').scrollIntoViewIfNeeded()
 await pagina.waitForTimeout(900)
-const figuraAbajo = await figuraEncendida()
+const abajo = await estadoEscenario()
+
 verificar(
-  'la imagen del scrollytelling cambia al bajar',
-  figuraArriba !== -1 && figuraAbajo !== -1 && figuraAbajo > figuraArriba,
-  `figura ${figuraArriba} → ${figuraAbajo}`
+  'el panel fijo se reescribe al bajar',
+  Boolean(arriba.titulo) && Boolean(abajo.titulo) && arriba.titulo !== abajo.titulo,
+  `"${arriba.titulo}" → "${abajo.titulo}"`
+)
+verificar(
+  'y el fondo cambia con la etapa',
+  arriba.fondo !== -1 && abajo.fondo !== -1 && abajo.fondo > arriba.fondo,
+  `fondo ${arriba.fondo} → ${abajo.fondo}`
+)
+
+// La portada dejó de usar GSAP: el escenario lo hace con JavaScript a secas.
+verificar(
+  'la portada no descarga GSAP',
+  !(await pagina.content()).includes('gsap'),
+  'aparece "gsap" en el HTML'
 )
 
 // El formulario de avisos

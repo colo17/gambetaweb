@@ -49,7 +49,8 @@ Vite no minifica y la nota de rendimiento no significa nada.
 - **React 19** — sólo para las tres islas: el explorador de ligas, el buscador de
   futbolistas y el perfil. Todo lo demás es HTML.
 - **Tailwind CSS 4** — el tema entero vive en `src/styles/global.css`, no hay `tailwind.config`.
-- **GSAP + ScrollTrigger** — los scrollytelling (tres en la portada, dos en `/manager`).
+- **GSAP + ScrollTrigger** — sólo los dos scrollytelling de `/manager`. Los tres de
+  la portada no usan ninguna biblioteca.
 - **Supabase JS** — sólo en `/perfil`, y se descarga sólo si las cuentas están prendidas.
 - **TypeScript** en la config y las islas.
 
@@ -94,7 +95,8 @@ src/
     Header · Hero · Footer
     PresentacionJuego    ← un juego en la portada
     MundoGambeta         ← la banda de números que va debajo
-    Recorrido            ← EL scrollytelling; se usa cinco veces
+    Escenario            ← el scrollytelling de la PORTADA (panel fijo + fondo)
+    Recorrido            ← el scrollytelling de /manager (imagen fija)
     Camino               ← las 10+4 etapas del Manager
     Alma                 ← el scrollytelling emocional del Manager
     ManagerIntro         ← la cabecera de /manager

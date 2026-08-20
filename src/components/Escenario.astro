@@ -1,0 +1,348 @@
+---
+/**
+ * EL ESCENARIO — el scrollytelling de la portada
+ * ==============================================
+ *
+ * ⚑ ES AL REVÉS DE `Recorrido.astro`, Y ESE ES EL PUNTO.
+ *
+ *   Recorrido (el de /manager):  scrollea el TEXTO,  queda fija la IMAGEN.
+ *   Escenario  (el de la portada): scrollean las IMÁGENES, queda fijo un PANEL
+ *                                  de texto que se reescribe solo.
+ *
+ *   Está calcado del scrollytelling de terrasol-web, que es lo que pidió el
+ *   dueño. Un panel grande que se va reescribiendo se lee como una película;
+ *   una lista de textos que pasan se lee como un documento. La portada quiere
+ *   lo primero.
+ *
+ * ⚑ Y ATRÁS, UNA IMAGEN A SANGRE que cambia con la etapa, pegada a la ventana.
+ *
+ * ⚠ PERO LAS CAPTURAS DEL JUEGO NO VAN A SANGRE. En Terrasol el fondo es una
+ *   foto de maquinaria y aguanta el velo; una captura de interfaz estirada y
+ *   oscurecida no se lee, y encima `object-cover` le come columnas enteras —
+ *   que es exactamente lo que ya falló cuatro veces (ver CONTEXTO §8). Por eso
+ *   una etapa `tipo: 'juego'` manda su captura al fondo DIFUMINADA, como
+ *   ambiente, y la muestra nítida y entera en su marco. El arte de Player y
+ *   Test, que sí son fotos, va al fondo nítido como en Terrasol.
+ *
+ * ⚠ NADA DE `overflow-hidden` EN LA SECCIÓN. Un overflow distinto de `visible`
+ *   la convierte en contenedor de scroll y rompe el `sticky` de las dos
+ *   columnas de adentro. El recorte del fondo lo hace su propio contenedor.
+ *
+ * ⚑ NO USA GSAP, a propósito. Es la única animación de scroll de la portada, y
+ *   con esto la portada deja de bajar GSAP + ScrollTrigger (~70 KB) para nada.
+ *   La cuenta es la misma de Terrasol y entra en veinte líneas.
+ */
+import type { Etapa } from '@/config/recorrido'
+
+interface Props {
+  etapas: Etapa[]
+  /** Se muestra arriba del panel fijo, para no perder de vista de qué juego es. */
+  juego: string
+}
+
+const { etapas, juego } = Astro.props
+const total = String(etapas.length).padStart(2, '0')
+const numeroDe = (i: number) => `${String(i + 1).padStart(2, '0')} / ${total}`
+---
+
+<div class="escenario relative" data-escenario>
+  {/* ---- El fondo, pegado a la ventana ------------------------------- */}
+  <div class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
+    <div class="sticky top-0 h-[100svh] overflow-hidden">
+      {
+        etapas.map((etapa, indice) => (
+          <img
+            src={etapa.imagenChica ?? etapa.imagen}
+            alt=""
+            loading="lazy"
+            decoding="async"
+            data-escenario-fondo={indice}
+            class:list={[
+              'absolute inset-0 h-full w-full scale-[1.06] object-cover opacity-0 transition-[opacity,transform] duration-1000 ease-salida',
+              // La captura de interfaz sólo sirve de ambiente: difuminada y muy baja.
+              etapa.tipo === 'arte' ? '' : 'blur-2xl saturate-150',
+            ]}
+          />
+        ))
+      }
+      {/*
+        El velo. A la izquierda tapa fuerte —ahí vive el panel de texto— y a la
+        derecha afloja, que es donde pasan las imágenes. Va en CSS de verdad y
+        no en una clase de Tailwind: son dos degradés superpuestos con comas
+        adentro, y meterlos en un valor arbitrario se rompe mirándolo.
+      */}
+      <span class="escenario-velo absolute inset-0"></span>
+    </div>
+  </div>
+
+  {/*
+    ⚠ EL FONDO QUEDÓ ARRIBA, FUERA DE ESTE `.contenedor`, Y TIENE QUE SEGUIR
+      ASÍ. Un fondo metido adentro del contenedor deja dos franjas oscuras a los
+      costados en cuanto la pantalla es más ancha que el contenido. Ya pasó
+      (CONTEXTO §8, intento 3).
+  */}
+  <div class="contenedor grid min-w-0 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1fr)] lg:gap-14 xl:gap-20">
+    {/* ---- El panel fijo, que se reescribe ---------------------------- */}
+    <div
+      class="hidden lg:flex lg:sticky lg:top-24 lg:h-[calc(100svh-6rem)] lg:flex-col lg:justify-center"
+      data-panel-fijo
+    >
+      <p class="font-display text-xs uppercase tracking-[0.28em] text-hueso-500">{juego}</p>
+      <p class="mt-6 text-sm font-semibold uppercase tracking-[0.2em] text-cesped-400" data-escenario-num>
+        {numeroDe(0)} · {etapas[0].pie}
+      </p>
+      {/*
+        ⚠ `min-h` EN EL TÍTULO Y EN EL TEXTO. Sin eso, el panel cambia de alto
+          en cada etapa y todo lo de adentro salta de lugar al pasar de una a
+          otra. Es el mismo criterio que Terrasol.
+      */}
+      <h3
+        class="mt-4 min-h-[2.1em] text-[clamp(1.75rem,3.2vw,2.75rem)] leading-tight"
+        data-escenario-titulo
+      >
+        {etapas[0].titulo}
+      </h3>
+      <p
+        class="mt-4 min-h-[7.5em] max-w-[46ch] text-lg leading-relaxed text-hueso-400"
+        data-escenario-texto
+      >
+        {etapas[0].texto}
+      </p>
+
+      {/* Los puntos del recorrido, que se encienden con la etapa */}
+      <ol class="mt-10 flex items-center gap-2" aria-hidden="true">
+        {
+          etapas.map((_, indice) => (
+            <li class="flex flex-1 items-center gap-2">
+              <span
+                class="h-1.5 w-full rounded-full bg-white/10 transition-colors duration-500"
+                data-escenario-punto={indice}
+              />
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+
+    {/* ---- Los pasos, que scrollean ----------------------------------- */}
+    <ol class="min-w-0 lg:pt-[18vh] lg:pb-[34vh]">
+      {
+        etapas.map((etapa, indice) => {
+          const esArte = etapa.tipo === 'arte'
+          return (
+            <li
+              class="scroll-mt-28 pb-16 opacity-100 transition-opacity duration-500 lg:pb-[16vh] lg:opacity-40"
+              data-paso={indice}
+              data-etapa={etapa.id}
+            >
+              {/*
+                ⚠ ESTE TEXTO SE VE SÓLO EN TELÉFONO Y CON MOVIMIENTO REDUCIDO.
+                  En escritorio lo dice el panel fijo, y mostrarlo dos veces
+                  sería el mismo párrafo dos veces en la misma pantalla.
+              */}
+              <div class="mb-5 lg:hidden" data-texto-paso>
+                <p
+                  class="text-xs font-semibold uppercase tracking-[0.2em] text-cesped-400"
+                  data-paso-num
+                >
+                  {numeroDe(indice)} · {etapa.pie}
+                </p>
+                <h3 class="mt-3 text-[clamp(1.5rem,5vw,2rem)]" data-paso-titulo>{etapa.titulo}</h3>
+                <p class="mt-3 text-hueso-400" data-paso-texto>{etapa.texto}</p>
+              </div>
+
+              <figure class="panel overflow-hidden">
+                {/*
+                  ⚠ EN ESCRITORIO LA CAPTURA DEFINE SU PROPIO ALTO.
+
+                  Las capturas del juego van de 1,10 a 1,96 de proporción —la
+                  fecha en vivo es casi cuadrada, el mercado es una banda—, así
+                  que cualquier marco de proporción fija le deja aire muerto a
+                  la mitad. Acá abajo se scrollean una atrás de otra, así que
+                  que cada una mida distinto no molesta: llena su marco y se ve
+                  grande.
+
+                  ⚠ EN TELÉFONO SÍ VA MARCO FIJO, y es la lección vieja
+                    (CONTEXTO §8): apiladas y de altos distintos quedaban como
+                    un collage. Ahí manda "chica y completa" antes que "grande".
+                */}
+                <div
+                  class:list={[
+                    'flex aspect-[4/3] items-center justify-center',
+                    esArte ? '' : 'bg-[#070a12] p-2 lg:aspect-auto',
+                  ]}
+                >
+                  <img
+                    src={etapa.imagen}
+                    alt={`${etapa.titulo} — ${etapa.pie}`}
+                    loading="lazy"
+                    decoding="async"
+                    class:list={[
+                      'h-full w-full',
+                      esArte ? 'object-cover' : 'object-contain lg:h-auto lg:max-h-[68vh]',
+                    ]}
+                  />
+                </div>
+                <figcaption class="flex items-center justify-between gap-4 border-t border-white/8 bg-carbon-900/90 px-4 py-3">
+                  <span class="truncate text-sm text-hueso-300">{etapa.pie}</span>
+                  <span
+                    class:list={[
+                      'shrink-0 rounded-full px-2 py-0.5 text-[0.6rem] font-semibold uppercase tracking-[0.12em]',
+                      esArte
+                        ? 'bg-white/5 text-hueso-400 ring-1 ring-white/10'
+                        : 'bg-cesped-500/15 text-cesped-300 ring-1 ring-cesped-500/30',
+                    ]}
+                  >
+                    {esArte ? 'Arte' : 'Captura real'}
+                  </span>
+                </figcaption>
+              </figure>
+            </li>
+          )
+        })
+      }
+    </ol>
+  </div>
+</div>
+
+<style>
+  /**
+   * ⚠ LOS DOS DEGRADÉS SE MULTIPLICAN, no se suman.
+   *
+   * Un primer intento usaba .96/.90/.72 de costado y .95/.55 de arriba abajo, y
+   * en el punto más claro dejaba pasar el 12% de la foto: el fondo directamente
+   * no se veía y la sección parecía negra. Estos valores dejan pasar ~25% ahí,
+   * que es donde la foto se lee como ambiente sin pelearle al texto.
+   */
+  .escenario-velo {
+    background:
+      linear-gradient(to right, rgba(5, 6, 7, 0.95) 0%, rgba(5, 6, 7, 0.84) 42%, rgba(5, 6, 7, 0.55) 100%),
+      linear-gradient(to bottom, rgba(5, 6, 7, 0.92) 0%, rgba(5, 6, 7, 0.42) 26%, rgba(5, 6, 7, 0.42) 74%, rgba(5, 6, 7, 0.92) 100%);
+  }
+
+  /* En el teléfono el texto ocupa todo el ancho, así que el velo lateral no
+     tiene sentido: es un manto parejo. Es la misma lección del hero, donde el
+     degradé de izquierda a derecha mataba el video en pantallas chicas. */
+  @media (max-width: 1023px) {
+    .escenario-velo {
+      background: linear-gradient(to bottom, rgba(5, 6, 7, 0.94) 0%, rgba(5, 6, 7, 0.82) 30%, rgba(5, 6, 7, 0.82) 70%, rgba(5, 6, 7, 0.94) 100%);
+    }
+  }
+
+  /**
+   * ⚠ CON MOVIMIENTO REDUCIDO SE CAE AL MISMO DISEÑO QUE EL TELÉFONO: el panel
+   *   que se reescribe desaparece y cada paso muestra su propio texto. Va en
+   *   CSS y no en JavaScript para que valga aunque el script no llegue a
+   *   correr.
+   */
+  @media (prefers-reduced-motion: reduce) {
+    [data-panel-fijo] {
+      display: none !important;
+    }
+    [data-texto-paso] {
+      display: block !important;
+    }
+    [data-paso] {
+      opacity: 1 !important;
+    }
+  }
+</style>
+
+<script>
+  /**
+   * EL MOTOR DEL ESCENARIO
+   *
+   * Manda el paso que cruza la mitad de la pantalla; si ninguno la cruza
+   * —porque se está entrando o saliendo del bloque— manda el más cercano. Es la
+   * misma cuenta que usa terrasol-web, y no necesita ninguna biblioteca.
+   *
+   * ⚑ AGARRA TODOS LOS ESCENARIOS DE LA PÁGINA. En la portada hay tres, uno por
+   *   juego, y cada uno tiene que mirar sólo sus propios pasos: con un
+   *   `document.querySelectorAll` suelto, el último le pisa el estado a los
+   *   anteriores.
+   */
+  const quieto = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+  document.querySelectorAll<HTMLElement>('[data-escenario]').forEach((bloque) => {
+    const pasos = [...bloque.querySelectorAll<HTMLElement>('[data-paso]')]
+    const fondos = [...bloque.querySelectorAll<HTMLElement>('[data-escenario-fondo]')]
+    const puntos = [...bloque.querySelectorAll<HTMLElement>('[data-escenario-punto]')]
+    const elNumero = bloque.querySelector<HTMLElement>('[data-escenario-num]')
+    const elTitulo = bloque.querySelector<HTMLElement>('[data-escenario-titulo]')
+    const elTexto = bloque.querySelector<HTMLElement>('[data-escenario-texto]')
+    if (!pasos.length) return
+
+    /**
+     * El texto de cada paso se lee del DOM, no de una copia en un atributo:
+     * ya está escrito en el bloque que se muestra en el teléfono, así que
+     * duplicarlo en `data-` sería mandar el mismo párrafo dos veces por el
+     * cable.
+     */
+    const contenido = pasos.map((paso) => ({
+      numero: paso.querySelector('[data-paso-num]')?.textContent?.trim() ?? '',
+      titulo: paso.querySelector('[data-paso-titulo]')?.textContent?.trim() ?? '',
+      texto: paso.querySelector('[data-paso-texto]')?.textContent?.trim() ?? '',
+    }))
+
+    let actual = -1
+
+    const pintar = (indice: number) => {
+      if (indice === actual) return
+      actual = indice
+
+      fondos.forEach((fondo, i) => {
+        fondo.style.opacity = i === indice ? '1' : '0'
+        fondo.style.transform = i === indice ? 'scale(1)' : 'scale(1.06)'
+      })
+      pasos.forEach((paso, i) => {
+        paso.classList.toggle('lg:opacity-100', i === indice)
+        paso.classList.toggle('lg:opacity-40', i !== indice)
+      })
+      puntos.forEach((punto, i) => {
+        punto.classList.toggle('bg-cesped-500', i <= indice)
+        punto.classList.toggle('bg-white/10', i > indice)
+      })
+
+      const c = contenido[indice]
+      if (elNumero) elNumero.textContent = c.numero
+      if (elTitulo) elTitulo.textContent = c.titulo
+      if (elTexto) elTexto.textContent = c.texto
+    }
+
+    const elegir = () => {
+      const medio = window.innerHeight / 2
+      let mejor = 0
+      let distancia = Infinity
+      for (let i = 0; i < pasos.length; i += 1) {
+        const r = pasos[i].getBoundingClientRect()
+        if (r.top <= medio && r.bottom >= medio) { mejor = i; break }
+        const d = Math.abs(r.top + r.height / 2 - medio)
+        if (d < distancia) { distancia = d; mejor = i }
+      }
+      pintar(mejor)
+    }
+
+    /**
+     * ⚠ EL SCROLL SE MIRA UNA VEZ POR CUADRO, no en cada evento. En un teléfono
+     *   el navegador dispara `scroll` decenas de veces por segundo y cada una
+     *   pide `getBoundingClientRect`, que fuerza al navegador a recalcular el
+     *   layout. Sin esto, bajar por la portada se siente pegajoso.
+     */
+    let pendiente = false
+    const alScrollear = () => {
+      if (pendiente) return
+      pendiente = true
+      requestAnimationFrame(() => {
+        pendiente = false
+        elegir()
+      })
+    }
+
+    // Con movimiento reducido el CSS ya dejó todo visible: no hay nada que animar.
+    if (quieto) return
+
+    window.addEventListener('scroll', alScrollear, { passive: true })
+    window.addEventListener('resize', alScrollear)
+    elegir()
+  })
+</script>
