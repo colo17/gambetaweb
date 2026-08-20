@@ -137,7 +137,6 @@ src/
   lib/cuenta.ts          ← cliente de Supabase + tipos del perfil
   data/*.json            ← generados por `npm run datos`. NO editar a mano.
   components/
-    Ambiente.astro       ← el fondo vivo del sitio. UNA capa fixed, en Base.
     Header · Hero        ← el hero son 5 clips de video en secuencia
     Escenario.astro      ← EL scrollytelling. Se usa 5 veces (3 en la portada,
                             2 en /manager) y trae su propio script.
@@ -157,34 +156,6 @@ harness/                 ← monta las pantallas del juego para fotografiarlas
 assets-src/              ← originales de Higgsfield (se versionan, ~60 MB)
 public/data/planteles/   ← 81 archivos, el plantel de cada club por liga
 ```
-
-### ⚠ EL FONDO VIVO, Y POR QUÉ NINGUNA SECCIÓN PUEDE TENER FONDO OPACO
-
-`Ambiente.astro` es **una sola capa `fixed` para todo el sitio**, montada en
-`Base.astro`. Tiene tres manchas de color muy difusas que derivan lento —verde
-césped, y un toque chico de dorado— y encima una trama con geometría de cancha
-que se desplaza despacio. Sin JavaScript: son animaciones de `transform` y
-`opacity`.
-
-Salió de un pedido del dueño el 20 de agosto: *"veo a la página muy apagada…
-podríamos agregar efectos o símbolos de fútbol que se muevan por el fondo"*.
-
-⚠ **LA TRAMPA:** casi todas las secciones llevaban `bg-carbon-950`, que es
-exactamente el color del `body`. Eso **tapa el ambiente y no se ve nada**, y
-como el color es idéntico, parece que la capa no funcionara. Ahora las secciones
-van **sin fondo** y el color lo pone el `body`. Las bandas que necesitan
-contraste usan `bg-carbon-900/70`, **con alfa**, para que el ambiente se filtre.
-
-Si agregás una sección nueva: **no le pongas fondo**. Si necesita contrastar,
-que sea con alfa.
-
-⚠ **Y NO SON SÍMBOLOS LITERALES.** La primera idea fue pelotitas y botines
-flotando; en un sitio oscuro y premium eso se ve barato al instante. La
-geometría de la cancha dice "fútbol" igual y no le compite a nada.
-
-⚑ El dorado del ambiente va chico y apagado a propósito: en la identidad del
-proyecto el dorado es caro y su trabajo es decir "hacé click acá". Un fondo con
-dorado por todos lados le saca fuerza a los botones.
 
 ### ⚑ HAY UN SOLO SCROLLYTELLING: `Escenario`
 

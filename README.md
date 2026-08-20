@@ -92,7 +92,6 @@ src/
   lib/cuenta.ts          ← el cliente de Supabase y los tipos del perfil
   data/*.json            ← generados por `npm run datos`, no editar a mano
   components/
-    Ambiente             ← el fondo vivo: luces que derivan + trama de cancha
     Header · Hero · Footer
     PresentacionJuego    ← un juego en la portada
     MundoGambeta         ← la banda de números que va debajo
