@@ -70,7 +70,7 @@ Todo verde y desplegable:
 
 Accesibilidad, buenas prácticas y SEO: **100 en las seis**.
 
-- `npm run probar` → 53 de 53 verificaciones funcionales, sobre las seis páginas.
+- `npm run probar` → 57 de 57 verificaciones funcionales, sobre las seis páginas.
 - `npm run revisar` → sin desbordes, sin imágenes rotas, un solo `h1` por página,
   sin ids repetidos. Mira cada página a 1440, 390 y **430px**.
 - `npm run build` → sin errores.
@@ -139,11 +139,12 @@ src/
   components/
     Simbolos.astro       ← iconitos de fútbol flotando en los márgenes
     Header · Hero        ← el hero son 5 clips de video en secuencia
-    Escenario.astro      ← EL scrollytelling. Se usa 5 veces (3 en la portada,
-                            2 en /manager) y trae su propio script.
+    Escenario.astro      ← EL scrollytelling. Se usa 6 veces (3 en la portada,
+                            3 en /manager) y trae su propio script.
     PresentacionJuego    ← un juego en la portada · MundoGambeta ← la banda
     Camino               ← las 10+4 etapas del Manager
-    Alma                 ← la pizarra que cambia de formación
+    Alma                 ← los cuatro momentos, con la pizarra por etapa
+    Pizarra.astro        ← la cancha con una formación dibujada
     ManagerIntro · MundoLigas · MundoFiguras
     LigasExplorer.tsx    ← isla: las 81 ligas
     PlantelExplorer.tsx  ← isla: planteles y buscador de futbolistas
@@ -161,7 +162,7 @@ public/data/planteles/   ← 81 archivos, el plantel de cada club por liga
 ### ⚑ LOS SÍMBOLOS DE FONDO, Y EL INTENTO QUE NO FUE
 
 `Simbolos.astro` apoya iconitos de fútbol dibujados a línea —pelota, botín,
-silbato, arco, banderín, cronómetro, trofeo, camiseta— en los **márgenes** de
+pizarra, cono, banderín, cronómetro, trofeo, guante, camiseta— en los **márgenes** de
 una sección, en verde y al 18% de opacidad, flotando apenas. La referencia la
 dio el dueño: es lo que hace nexora-media.com con el `</>` y la paleta.
 
@@ -208,8 +209,33 @@ unificar: *"cambiá los del manager para que sean como estos, que la verdad
 quedaron mucho mejor"*. **No lo resucites**: si aparece la necesidad de un
 scrollytelling distinto, que sea una variante de `Escenario`.
 
-⚠ **La portada NO carga GSAP**, y conviene que siga así: sacarlo subió la nota
-móvil de 98 a 99. En `/manager` GSAP sigue estando, pero por `Alma`.
+⚠ **YA NO SE USA GSAP EN NINGUNA PÁGINA.** `Alma` era el último que lo cargaba y
+pasó a `Escenario` el 20 de agosto. Sacarlo de la portada le subió la nota móvil
+de 98 a 99. Si algo pide una animación de scroll, fijate primero si `Escenario`
+no lo resuelve.
+
+### ⚠ POR QUÉ SE MURIÓ LA PIZARRA DEL ALMA, Y QUÉ SE APRENDIÓ
+
+`Alma` tenía **una** pizarra clavada y una línea de tiempo de GSAP con `scrub`
+que reacomodaba las once fichas entre formaciones. El disparador era
+`start: 'top top'` / `end: 'bottom bottom'` sobre la sección: **depende de que
+la sección mida cierto alto**. Al reacomodar el layout esa ventana se achicó y
+el recorrido quedó en nada — las fichas se congelaron, sin error, sin aviso. Lo
+reportó el dueño mirando el sitio.
+
+Ahora hay **una pizarra por etapa** (`Pizarra.astro`) y lo que cambia la
+formación es el scroll, igual que en los demás escenarios cambia la imagen. No
+queda nada que sincronizar con el alto de nada.
+
+⚑ La lección no es "arreglar el trigger": **una animación atada al alto de una
+sección se rompe callada cada vez que alguien toca el layout.** Y `probar.mjs`
+ahora verifica que las fichas se muevan, para que la próxima vez lo agarre una
+prueba y no el dueño.
+
+⚑ Las fichas igual se mueven siempre: cabecean dos píxeles, en CSS, con un
+desfasaje distinto cada una. Se animan con `translate` y **no** con `transform`,
+porque el `<g>` ya usa `transform` para su posición en la cancha y animarlo lo
+pisaría: las once saltarían al centro.
 
 ⚠ **Las capturas del juego NO van de fondo a sangre.** El fondo de Terrasol es
 una foto y aguanta el velo; una captura de interfaz estirada y oscurecida no se

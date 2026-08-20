@@ -35,4 +35,12 @@ export interface Etapa {
   fondoChico?: string
   /** Imágenes adicionales; si están, el marco se parte en mosaico. */
   extra?: { imagen: string; pie: string }[]
+  /**
+   * En vez de una imagen, la cancha con una formación dibujada.
+   *
+   * ⚑ Es la clave de `FORMACIONES` ('4-2-3-1', '4-4-2', '4-3-3', 'festejo').
+   *   Lo usa el bloque del alma en `/manager`: ahí lo que cambia al scrollear
+   *   no es una foto, es cómo están parados los once.
+   */
+  pizarra?: string
 }

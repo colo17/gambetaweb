@@ -31,6 +31,8 @@
  *   (~70 KB) para nada; en /manager GSAP sigue estando, pero por `Alma`.
  */
 import type { Etapa } from '@/config/recorrido'
+import Pizarra from './Pizarra.astro'
+import { FORMACIONES } from '@/config/formaciones'
 
 interface Props {
   etapas: Etapa[]
@@ -58,9 +60,23 @@ const numeroDe = (i: number) => `${String(i + 1).padStart(2, '0')} / ${total}`
            *   3. es una captura del juego         → su misma imagen, DIFUMINADA,
            *      porque una interfaz estirada a sangre no se lee
            */
-          const grande = etapa.fondo ?? etapa.imagen
+          const grande = etapa.fondo || etapa.imagen || null
           const chico = etapa.fondoChico ?? etapa.imagenChica ?? null
           const difuminar = !etapa.fondo && etapa.tipo !== 'arte'
+
+          /**
+           * ⚠ SIN IMAGEN NO VA UN `<img>` VACÍO, VA UN HUECO.
+           *
+           * Las etapas del alma dibujan una pizarra, no una foto, así que no
+           * tienen de dónde sacar un fondo. Con `src=""` el navegador la cuenta
+           * como imagen rota —lo agarró `revisar.mjs` en el teléfono— y encima
+           * algunos piden la página de nuevo.
+           *
+           * El hueco tiene que existir igual: el script prende el fondo por
+           * índice, y si se saltearan los vacíos se desalinearían todos.
+           */
+          if (!grande) return <span data-escenario-fondo={indice} />
+
           return (
             <img
               src={chico ?? grande}
@@ -185,13 +201,17 @@ const numeroDe = (i: number) => `${String(i + 1).padStart(2, '0')} / ${total}`
                 */}
                 <div
                   class:list={[
-                    'flex aspect-[4/3] items-center justify-center',
-                    esArte ? '' : 'bg-[#070a12] p-2',
-                    !esArte && !mosaico && 'lg:aspect-auto',
+                    'flex items-center justify-center',
+                    // La pizarra trae su propia proporción: la cancha es alta.
+                    !etapa.pizarra && 'aspect-[4/3]',
+                    esArte || etapa.pizarra ? '' : 'bg-[#070a12] p-2',
+                    !esArte && !mosaico && !etapa.pizarra && 'lg:aspect-auto',
                   ]}
                 >
                   {
-                    mosaico ? (
+                    etapa.pizarra ? (
+                      <Pizarra formacion={etapa.pizarra} />
+                    ) : mosaico ? (
                       /*
                         Cuatro paneles a la vez: la etapa "y mucho más" no es
                         una pantalla, es un montón de pantallas. Acá sí va
@@ -229,15 +249,27 @@ const numeroDe = (i: number) => `${String(i + 1).padStart(2, '0')} / ${total}`
                 </div>
                 <figcaption class="flex items-center justify-between gap-4 border-t border-white/8 bg-carbon-900/90 px-4 py-3">
                   <span class="truncate text-sm text-hueso-300">{etapa.pie}</span>
+                  {/*
+                    ⚑ EL BADGE DICE QUÉ ES LO QUE SE ESTÁ MIRANDO: una captura
+                      del juego funcionando, una ilustración, o —en la pizarra—
+                      la formación dibujada. El visitante tiene que poder
+                      distinguirlo de un vistazo.
+                  */}
                   <span
                     class:list={[
                       'shrink-0 rounded-full px-2 py-0.5 text-[0.6rem] font-semibold uppercase tracking-[0.12em]',
-                      esArte
+                      esArte || etapa.pizarra
                         ? 'bg-white/5 text-hueso-400 ring-1 ring-white/10'
                         : 'bg-cesped-500/15 text-cesped-300 ring-1 ring-cesped-500/30',
                     ]}
                   >
-                    {esArte ? 'Arte' : 'Captura real'}
+                    {
+                      etapa.pizarra
+                        ? (FORMACIONES[etapa.pizarra]?.etiqueta ?? 'Pizarra')
+                        : esArte
+                          ? 'Arte'
+                          : 'Captura real'
+                    }
                   </span>
                 </figcaption>
               </figure>

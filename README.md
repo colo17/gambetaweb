@@ -32,7 +32,7 @@ Queda en <http://localhost:4321>.
 | `npm run assets` | Reprocesa logo, fondos, íconos y la imagen de compartir |
 | `npm run capturas` | Vuelve a fotografiar las pantallas del juego |
 | `npm run harness` | Levanta sólo el harness de capturas, para mirarlo a ojo |
-| `npm run probar` | Prueba funcional de las seis páginas (53 verificaciones) |
+| `npm run probar` | Prueba funcional de las seis páginas (57 verificaciones) |
 | `npm run revisar` | Revisión visual: cada página a 1440, 390 y 430px + chequeos |
 
 Las tres últimas piden que haya un servidor levantado; `probar` y `revisar`
@@ -49,8 +49,8 @@ Vite no minifica y la nota de rendimiento no significa nada.
 - **React 19** — sólo para las tres islas: el explorador de ligas, el buscador de
   futbolistas y el perfil. Todo lo demás es HTML.
 - **Tailwind CSS 4** — el tema entero vive en `src/styles/global.css`, no hay `tailwind.config`.
-- **GSAP + ScrollTrigger** — sólo para `Alma`, en `/manager`. Los cinco
-  scrollytelling no usan ninguna biblioteca.
+- **GSAP** — quedó instalado pero **ya no se usa**: el último que lo cargaba era
+  `Alma`, y pasó a `Escenario`. Ninguna animación del sitio necesita biblioteca.
 - **Supabase JS** — sólo en `/perfil`, y se descarga sólo si las cuentas están prendidas.
 - **TypeScript** en la config y las islas.
 
@@ -99,7 +99,8 @@ src/
     Escenario            ← EL scrollytelling: panel de texto fijo, imágenes que
                             scrollean y una ilustración a sangre atrás
     Camino               ← las 10+4 etapas del Manager
-    Alma                 ← el scrollytelling emocional del Manager
+    Alma                 ← los cuatro momentos, con la pizarra por etapa
+    Pizarra              ← la cancha con una formación dibujada
     ManagerIntro         ← la cabecera de /manager
     MundoLigas · MundoFiguras
     LigasExplorer.tsx    ← isla: las 81 ligas y sus clubes

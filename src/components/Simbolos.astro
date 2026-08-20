@@ -52,14 +52,14 @@ const ICONOS: Record<string, string> = {
  * mismo compás, que es lo que delata que es una animación.
  */
 const LUGARES = [
-  { estilo: 'top:14%;left:4%',     tamano: 58, viaje: 15, duracion: 9,  retraso: 0,   movil: false },
-  { estilo: 'top:8%;right:6%',     tamano: 50, viaje: 13, duracion: 11, retraso: 2.5, movil: false },
-  { estilo: 'bottom:16%;left:7%',  tamano: 56, viaje: 16, duracion: 10, retraso: 5,   movil: false },
-  { estilo: 'bottom:10%;right:5%', tamano: 48, viaje: 12, duracion: 12, retraso: 1.4, movil: false },
-  { estilo: 'top:44%;right:3%',    tamano: 52, viaje: 14, duracion: 8,  retraso: 3.6, movil: false },
-  { estilo: 'top:38%;left:2%',     tamano: 46, viaje: 15, duracion: 11, retraso: 6,   movil: false },
-  { estilo: 'top:6%;left:26%',     tamano: 40, viaje: 12, duracion: 9,  retraso: 4.4, movil: 'a' },
-  { estilo: 'bottom:5%;right:28%', tamano: 44, viaje: 14, duracion: 10, retraso: 2,   movil: 'b' },
+  { estilo: 'top:14%;left:4%',     tamano: 58, viaje: 7, duracion: 3.4, retraso: 0,   movil: false },
+  { estilo: 'top:8%;right:6%',     tamano: 50, viaje: 6, duracion: 4.2, retraso: 1.1, movil: false },
+  { estilo: 'bottom:16%;left:7%',  tamano: 56, viaje: 8, duracion: 3.8, retraso: 2.3, movil: false },
+  { estilo: 'bottom:10%;right:5%', tamano: 48, viaje: 6, duracion: 4.6, retraso: 0.6, movil: false },
+  { estilo: 'top:44%;right:3%',    tamano: 52, viaje: 7, duracion: 3.1, retraso: 1.7, movil: false },
+  { estilo: 'top:38%;left:2%',     tamano: 46, viaje: 8, duracion: 4.4, retraso: 2.9, movil: false },
+  { estilo: 'top:6%;left:26%',     tamano: 40, viaje: 6, duracion: 3.6, retraso: 2,   movil: 'a' },
+  { estilo: 'bottom:5%;right:28%', tamano: 44, viaje: 7, duracion: 4,   retraso: 0.9, movil: 'b' },
 ] as const
 
 /**
@@ -204,8 +204,13 @@ const puestos = LUGARES.map((lugar, i) => ({
    *   con suavizado en las puntas: medido en el navegador, **1,3 píxeles en dos
    *   segundos y medio**. El dueño los reportó como estáticos y tenía razón.
    *
-   *   Ahora el recorrido es de 24 a 32 píxeles en 8 a 12 segundos, que es lo
-   *   que se lee como "flotando despacio" sin llegar a distraer.
+   *   El segundo intento se fue al otro lado: 24 a 32 píxeles en 8 a 12
+   *   segundos. Se veía, pero se leía como un ascensor, no como algo flotando.
+   *   El dueño lo dijo así: *"que sea más rápido y con menos trayectoria, que
+   *   dé la sensación que está flotando"*.
+   *
+   *   El punto está en **poco recorrido y ciclo corto**: 12 a 16 píxeles en 3 a
+   *   4,6 segundos. Es el cabeceo de una boya, no un viaje.
    *
    * ⚑ Y SE FUE LA ROTACIÓN. El pedido es "para arriba y abajo"; el giro sumaba
    *   ruido y ninguna de las dos cosas se leía bien.

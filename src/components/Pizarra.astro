@@ -1,0 +1,127 @@
+---
+/**
+ * LA PIZARRA TÁCTICA
+ * ==================
+ *
+ * La cancha vista de arriba con los once acomodados en una formación. Es la
+ * misma que dibujaba `Alma.astro`, sacada afuera para que `Escenario` pueda
+ * ponerla donde antes iba una captura del juego.
+ *
+ * ⚑ POR QUÉ DEJÓ DE SER UNA ANIMACIÓN. Antes había UNA pizarra clavada y una
+ *   línea de tiempo de GSAP que reacomodaba las fichas al scrollear. Dependía
+ *   de que la sección midiera cierto alto —`start: 'top top'`, `end: 'bottom
+ *   bottom'`, con `scrub`—, y cuando el layout cambió esa ventana se achicó y
+ *   el recorrido quedó en nada: **las fichas dejaron de moverse**. El dueño lo
+ *   reportó.
+ *
+ *   Ahora hay una pizarra por etapa, cada una con su formación, y lo que
+ *   cambia la formación es el scroll —igual que en los demás escenarios cambia
+ *   la imagen—. No hay línea de tiempo que se pueda desincronizar del layout.
+ *
+ * ⚑ Y LAS FICHAS SE MUEVEN SIEMPRE, un poquito. Es un cabeceo de dos píxeles,
+ *   con un desfasaje distinto por ficha, que las hace parecer once personas
+ *   moviéndose en la cancha en vez de once puntos pegados. Es CSS puro: no hay
+ *   nada que se pueda romper.
+ */
+import { FORMACIONES } from '@/config/formaciones'
+
+interface Props {
+  /** La clave de `FORMACIONES`: '4-2-3-1', '4-4-2', '4-3-3' o 'festejo'. */
+  formacion: string
+}
+
+const { formacion } = Astro.props
+const puesta = FORMACIONES[formacion] ?? FORMACIONES['4-2-3-1']
+---
+
+{/*
+  ⚠ SIN FONDO PROPIO. La primera versión traía el suyo y, como el marco de
+    afuera (`.panel`) tiene otro tono, se veían dos bandas a los costados de la
+    cancha. El fondo lo pone el marco; acá va sólo la cancha.
+
+  ⚠ Y CON ANCHO MÁXIMO. La cancha es alta (400×600): estirada al ancho del
+    marco quedaba enorme y empujaba el pie de la figura fuera de pantalla.
+*/}
+<div class="mx-auto w-full max-w-[19rem] p-4 md:p-5">
+  <div class="mb-3 flex items-center justify-between">
+    <p class="rotulo">La pizarra</p>
+    <p class="font-display text-sm tracking-widest text-hueso-500">{puesta.etiqueta}</p>
+  </div>
+
+  <svg
+    viewBox="0 0 400 600"
+    class="w-full"
+    role="img"
+    aria-label={`Cancha con los once acomodados en ${puesta.etiqueta}`}
+  >
+    <defs>
+      {/*
+        ⚠ EL `id` DEL DEGRADÉ LLEVA EL NOMBRE DE LA FORMACIÓN. Hay cuatro
+          pizarras en la misma página y un `id` repetido hace que las cuatro
+          usen el degradé de la primera — o ninguno, según el navegador.
+      */}
+      <linearGradient id={`cesped-${formacion}`} x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#0b6e4f" stop-opacity="0.30" />
+        <stop offset="100%" stop-color="#06382a" stop-opacity="0.14" />
+      </linearGradient>
+    </defs>
+
+    <!-- Las líneas de cal -->
+    <g stroke="#e7e4dc" stroke-opacity="0.20" fill="none" stroke-width="1.5">
+      <rect x="14" y="14" width="372" height="572" rx="3" fill={`url(#cesped-${formacion})`} />
+      <line x1="14" y1="300" x2="386" y2="300" />
+      <circle cx="200" cy="300" r="56" />
+      <circle cx="200" cy="300" r="2.5" fill="#e7e4dc" fill-opacity="0.3" stroke="none" />
+      <rect x="98" y="14" width="204" height="82" />
+      <rect x="150" y="14" width="100" height="32" />
+      <rect x="98" y="504" width="204" height="82" />
+      <rect x="150" y="554" width="100" height="32" />
+    </g>
+
+    <!-- Los once -->
+    <g>
+      {
+        puesta.jugadores.map(([x, y], i) => (
+          <g
+            class="ficha"
+            transform={`translate(${x} ${y})`}
+            style={`animation-delay:-${(i * 0.37).toFixed(2)}s;animation-duration:${(3 + (i % 4) * 0.4).toFixed(1)}s`}
+          >
+            <circle r="13" fill="#12b76a" fill-opacity="0.16" />
+            <circle r="8" fill="#12b76a" stroke="#050607" stroke-width="1.5" />
+          </g>
+        ))
+      }
+    </g>
+
+    <circle cx={puesta.pelota[0]} cy={puesta.pelota[1]} r="5" fill="#f59e0b" />
+  </svg>
+</div>
+
+<style>
+  /**
+   * El cabeceo de cada ficha.
+   *
+   * ⚠ VA EN UN `<g>` QUE YA TIENE `transform`, así que la animación NO puede
+   *   usar `transform`: lo pisaría y las once fichas saltarían al centro. Se
+   *   anima `translate`, que es una propiedad aparte y se compone encima del
+   *   `transform` del atributo.
+   */
+  .ficha {
+    animation-name: cabecear;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+  }
+
+  @keyframes cabecear {
+    from { translate: 0 -2px; }
+    to   { translate: 0 2px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ficha {
+      animation: none;
+    }
+  }
+</style>

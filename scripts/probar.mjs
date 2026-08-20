@@ -276,8 +276,9 @@ console.log('\nManager')
 
 await ir('/manager')
 verificar(
-  'el camino completo tiene sus dos escenarios',
-  (await pagina.locator('[data-escenario]').count()) === 2
+  'la página tiene sus tres escenarios (club, selección y alma)',
+  (await pagina.locator('[data-escenario]').count()) === 3,
+  `${await pagina.locator('[data-escenario]').count()}`
 )
 verificar(
   'y las catorce etapas, cada una con su fondo',
@@ -294,7 +295,29 @@ verificar(
   (await pagina.locator('img[src*="/assets/screenshots/"]').count()) > 10,
   `${await pagina.locator('img[src*="/assets/screenshots/"]').count()} imágenes`
 )
-verificar('el alma sigue estando', await pagina.locator('#alma').count() === 1)
+verificar('el alma sigue estando', (await pagina.locator('#alma').count()) === 1)
+
+/**
+ * La pizarra del alma: cuatro canchas, once fichas cada una, y las fichas
+ * MOVIÉNDOSE. La versión anterior usaba una línea de tiempo de GSAP atada al
+ * alto de la sección y se rompió callada al cambiar el layout: las fichas
+ * quedaron quietas y lo tuvo que reportar el dueño. Esta prueba existe para que
+ * no vuelva a pasar sin que nadie se entere.
+ */
+verificar('la pizarra dibuja las cuatro formaciones', (await pagina.locator('#alma svg[role="img"]').count()) === 4)
+verificar(
+  'y cada una tiene sus once',
+  (await pagina.locator('#alma .ficha').count()) === 44,
+  `${await pagina.locator('#alma .ficha').count()} fichas`
+)
+
+const posicionFicha = () =>
+  pagina.locator('#alma .ficha').first().evaluate((el) => getComputedStyle(el).translate)
+const fichaAntes = await posicionFicha()
+await pagina.waitForTimeout(1100)
+verificar('las fichas de la pizarra se mueven', fichaAntes !== (await posicionFicha()), fichaAntes)
+
+verificar('y /manager dejó de cargar GSAP', !(await pagina.content()).includes('gsap'))
 
 // ===========================================================================
 // 8. Las dos que vienen

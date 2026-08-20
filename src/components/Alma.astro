@@ -1,306 +1,102 @@
 ---
 /**
- * SCROLLYTELLING #1 — "El alma del manager"
+ * EL ALMA DEL MANAGER
+ * ===================
  *
- * La sección se clava en pantalla y el scroll deja de mover la página: pasa a
- * mover UNA HISTORIA. Cuatro momentos, de la pizarra a la vuelta olímpica.
+ * Cuatro momentos, de la pizarra a la vuelta olímpica, y al costado la cancha
+ * con los once acomodándose. Es la única parte del sitio que no explica el
+ * juego: cuenta por qué uno lo juega.
  *
- * ⚑ LA IDEA VISUAL: la cancha de al lado no ilustra el texto, lo ACOMPAÑA. Los
- *   once puntos arrancan plantados en un 4-2-3-1 y, a medida que se baja, se
- *   reacomodan en 4-4-2, se estiran a 4-3-3 y terminan abrazándose. Es la misma
- *   cancha que el juego dibuja en la pantalla de alineación, y por eso
- *   funciona: el visitante ya vio lo que va a hacer.
+ * ⚑ USA `Escenario`, COMO TODO EL RESTO DEL SITIO. Lo que en los demás bloques
+ *   es una captura o una ilustración, acá es la pizarra: lo que cambia al
+ *   scrollear no es una foto, es **cómo están parados los once**.
  *
- * Sin JavaScript, o con `prefers-reduced-motion`, los cuatro momentos quedan
- * uno abajo del otro como texto normal. Se lee igual.
+ * ⚠ ANTES ERA UNA ANIMACIÓN DE GSAP Y SE ROMPIÓ. Había una sola pizarra clavada
+ *   y una línea de tiempo con `scrub` atada a la sección (`start: 'top top'`,
+ *   `end: 'bottom bottom'`). Eso depende de que la sección mida cierto alto, y
+ *   cuando el layout cambió la ventana se achicó tanto que el recorrido quedó
+ *   en nada: **las fichas dejaron de moverse**. El dueño lo reportó mirando el
+ *   sitio de verdad.
+ *
+ *   La lección no fue "arreglar el trigger": fue que una animación atada al
+ *   alto de una sección se rompe callada cada vez que alguien toca el layout.
+ *   Con una pizarra por etapa no hay nada que sincronizar. Y las fichas igual
+ *   se mueven —cabecean dos píxeles, en CSS— así que la cancha nunca está
+ *   muerta.
+ *
+ * ⚑ Y CON ESTO `/manager` DEJÓ DE CARGAR GSAP: era el último que lo usaba.
  */
+import Escenario from './Escenario.astro'
 
 const momentos = [
   {
-    indice: '01',
+    id: 'alma-pizarra',
+    numero: '01',
     titulo: 'Primero es una idea',
     texto:
       'Once nombres y una flecha. Nadie te vio hacerlo, no salió en ningún lado, y sin embargo ahí empezó todo: en una pizarra, decidiendo quién juega y quién mira.',
-    palabra: 'La pizarra',
+    imagen: '',
+    pizarra: '4-2-3-1',
+    pie: 'La pizarra',
   },
   {
-    indice: '02',
+    id: 'alma-semana',
+    numero: '02',
     titulo: 'Después son seis días de dudas',
     texto:
       'El pibe de 17 o el veterano que ya no corre. Vender al 9 para pagar sueldos. Aguantar al hincha que quiere ganar hoy. Un manager es eso: elegir sabiendo que vas a estar solo si sale mal.',
-    palabra: 'La semana',
+    imagen: '',
+    pizarra: '4-4-2',
+    pie: 'La semana',
   },
   {
-    indice: '03',
+    id: 'alma-partido',
+    numero: '03',
     titulo: 'Y llegan los noventa minutos',
     texto:
       'Ahí ya no tocás nada. Mirás. Te agarrás la cabeza en el córner en contra, gritás un gol que decidiste el martes, y entendés que un cambio a los 70 puede valer una temporada entera.',
-    palabra: 'El partido',
+    imagen: '',
+    pizarra: '4-3-3',
+    pie: 'El partido',
   },
   {
-    indice: '04',
+    id: 'alma-gloria',
+    numero: '04',
     titulo: 'La vuelta no es tuya. Pero un poco sí',
     texto:
       'Los que dan la vuelta son ellos. Vos mirás desde el costado, con las manos en los bolsillos, sabiendo exactamente cuánto hay tuyo adentro de eso.',
-    palabra: 'La gloria',
+    imagen: '',
+    pizarra: 'festejo',
+    pie: 'La gloria',
   },
 ]
 ---
 
 <section
   id="alma"
-  class="relative isolate grano bg-carbon-950"
-  data-alma
+  class="relative isolate grano border-t border-white/5 bg-carbon-950 py-24 md:py-32"
   aria-label="El alma del manager"
 >
-  <!-- Fondo con parallax suave -->
+  <!-- El fondo del potrero, quieto. -->
   <div class="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
     <img
       src="/assets/generated/bg-potrero-1600.webp"
       alt=""
       loading="lazy"
       decoding="async"
-      class="h-[120%] w-full object-cover opacity-25"
-      data-alma-fondo
+      class="h-full w-full object-cover opacity-20"
     />
-    <div class="absolute inset-0 bg-gradient-to-b from-carbon-950 via-carbon-950/75 to-carbon-950"></div>
+    <div class="absolute inset-0 bg-gradient-to-b from-carbon-950 via-carbon-950/80 to-carbon-950"></div>
   </div>
 
-  <div class="contenedor py-24 md:py-32">
+  <div class="contenedor">
     <header class="mx-auto mb-16 max-w-2xl text-center md:mb-24">
       <p class="rotulo">El alma del manager</p>
       <h2 class="mt-4 text-[clamp(2.25rem,6vw,4.5rem)]">
         Dirigir es decidir <span class="texto-degrade">con miedo</span>
       </h2>
     </header>
-
-    <!--
-      ⚠ SIN `items-start`. Con `items-start` la columna de la derecha se
-      encoge al alto de su contenido (~500px) y la cancha, que es `sticky`,
-      se va de pantalla apenas empieza el segundo momento: quedaba media
-      sección con un hueco enorme al costado. Estirada (el `stretch` por
-      defecto) la columna mide lo que la sección, y la cancha acompaña los
-      cuatro momentos.
-    -->
-    <div class="grid gap-12 lg:grid-cols-[1fr_minmax(0,26rem)] lg:gap-20">
-      <!-- Columna de texto: los cuatro momentos -->
-      <ol class="space-y-24 lg:space-y-[60vh]" data-alma-lista>
-        {
-          momentos.map((momento) => (
-            <li class="max-w-xl" data-alma-momento>
-              <p class="mb-3 font-display text-6xl text-cesped-700/70 md:text-7xl">
-                {momento.indice}
-              </p>
-              <p class="rotulo mb-4">{momento.palabra}</p>
-              <h3 class="text-[clamp(1.75rem,4vw,3rem)]">{momento.titulo}</h3>
-              <p class="mt-5 text-lg leading-relaxed text-hueso-400">{momento.texto}</p>
-            </li>
-          ))
-        }
-      </ol>
-
-      <!-- La cancha, clavada al costado -->
-      <div class="hidden lg:block" data-alma-columna>
-        <div class="panel sticky top-28 overflow-hidden p-5">
-          <div class="mb-4 flex items-center justify-between">
-            <p class="rotulo">La pizarra</p>
-            <p
-              class="font-display text-sm tracking-widest text-hueso-500"
-              data-alma-etiqueta
-            >
-              4-2-3-1
-            </p>
-          </div>
-
-          <svg viewBox="0 0 400 600" class="w-full" role="img" aria-label="Cancha con once jugadores acomodándose en distintas formaciones">
-            <defs>
-              <linearGradient id="cesped-cancha" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#0b6e4f" stop-opacity="0.30" />
-                <stop offset="100%" stop-color="#06382a" stop-opacity="0.14" />
-              </linearGradient>
-            </defs>
-
-            <!-- Las líneas de cal -->
-            <g stroke="#e7e4dc" stroke-opacity="0.20" fill="none" stroke-width="1.5">
-              <rect x="14" y="14" width="372" height="572" rx="3" fill="url(#cesped-cancha)" />
-              <line x1="14" y1="300" x2="386" y2="300" />
-              <circle cx="200" cy="300" r="56" />
-              <circle cx="200" cy="300" r="2.5" fill="#e7e4dc" fill-opacity="0.3" stroke="none" />
-              <rect x="98" y="14" width="204" height="82" />
-              <rect x="150" y="14" width="100" height="32" />
-              <rect x="98" y="504" width="204" height="82" />
-              <rect x="150" y="554" width="100" height="32" />
-            </g>
-
-            <!-- Los once. GSAP los reacomoda entre formaciones al scrollear. -->
-            <g data-alma-jugadores>
-              {
-                Array.from({ length: 11 }).map((_, i) => (
-                  <g data-jugador={i} transform="translate(200 545)">
-                    <circle r="13" fill="#12b76a" fill-opacity="0.16" />
-                    <circle r="8" fill="#12b76a" stroke="#050607" stroke-width="1.5" />
-                  </g>
-                ))
-              }
-            </g>
-
-            <!-- La pelota -->
-            <circle data-alma-pelota cx="200" cy="300" r="5" fill="#f59e0b" />
-          </svg>
-        </div>
-      </div>
-    </div>
   </div>
+
+  <Escenario etapas={momentos} juego="El alma" />
 </section>
-
-<script>
-  import { gsap } from 'gsap'
-  import { ScrollTrigger } from 'gsap/ScrollTrigger'
-
-  gsap.registerPlugin(ScrollTrigger)
-
-  const seccion = document.querySelector<HTMLElement>('[data-alma]')
-  const jugadores = gsap.utils.toArray<SVGGElement>('[data-jugador]')
-  const momentos = gsap.utils.toArray<HTMLElement>('[data-alma-momento]')
-  const etiqueta = document.querySelector<HTMLElement>('[data-alma-etiqueta]')
-  const pelota = document.querySelector<SVGCircleElement>('[data-alma-pelota]')
-  const fondo = document.querySelector<HTMLElement>('[data-alma-fondo]')
-
-  const quieto = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  if (!seccion || !jugadores.length || quieto) {
-    // Sin animación los momentos tienen que verse igual.
-    momentos.forEach((m) => gsap.set(m, { opacity: 1 }))
-  } else {
-    /**
-     * Las cuatro posturas, en coordenadas de la cancha (400×600).
-     * El arco propio está abajo: se ataca hacia arriba.
-     */
-    const FORMACIONES: Record<string, [number, number][]> = {
-      // ⚠ ARRANCA EN UNA FORMACIÓN, NO EN UN MONTÓN. Antes los once empezaban
-      //   amontonados adentro del arco y parecía un error de dibujo, no una
-      //   idea. Un 4-2-3-1 se lee como equipo desde el primer cuadro.
-      '4-2-3-1': [
-        [200, 545],
-        [70, 438], [154, 454], [246, 454], [330, 438],
-        [148, 344], [252, 344],
-        [76, 240], [200, 258], [324, 240],
-        [200, 140],
-      ],
-      '4-4-2': [
-        [200, 545],
-        [72, 440], [156, 458], [244, 458], [328, 440],
-        [72, 300], [156, 312], [244, 312], [328, 300],
-        [156, 168], [244, 168],
-      ],
-      '4-3-3': [
-        [200, 545],
-        [66, 436], [152, 452], [248, 452], [334, 436],
-        [124, 322], [200, 346], [276, 322],
-        [74, 168], [200, 128], [326, 168],
-      ],
-      // El abrazo del final.
-      festejo: [
-        [200, 214], [172, 228], [228, 228], [186, 254], [214, 254],
-        [158, 250], [242, 250], [200, 268], [176, 200], [224, 200], [200, 240],
-      ],
-    }
-
-    const mover = (nombre: keyof typeof FORMACIONES) =>
-      FORMACIONES[nombre].map(([x, y], i) => ({ elemento: jugadores[i], x, y }))
-
-    const acomodar = (nombre: string, duracion = 1) => {
-      const destino = mover(nombre as keyof typeof FORMACIONES)
-      return gsap.to(
-        destino.map((d) => d.elemento),
-        {
-          duration: duracion,
-          ease: 'power2.inOut',
-          x: (i: number) => destino[i].x,
-          y: (i: number) => destino[i].y,
-          // Un escalonado chico: se ven como once personas, no como una grilla.
-          stagger: { amount: 0.35, from: 'random' },
-        }
-      )
-    }
-
-    gsap.set(jugadores, {
-      x: (i) => FORMACIONES['4-2-3-1'][i][0],
-      y: (i) => FORMACIONES['4-2-3-1'][i][1],
-    })
-
-    // --- La línea de tiempo, arrastrada por el scroll --------------------
-    const linea = gsap.timeline({
-      scrollTrigger: {
-        trigger: seccion,
-        start: 'top top',
-        end: 'bottom bottom',
-        scrub: 0.8,
-      },
-    })
-
-    linea
-      .add(acomodar('4-4-2'))
-      .add(() => etiqueta && (etiqueta.textContent = '4-4-2'), '<')
-      .to(pelota, { attr: { cy: 300 }, duration: 0.6 }, '<')
-
-      .add(acomodar('4-3-3'), '+=0.6')
-      .add(() => etiqueta && (etiqueta.textContent = '4-3-3'), '<')
-      .to(pelota, { attr: { cy: 200, cx: 260 }, duration: 1 }, '<')
-
-      .add(acomodar('festejo'), '+=0.6')
-      .add(() => etiqueta && (etiqueta.textContent = '⚑ CAMPEÓN'), '<')
-      .to(pelota, { attr: { cy: 60, cx: 200 }, duration: 0.8 }, '<')
-
-    // ScrollTrigger va y viene: al subir hay que revertir la etiqueta.
-    ScrollTrigger.create({
-      trigger: seccion,
-      start: 'top top',
-      end: 'bottom bottom',
-      onUpdate: (self) => {
-        if (!etiqueta) return
-        if (self.progress < 0.28) etiqueta.textContent = '4-2-3-1'
-      },
-    })
-
-    /**
-     * --- Cada momento aparece cuando le toca ---------------------------------
-     *
-     * ⚠ ANTES ESTO DEJABA TODO APAGADO. Iba de `opacity: 0.15` a 1 con `scrub`,
-     *   o sea atado al scroll: si el momento no llegaba a cruzar entero la
-     *   ventana —y el último nunca llega— se quedaba a mitad de camino, gris,
-     *   como si tuviera un filtro encima. Ahora entra UNA vez, sin scrub, y se
-     *   queda. `toggleActions` sin `reverse` es lo que garantiza que no se
-     *   vuelva a apagar al subir.
-     */
-    momentos.forEach((momento) => {
-      gsap.fromTo(
-        momento,
-        { opacity: 0, y: 28 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.7,
-          ease: 'power2.out',
-          scrollTrigger: {
-            trigger: momento,
-            start: 'top 85%',
-            toggleActions: 'play none none none',
-          },
-        }
-      )
-    })
-
-    // --- Parallax del fondo -------------------------------------------------
-    if (fondo) {
-      gsap.fromTo(
-        fondo,
-        { yPercent: -8 },
-        {
-          yPercent: 8,
-          ease: 'none',
-          scrollTrigger: { trigger: seccion, start: 'top bottom', end: 'bottom top', scrub: true },
-        }
-      )
-    }
-  }
-</script>
