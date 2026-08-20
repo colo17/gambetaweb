@@ -69,7 +69,7 @@ larguísima y se partió. Cada una tiene un trabajo y sólo uno:
 
 | Ruta | Qué hay | Qué NO hay |
 |---|---|---|
-| `/` | El hero y una presentación corta por juego, cada una con su scrollytelling | El detalle de nada: eso vive en las otras |
+| `/` | El hero, el hub con los tres juegos, y una presentación corta por juego con su scrollytelling | El detalle de nada: eso vive en las otras |
 | `/gambeta` | El mundo: las 81 ligas, los planteles club por club, las figuras, y el formulario para pedir que sumemos un equipo | Nada de un juego en particular |
 | `/manager` | Todo el Manager: los modos, el recorrido completo de una temporada y el alma | Los datos del catálogo: son del mundo, no del juego |
 | `/player` | Video de fondo y "muy pronto" | Todavía no hay juego que mostrar |
@@ -92,6 +92,7 @@ src/
   lib/cuenta.ts          ← el cliente de Supabase y los tipos del perfil
   data/*.json            ← generados por `npm run datos`, no editar a mano
   components/
+    Ambiente             ← el fondo vivo: luces que derivan + trama de cancha
     Header · Hero · Footer
     PresentacionJuego    ← un juego en la portada
     MundoGambeta         ← la banda de números que va debajo

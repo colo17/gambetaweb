@@ -33,6 +33,18 @@ import { PRESENTACIONES } from '@/config/presentaciones'
   <main id="contenido">
     <Hero />
 
+    {/*
+      ⚑ EL HUB VA ARRIBA, PEGADO AL HERO, Y NO AL FINAL.
+
+      Estuvo abajo hasta el 20 de agosto y el dueño lo subió: el que llega
+      quiere saber en dos segundos cuántos juegos hay y cuál puede jugar hoy.
+      Enterarse recién después de tres scrollytelling es enterarse tarde.
+
+      Además ahora funciona como índice: las tres cards llevan a la página de
+      cada juego, y abajo siguen las presentaciones en el mismo orden.
+    */}
+    <Juegos />
+
     {
       PRESENTACIONES.map((presentacion) => (
         <>
@@ -42,7 +54,6 @@ import { PRESENTACIONES } from '@/config/presentaciones'
       ))
     }
 
-    <Juegos />
     <Avisame />
   </main>
   <Footer />

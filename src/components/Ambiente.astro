@@ -1,0 +1,159 @@
+---
+/**
+ * EL AMBIENTE — lo que hay detrás de todo el sitio
+ * ================================================
+ *
+ * Pedido del dueño el 20 de agosto: *"veo a la página muy apagada… podríamos
+ * agregar efectos o símbolos de fútbol que se muevan por el fondo, para que no
+ * quede tanto fondo negro"*.
+ *
+ * Son dos capas, y hacen cosas distintas:
+ *
+ *   LUCES   tres manchas de color muy difusas —verde césped y un toque de
+ *           dorado— que derivan lento. Son las que sacan el negro plano: un
+ *           fondo oscuro con temperatura no se lee como apagado, se lee como
+ *           una cancha de noche.
+ *   TRAMA   geometría de cancha —el círculo central, el arco del área, la
+ *           esquina— repetida y muy tenue, que se desplaza despacio.
+ *
+ * ⚑ ES UNA SOLA CAPA `fixed` PARA TODO EL SITIO, montada en `Base.astro`, y no
+ *   un fondo por sección. Una sola capa se pinta una vez y después sólo se
+ *   mueve; repetirla en diez secciones serían diez capas con desenfoque
+ *   pintándose cada una.
+ *
+ * ⚠ POR ESO LAS SECCIONES NO PUEDEN TENER FONDO OPACO. Casi todas llevaban
+ *   `bg-carbon-950`, que es exactamente el color del `body`: tapaban esto y no
+ *   se veía nada. Ahora van transparentes y el color lo pone el `body`. Las
+ *   bandas que necesitan contraste usan `bg-carbon-900/70`, con alfa, para que
+ *   el ambiente igual se filtre.
+ *
+ * ⚠ Y NADA DE SÍMBOLOS LITERALES FLOTANDO. La primera idea fue pelotitas y
+ *   botines derivando por la pantalla; en un sitio oscuro y premium eso se ve
+ *   barato al instante. La geometría de la cancha dice "fútbol" igual y no
+ *   compite con nada.
+ *
+ * ⚑ SIN JAVASCRIPT. Son animaciones de `transform` y `opacity`, que el
+ *   navegador resuelve en el compositor sin recalcular layout. Con
+ *   `prefers-reduced-motion` se quedan quietas, pero el color se queda: lo que
+ *   molesta es el movimiento, no que el fondo tenga temperatura.
+ */
+---
+
+<div class="ambiente" aria-hidden="true">
+  <span class="ambiente-luz ambiente-luz-1"></span>
+  <span class="ambiente-luz ambiente-luz-2"></span>
+  <span class="ambiente-luz ambiente-luz-3"></span>
+  <div class="ambiente-trama"></div>
+</div>
+
+<style>
+  /**
+   * ⚑ `z-index: -1` FUNCIONA porque el fondo del `body` se propaga al lienzo
+   *   del navegador y se pinta antes que cualquier hijo. O sea que esta capa
+   *   queda por encima del color de fondo y por debajo de todo el contenido,
+   *   que es justo lo que hace falta.
+   */
+  .ambiente {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  /* --- Las luces ---------------------------------------------------- */
+
+  .ambiente-luz {
+    position: absolute;
+    border-radius: 9999px;
+    /**
+     * ⚠ El desenfoque es CARO de pintar si el elemento es enorme. Estos miden
+     * como media pantalla y se pintan una sola vez: después sólo se mueven,
+     * que es gratis. Agrandarlos mucho más sí se nota en un teléfono.
+     */
+    filter: blur(90px);
+    will-change: transform;
+  }
+
+  .ambiente-luz-1 {
+    top: -12%;
+    left: -8%;
+    width: 46vmax;
+    height: 46vmax;
+    background: radial-gradient(circle, color-mix(in oklab, var(--color-cesped-500) 26%, transparent) 0%, transparent 68%);
+    animation: derivar-1 46s ease-in-out infinite alternate;
+  }
+
+  .ambiente-luz-2 {
+    bottom: -18%;
+    right: -10%;
+    width: 40vmax;
+    height: 40vmax;
+    background: radial-gradient(circle, color-mix(in oklab, var(--color-cesped-700) 30%, transparent) 0%, transparent 70%);
+    animation: derivar-2 62s ease-in-out infinite alternate;
+  }
+
+  /**
+   * ⚠ EL DORADO VA CHICO Y APAGADO. En la identidad del proyecto el dorado es
+   * caro a propósito: su trabajo es decir "hacé click acá". Si el fondo entero
+   * tiene dorado, los botones dejan de destacarse.
+   */
+  .ambiente-luz-3 {
+    top: 38%;
+    right: 6%;
+    width: 22vmax;
+    height: 22vmax;
+    background: radial-gradient(circle, color-mix(in oklab, var(--color-dorado-500) 12%, transparent) 0%, transparent 72%);
+    animation: derivar-3 54s ease-in-out infinite alternate;
+  }
+
+  @keyframes derivar-1 {
+    from { transform: translate3d(0, 0, 0) scale(1); }
+    to   { transform: translate3d(14vw, 10vh, 0) scale(1.18); }
+  }
+  @keyframes derivar-2 {
+    from { transform: translate3d(0, 0, 0) scale(1.1); }
+    to   { transform: translate3d(-16vw, -12vh, 0) scale(1); }
+  }
+  @keyframes derivar-3 {
+    from { transform: translate3d(0, 0, 0); opacity: 0.55; }
+    to   { transform: translate3d(-10vw, 16vh, 0); opacity: 1; }
+  }
+
+  /* --- La trama de cancha -------------------------------------------- */
+
+  /**
+   * El mosaico: el círculo central, el arco del área y la esquina. Va en un
+   * `data:` URI porque son cuatro trazos y una petición más por esto sería
+   * ridícula.
+   *
+   * ⚠ El bloque mide 150% y se mueve como mucho un cuarto de mosaico: así
+   *   nunca se le ve el borde por más que derive.
+   */
+  .ambiente-trama {
+    position: absolute;
+    top: -25%;
+    left: -25%;
+    width: 150%;
+    height: 150%;
+    opacity: 0.5;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='620' height='620' fill='none' stroke='%23ffffff' stroke-opacity='0.05' stroke-width='1.4'%3E%3Ccircle cx='150' cy='140' r='74'/%3E%3Ccircle cx='150' cy='140' r='4' stroke-opacity='0.09'/%3E%3Cpath d='M470 40v70a58 58 0 0 0 0 -70z' stroke-opacity='0.045'/%3E%3Cpath d='M430 300h84v54h-84'/%3E%3Cpath d='M514 316a40 40 0 0 0 0 22'/%3E%3Cpath d='M60 470a34 34 0 0 1 34 34'/%3E%3Ccircle cx='300' cy='500' r='30' stroke-opacity='0.055'/%3E%3Cpath d='M300 470v60M270 500h60' stroke-opacity='0.04'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    animation: derivar-trama 120s linear infinite alternate;
+    will-change: transform;
+  }
+
+  @keyframes derivar-trama {
+    from { transform: translate3d(0, 0, 0); }
+    to   { transform: translate3d(-155px, -110px, 0); }
+  }
+
+  /* --- Quien pidió que nada se mueva --------------------------------- */
+
+  @media (prefers-reduced-motion: reduce) {
+    .ambiente-luz,
+    .ambiente-trama {
+      animation: none !important;
+    }
+  }
+</style>

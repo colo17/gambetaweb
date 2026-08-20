@@ -6,6 +6,7 @@
  * favicon y datos estructurados. Ninguna página los repite.
  */
 import '@/styles/global.css'
+import Ambiente from '@/components/Ambiente.astro'
 import { JUEGOS, URL_MANAGER } from '@/config/games'
 
 interface Props {
@@ -144,6 +145,12 @@ const datosEstructurados = schema ?? {
 
   <body>
     <a href="#contenido" class="solo-lectores focus:not-sr-only">Saltar al contenido</a>
+    {/*
+      El fondo vivo del sitio. Va una sola vez acá y no por sección: ver la
+      cabecera de `Ambiente.astro`, incluida la razón por la que las secciones
+      no pueden llevar fondo opaco.
+    */}
+    <Ambiente />
     <slot />
     {
       /* Un solo lugar donde se sabe si el juego ya está publicado, por si algún
