@@ -167,7 +167,24 @@ export default function Perfil({ juegos }: Props) {
             bien: true,
           })
         } else {
-          const { error } = await supabase.auth.resetPasswordForEmail(correo)
+          /**
+           * ⚠ EL `redirectTo` NO ES OPCIONAL ACÁ.
+           *
+           * Sin él, Supabase manda a la persona a la **Site URL** del proyecto,
+           * que es una sola y la comparten el juego y la web. Hoy vale
+           * `http://localhost:3000`: el mail de recuperación llevaba a una
+           * máquina de desarrollo que del otro lado no existe.
+           *
+           * Con esto vuelve al /perfil del mismo sitio desde el que lo pidió, y
+           * anda igual en producción y en local sin configurar nada.
+           *
+           * ⚑ La URL tiene que estar en la lista blanca de Supabase
+           *   (Authentication → URL Configuration → Redirect URLs). Si no está,
+           *   Supabase la ignora y cae de nuevo en la Site URL.
+           */
+          const { error } = await supabase.auth.resetPasswordForEmail(correo, {
+            redirectTo: `${window.location.origin}/perfil`,
+          })
           if (error) throw error
           setAviso({ texto: 'Te mandamos un mail para cambiar la contraseña.', bien: true })
         }
