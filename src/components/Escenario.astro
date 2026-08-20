@@ -50,20 +50,35 @@ const numeroDe = (i: number) => `${String(i + 1).padStart(2, '0')} / ${total}`
   <div class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
     <div class="sticky top-0 h-[100svh] overflow-hidden">
       {
-        etapas.map((etapa, indice) => (
-          <img
-            src={etapa.imagenChica ?? etapa.imagen}
-            alt=""
-            loading="lazy"
-            decoding="async"
-            data-escenario-fondo={indice}
-            class:list={[
-              'absolute inset-0 h-full w-full scale-[1.06] object-cover opacity-0 transition-[opacity,transform] duration-1000 ease-salida',
-              // La captura de interfaz sólo sirve de ambiente: difuminada y muy baja.
-              etapa.tipo === 'arte' ? '' : 'blur-2xl saturate-150',
-            ]}
-          />
-        ))
+        etapas.map((etapa, indice) => {
+          /**
+           * ⚑ TRES CASOS, en este orden:
+           *
+           *   1. la etapa trae su propio `fondo`  → va nítido (es una ilustración
+           *      hecha para esto)
+           *   2. es arte                          → su misma imagen, nítida
+           *   3. es una captura del juego         → su misma imagen, DIFUMINADA,
+           *      porque una interfaz estirada a sangre no se lee
+           */
+          const grande = etapa.fondo ?? etapa.imagen
+          const chico = etapa.fondoChico ?? etapa.imagenChica ?? null
+          const difuminar = !etapa.fondo && etapa.tipo !== 'arte'
+          return (
+            <img
+              src={chico ?? grande}
+              srcset={chico ? `${chico} 900w, ${grande} 1600w` : undefined}
+              sizes="100vw"
+              alt=""
+              loading="lazy"
+              decoding="async"
+              data-escenario-fondo={indice}
+              class:list={[
+                'absolute inset-0 h-full w-full scale-[1.06] object-cover opacity-0 transition-[opacity,transform] duration-1000 ease-salida',
+                difuminar && 'blur-2xl saturate-150',
+              ]}
+            />
+          )
+        })
       }
       {/*
         El velo. A la izquierda tapa fuerte —ahí vive el panel de texto— y a la

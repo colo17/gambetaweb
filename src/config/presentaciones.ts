@@ -42,6 +42,8 @@ export const PRESENTACIONES: Presentacion[] = [
     etapas: [
       {
         id: 'p-sala',
+        fondo: '/assets/generated/bg-manager-sala-1600.webp',
+        fondoChico: '/assets/generated/bg-manager-sala-900.webp',
         numero: '01',
         titulo: 'Se abre una sala y entran todos',
         texto:
@@ -51,6 +53,8 @@ export const PRESENTACIONES: Presentacion[] = [
       },
       {
         id: 'p-mercado',
+        fondo: '/assets/generated/bg-manager-mercado-1600.webp',
+        fondoChico: '/assets/generated/bg-manager-mercado-900.webp',
         numero: '02',
         titulo: 'Se pelea el mercado',
         texto:
@@ -60,6 +64,8 @@ export const PRESENTACIONES: Presentacion[] = [
       },
       {
         id: 'p-equipo',
+        fondo: '/assets/generated/bg-manager-equipo-1600.webp',
+        fondoChico: '/assets/generated/bg-manager-equipo-900.webp',
         numero: '03',
         titulo: 'Se planta el equipo',
         texto:
@@ -69,6 +75,8 @@ export const PRESENTACIONES: Presentacion[] = [
       },
       {
         id: 'p-partido',
+        fondo: '/assets/generated/bg-manager-partido-1600.webp',
+        fondoChico: '/assets/generated/bg-manager-partido-900.webp',
         numero: '04',
         titulo: 'Y se juega la fecha, en vivo',
         texto:
@@ -78,6 +86,8 @@ export const PRESENTACIONES: Presentacion[] = [
       },
       {
         id: 'p-tabla',
+        fondo: '/assets/generated/bg-manager-tabla-1600.webp',
+        fondoChico: '/assets/generated/bg-manager-tabla-900.webp',
         numero: '05',
         titulo: 'Treinta y ocho fechas después',
         texto:

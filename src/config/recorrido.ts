@@ -18,6 +18,21 @@ export interface Etapa {
   pie: string
   /** 'juego' (por defecto) o 'arte'; cambia el badge y el encuadre. */
   tipo?: 'juego' | 'arte'
+  /**
+   * La imagen que va DE FONDO en el escenario de la portada, cuando tiene que
+   * ser distinta de la que se muestra en el marco.
+   *
+   * ⚑ Existe por las capturas del juego: una captura de interfaz no sirve de
+   *   fondo a sangre —se estira, se oscurece y no se lee—, pero el bloque sin
+   *   fondo queda negro al lado de los otros dos. Con esto, cada etapa del
+   *   Manager tiene su propia ilustración atrás y su captura nítida adelante.
+   *
+   * Si no está, el escenario usa la imagen de la etapa (difuminada, si es una
+   * captura).
+   */
+  fondo?: string
+  /** La misma de fondo, más chica, para el teléfono. */
+  fondoChico?: string
   /** Imágenes adicionales; si están, el marco se parte en mosaico. */
   extra?: { imagen: string; pie: string }[]
 }
