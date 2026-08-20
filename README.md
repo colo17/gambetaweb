@@ -32,7 +32,7 @@ Queda en <http://localhost:4321>.
 | `npm run assets` | Reprocesa logo, fondos, íconos y la imagen de compartir |
 | `npm run capturas` | Vuelve a fotografiar las pantallas del juego |
 | `npm run harness` | Levanta sólo el harness de capturas, para mirarlo a ojo |
-| `npm run probar` | Prueba funcional de las seis páginas (59 verificaciones) |
+| `npm run probar` | Prueba funcional de las seis páginas (64 verificaciones) |
 | `npm run revisar` | Revisión visual: cada página a 1440, 390 y 430px + chequeos |
 
 Las tres últimas piden que haya un servidor levantado; `probar` y `revisar`
@@ -92,6 +92,7 @@ src/
   lib/cuenta.ts          ← el cliente de Supabase y los tipos del perfil
   data/*.json            ← generados por `npm run datos`, no editar a mano
   components/
+    Cuenta               ← el control de sesión del header (entrar / tu nombre)
     Simbolos             ← iconitos de fútbol flotando en los márgenes
     Header · Hero · Footer
     PresentacionJuego    ← un juego en la portada

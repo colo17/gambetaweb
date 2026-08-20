@@ -29,6 +29,15 @@ export const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY?.trim(
 /** ¿Están las dos variables? Si falta una, no hay cuentas. */
 export const HAY_CUENTAS = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY)
 
+/**
+ * Dónde guarda Supabase la sesión en el navegador.
+ *
+ * ⚑ ESTÁ ACÁ PARA QUE LO USEN DOS. El cliente lo recibe como `storageKey`, y el
+ *   control de cuenta del header lo lee **a mano** para saber si hay alguien
+ *   adentro sin tener que descargar el paquete de Supabase en las seis páginas.
+ */
+export const CLAVE_SESION = 'gambeta-web-auth'
+
 /** La carrera de un entrenador, tal como la devuelve `coach_profile()`. */
 export interface PerfilEntrenador {
   id: string
@@ -94,7 +103,7 @@ export function clienteCuenta() {
            * mostrar el formulario de contraseña nueva.
            */
           detectSessionInUrl: true,
-          storageKey: 'gambeta-web-auth',
+          storageKey: CLAVE_SESION,
         },
       })
     )

@@ -9,6 +9,7 @@
  *   abierta: en un sitio de una sola página no hacía falta, en uno de seis sí.
  */
 import { NAVEGACION, CTA_JUGAR, rutaActiva } from '@/config/games'
+import Cuenta from './Cuenta.astro'
 
 const aqui = Astro.url.pathname
 ---
@@ -59,6 +60,15 @@ const aqui = Astro.url.pathname
         {CTA_JUGAR.texto}
       </a>
 
+      {/*
+        ⚠ EN EL TELÉFONO NO ENTRA. Con el logo, el CTA y la hamburguesa, un
+          botón más a 390px empuja todo. Ahí el control de cuenta va al final
+          del menú desplegable, que es donde hay lugar.
+      */}
+      <div class="hidden lg:block">
+        <Cuenta />
+      </div>
+
       <button
         type="button"
         class="grid h-10 w-10 place-items-center rounded-lg border border-white/10 text-hueso-200 lg:hidden"
@@ -100,6 +110,8 @@ const aqui = Astro.url.pathname
           )
         })
       }
+
+      <Cuenta variante="menu" />
     </nav>
   </div>
 </header>

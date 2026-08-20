@@ -398,6 +398,67 @@ verificar(
 )
 
 // ===========================================================================
+// 9b. El control de cuenta del header
+// ===========================================================================
+console.log('\nCuenta en el header')
+
+await ir('/')
+verificar(
+  'sin sesión ofrece entrar',
+  await pagina.locator('header [data-cuenta-entrar]').first().isVisible()
+)
+
+/**
+ * La sesión se simula escribiendo en el navegador lo mismo que deja Supabase.
+ * Así se prueba el control sin tocar la base del juego ni pedir credenciales.
+ *
+ * ⚑ Y de paso verifica lo que hace que esto no cueste rendimiento: el header
+ *   reconoce la sesión SIN descargar el paquete de Supabase.
+ */
+const sesionFalsa = JSON.stringify({
+  access_token: 'de-mentira',
+  expires_at: Math.floor(Date.now() / 1000) + 3600,
+  user: { email: 'juan@ejemplo.com', user_metadata: { display_name: 'El Colo' } },
+})
+
+const conCuenta = await contexto.newPage()
+await conCuenta.addInitScript((v) => localStorage.setItem('gambeta-web-auth', v), sesionFalsa)
+await conCuenta.goto(BASE + '/', { waitUntil: 'networkidle' })
+await conCuenta.waitForTimeout(400)
+
+verificar(
+  'con sesión muestra el nombre en la barra',
+  (await conCuenta.locator('header [data-cuenta-abrir]').textContent())?.trim() === 'El Colo'
+)
+verificar(
+  'y esconde el botón de entrar',
+  !(await conCuenta.locator('header [data-cuenta-entrar]').first().isVisible())
+)
+
+await conCuenta.locator('[data-cuenta-abrir]').click()
+await conCuenta.waitForTimeout(250)
+verificar(
+  'el menú se abre con el perfil y la salida',
+  (await conCuenta.locator('[data-cuenta-menu]').isVisible()) &&
+    (await conCuenta.locator('[data-cuenta-salir]').first().isVisible())
+)
+
+// Una sesión vencida es una sesión cerrada.
+const vencida = await contexto.newPage()
+await vencida.addInitScript(
+  (v) => localStorage.setItem('gambeta-web-auth', v),
+  JSON.stringify({ expires_at: 1000, user: { email: 'viejo@ejemplo.com' } })
+)
+await vencida.goto(BASE + '/', { waitUntil: 'networkidle' })
+await vencida.waitForTimeout(400)
+verificar(
+  'una sesión vencida vuelve a "Entrar"',
+  await vencida.locator('header [data-cuenta-entrar]').first().isVisible()
+)
+await vencida.close()
+await conCuenta.close()
+
+// ===========================================================================
 // 10. Accesibilidad y salud general
 // ===========================================================================
 console.log('\nAccesibilidad')

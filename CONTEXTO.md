@@ -70,7 +70,7 @@ Todo verde y desplegable:
 
 Accesibilidad, buenas prácticas y SEO: **100 en las seis**.
 
-- `npm run probar` → 59 de 59 verificaciones funcionales, sobre las seis páginas.
+- `npm run probar` → 64 de 64 verificaciones funcionales, sobre las seis páginas.
 - `npm run revisar` → sin desbordes, sin imágenes rotas, un solo `h1` por página,
   sin ids repetidos. Mira cada página a 1440, 390 y **430px**.
 - `npm run build` → sin errores.
@@ -137,6 +137,7 @@ src/
   lib/cuenta.ts          ← cliente de Supabase + tipos del perfil
   data/*.json            ← generados por `npm run datos`. NO editar a mano.
   components/
+    Cuenta.astro         ← el control de sesión del header (entrar / tu nombre)
     Simbolos.astro       ← iconitos de fútbol flotando en los márgenes
     Header · Hero        ← el hero son 5 clips de video en secuencia
     Escenario.astro      ← EL scrollytelling. Se usa 6 veces (3 en la portada,
@@ -158,6 +159,30 @@ harness/                 ← monta las pantallas del juego para fotografiarlas
 assets-src/              ← originales de Higgsfield (se versionan, ~60 MB)
 public/data/planteles/   ← 81 archivos, el plantel de cada club por liga
 ```
+
+### ⚑ EL CONTROL DE CUENTA DEL HEADER LEE LA SESIÓN A MANO
+
+`Cuenta.astro` muestra "Entrar" o —si hay sesión— tu nombre con un menú abajo
+que tiene "Mi perfil" y "Salir". Vive en el header, o sea **en las seis
+páginas**.
+
+⚠ **Y POR ESO NO USA EL CLIENTE DE SUPABASE PARA SABER SI HAY ALGUIEN.** Cargarlo
+en todas las páginas para preguntar "¿hay sesión?" serían ~40 KB de JavaScript
+en cada visita, incluida la de quien nunca se registró. En su lugar lee del
+navegador la entrada que Supabase ya dejó guardada (`CLAVE_SESION`, exportada de
+`lib/cuenta.ts` justo para eso): instantáneo, sin red y sin descargar nada.
+
+**El paquete se baja sólo al apretar "Salir"**, que es lo único que necesita
+hablar con el servidor de verdad — borrar la entrada a mano dejaría el token
+vivo del otro lado.
+
+⚠ Ese formato es interno de Supabase, así que se lee con `try`: si algún día
+cambia, lo peor que pasa es que muestre "Entrar". Y se mira `expires_at`, porque
+sin eso una sesión vieja seguía mostrando el nombre de alguien que ya estaba
+afuera.
+
+⚠ **En el teléfono no va en la barra.** Con el logo, el CTA y la hamburguesa, un
+botón más a 390px empuja todo: ahí el control va al final del menú desplegable.
 
 ### ⚑ LOS SÍMBOLOS DE FONDO, Y EL INTENTO QUE NO FUE
 

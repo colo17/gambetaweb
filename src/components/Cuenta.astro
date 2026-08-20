@@ -1,0 +1,218 @@
+---
+/**
+ * EL CONTROL DE CUENTA DEL HEADER
+ * ===============================
+ *
+ * Al lado de "Quiero jugar": un botón para entrar, o —si ya entraste— tu nombre
+ * con un menú abajo que tiene "Mi perfil" y "Salir".
+ *
+ * ⚑ NO DESCARGA SUPABASE PARA AVERIGUAR SI HAY SESIÓN.
+ *
+ *   Esto vive en el header, o sea en las SEIS páginas. Cargar el cliente de
+ *   Supabase en todas para preguntar "¿hay alguien adentro?" serían ~40 KB de
+ *   JavaScript en cada visita, incluida la de quien nunca se registró.
+ *
+ *   En su lugar se lee del navegador la sesión que Supabase ya dejó guardada
+ *   (`CLAVE_SESION`). Es instantáneo, no pide red y no baja nada. El paquete se
+ *   descarga **sólo** cuando alguien aprieta "Salir", que es lo único que
+ *   necesita hablar con el servidor de verdad.
+ *
+ * ⚠ POR ESO SE LEE CON CUIDADO. El formato de esa entrada es interno de
+ *   Supabase: si algún día cambia, lo peor que pasa es que no se reconozca la
+ *   sesión y se muestre "Entrar". Nunca se rompe la página, y `/perfil` —que sí
+ *   usa el cliente de verdad— sigue diciendo la verdad.
+ *
+ * ⚠ Y SE MIRA EL VENCIMIENTO. Sin eso, una sesión vieja seguía mostrando el
+ *   nombre de alguien que en realidad ya estaba afuera.
+ */
+import { CLAVE_SESION } from '@/lib/cuenta'
+
+interface Props {
+  /**
+   * `barra`  el botón del header, con menú desplegable (escritorio)
+   * `menu`   una fila dentro del menú de teléfono, sin desplegable
+   */
+  variante?: 'barra' | 'menu'
+}
+
+const { variante = 'barra' } = Astro.props
+const esBarra = variante === 'barra'
+---
+
+<div
+  class:list={[esBarra ? 'relative' : 'border-t border-white/5 pt-3']}
+  data-cuenta
+  data-clave={CLAVE_SESION}
+>
+  {/*
+    Lo que se ve sin sesión, y lo que ve quien tiene el JavaScript apagado.
+    Lleva a /perfil, que es donde está el formulario de verdad.
+  */}
+  <a
+    href="/perfil"
+    class:list={[
+      esBarra
+        ? 'boton boton-secundario !px-4 !py-2.5 !text-sm'
+        : 'flex items-center justify-between py-3 text-base font-medium text-hueso-200',
+    ]}
+    data-cuenta-entrar
+  >
+    Entrar
+    {!esBarra && <span class="text-xs text-hueso-500">Tu cuenta de Gambeta</span>}
+  </a>
+
+  <!-- Lo que se ve con sesión. El script lo prende. -->
+  <div class="hidden" data-cuenta-sesion>
+    {
+      esBarra ? (
+        <>
+          <button
+            type="button"
+            class="flex max-w-[11rem] items-center gap-2 rounded-full border border-white/12 px-3.5 py-2 text-sm font-medium text-hueso-200 transition-colors hover:border-cesped-500/60 hover:text-hueso-50"
+            aria-expanded="false"
+            aria-haspopup="true"
+            data-cuenta-abrir
+          >
+            <span class="h-1.5 w-1.5 shrink-0 rounded-full bg-cesped-500" aria-hidden="true" />
+            <span class="truncate" data-cuenta-nombre />
+            <svg width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden="true" class="shrink-0">
+              <path
+                d="M2.5 4.5 6 8l3.5-3.5"
+                stroke="currentColor"
+                stroke-width="1.6"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </button>
+
+          {/*
+            El menú, abajo del botón — que es donde el dueño pidió que apareciera
+            el nombre y la salida.
+          */}
+          <div
+            class="absolute right-0 top-full z-50 mt-2 hidden w-56 overflow-hidden rounded-xl border border-white/10 bg-carbon-900 shadow-xl shadow-black/40"
+            data-cuenta-menu
+          >
+            <p class="border-b border-white/8 px-4 py-3">
+              <span class="block text-[0.65rem] uppercase tracking-[0.16em] text-hueso-500">
+                Tu cuenta
+              </span>
+              <span class="mt-1 block truncate text-sm text-hueso-100" data-cuenta-nombre />
+            </p>
+            <a href="/perfil" class="block px-4 py-3 text-sm text-hueso-300 transition-colors hover:bg-white/5 hover:text-hueso-50">
+              Mi perfil
+            </a>
+            <button
+              type="button"
+              class="block w-full px-4 py-3 text-left text-sm text-hueso-400 transition-colors hover:bg-white/5 hover:text-red-300"
+              data-cuenta-salir
+            >
+              Salir
+            </button>
+          </div>
+        </>
+      ) : (
+        <div class="py-3">
+          <p class="text-[0.65rem] uppercase tracking-[0.16em] text-hueso-500">Tu cuenta</p>
+          <p class="mt-1 truncate text-base font-medium text-hueso-100" data-cuenta-nombre />
+          <div class="mt-3 flex gap-4 text-sm">
+            <a href="/perfil" class="text-cesped-300">Mi perfil</a>
+            <button type="button" class="text-hueso-400" data-cuenta-salir>Salir</button>
+          </div>
+        </div>
+      )
+    }
+  </div>
+</div>
+
+<script>
+  import { CLAVE_SESION } from '@/lib/cuenta'
+
+  /**
+   * Lee la sesión guardada por Supabase sin descargar Supabase.
+   *
+   * Devuelve el nombre para mostrar, o `null` si no hay nadie adentro.
+   */
+  function nombreDeLaSesion(): string | null {
+    try {
+      const crudo = localStorage.getItem(CLAVE_SESION)
+      if (!crudo) return null
+
+      const sesion = JSON.parse(crudo)
+      const usuario = sesion?.user ?? sesion?.currentSession?.user
+      if (!usuario) return null
+
+      // ⚠ Una sesión vencida es una sesión cerrada. `expires_at` va en segundos.
+      const vence = Number(sesion?.expires_at ?? sesion?.currentSession?.expires_at ?? 0)
+      if (vence && vence * 1000 < Date.now()) return null
+
+      const metadatos = usuario.user_metadata ?? {}
+      const nombre = String(metadatos.display_name ?? metadatos.full_name ?? '').trim()
+      // Si nadie puso nombre, la parte del mail antes del arroba. Igual que el juego.
+      return nombre || String(usuario.email ?? '').split('@')[0] || 'Entrenador'
+    } catch {
+      // Formato inesperado: se trata como "no hay sesión" y se muestra "Entrar".
+      return null
+    }
+  }
+
+  const nombre = nombreDeLaSesion()
+
+  document.querySelectorAll<HTMLElement>('[data-cuenta]').forEach((cuenta) => {
+    const entrar = cuenta.querySelector<HTMLElement>('[data-cuenta-entrar]')
+    const conSesion = cuenta.querySelector<HTMLElement>('[data-cuenta-sesion]')
+    if (!entrar || !conSesion) return
+
+    if (!nombre) return // Queda "Entrar", que es lo que ya está dibujado.
+
+    entrar.classList.add('hidden')
+    conSesion.classList.remove('hidden')
+    cuenta.querySelectorAll<HTMLElement>('[data-cuenta-nombre]').forEach((n) => {
+      n.textContent = nombre
+    })
+
+    // --- El desplegable (sólo en la barra) ------------------------------
+    const abrir = cuenta.querySelector<HTMLButtonElement>('[data-cuenta-abrir]')
+    const menu = cuenta.querySelector<HTMLElement>('[data-cuenta-menu]')
+
+    if (abrir && menu) {
+      const alternar = (mostrar?: boolean) => {
+        const visible = mostrar ?? menu.classList.contains('hidden')
+        menu.classList.toggle('hidden', !visible)
+        abrir.setAttribute('aria-expanded', String(visible))
+      }
+
+      abrir.addEventListener('click', (evento) => {
+        evento.stopPropagation()
+        alternar()
+      })
+      // Un click afuera lo cierra, y Escape también: se navega con teclado.
+      document.addEventListener('click', () => alternar(false))
+      document.addEventListener('keydown', (e) => e.key === 'Escape' && alternar(false))
+      menu.addEventListener('click', (evento) => evento.stopPropagation())
+    }
+
+    // --- Salir ----------------------------------------------------------
+    cuenta.querySelectorAll<HTMLButtonElement>('[data-cuenta-salir]').forEach((boton) => {
+      boton.addEventListener('click', async () => {
+        boton.disabled = true
+        boton.textContent = 'Saliendo…'
+        try {
+          /**
+           * ⚑ ACÁ SÍ SE BAJA SUPABASE, y recién acá. Cerrar sesión de verdad
+           *   es lo único de este control que necesita hablar con el servidor:
+           *   borrar la entrada del navegador a mano dejaría el token vivo.
+           */
+          const { clienteCuenta } = await import('@/lib/cuenta')
+          const supabase = await clienteCuenta()
+          await supabase.auth.signOut()
+        } catch {
+          // Si no se pudo hablar con el servidor, igual se limpia acá.
+          localStorage.removeItem(CLAVE_SESION)
+        }
+        window.location.href = '/'
+      })
+    })
+  })
+</script>
